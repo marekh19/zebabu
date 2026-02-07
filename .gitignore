@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+
+# Build output
+.output
+dist
+.turbo
+
+# Deploy
+.vercel
+.netlify
+.wrangler
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+!.env.test

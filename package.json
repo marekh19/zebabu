@@ -1,0 +1,32 @@
+{
+  "name": "zebabu-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check": "turbo check",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "turbo clean && rm -rf node_modules",
+    "db:start": "docker compose up",
+    "db:push": "pnpm --filter @zebabu/web db:push",
+    "db:generate": "pnpm --filter @zebabu/web db:generate",
+    "db:migrate": "pnpm --filter @zebabu/web db:migrate",
+    "db:studio": "pnpm --filter @zebabu/web db:studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-svelte": "^3.4.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "turbo": "^2.4.4"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

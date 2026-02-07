@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+
+# Build output
+.svelte-kit
+build
+dist
+.turbo
+
+# Generated
+**/src/lib/paraglide
+**/project.inlang
+
+# Claude
+.claude
+
+# Static assets
+**/static
+**/drizzle

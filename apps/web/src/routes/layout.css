@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '@zebabu/tailwind-config/theme.css';
+
+@source '../../node_modules/@zebabu/ui';
