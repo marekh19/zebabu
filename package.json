@@ -15,9 +15,14 @@
     "db:push": "pnpm --filter @zebabu/web db:push",
     "db:generate": "pnpm --filter @zebabu/web db:generate",
     "db:migrate": "pnpm --filter @zebabu/web db:migrate",
-    "db:studio": "pnpm --filter @zebabu/web db:studio"
+    "db:studio": "pnpm --filter @zebabu/web db:studio",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-svelte": "^3.4.1",
