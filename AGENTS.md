@@ -1,5 +1,10 @@
 # Agent Guidelines
 
+## Shell
+
+- `builtin` is ONLY for the `cd` command (user has `cd` aliased to zoxide). Example: `builtin cd /path && pnpm dlx ...`
+- NEVER prefix `pnpm`, `node`, or any other command with `builtin` — only `cd`
+
 ## TypeScript
 
 - Write functional, immutable TypeScript code

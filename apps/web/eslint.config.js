@@ -44,4 +44,11 @@ export default defineConfig(
       },
     },
   },
+  // Don't use no-navigation-without-resolve for shadcn-svelte components
+  {
+    files: ['src/lib/components/ui/**/*.svelte'],
+    rules: {
+      'svelte/no-navigation-without-resolve': 'off',
+    },
+  },
 )

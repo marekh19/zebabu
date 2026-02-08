@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from '@zebabu/ui'
+  import { Button } from '$lib/components/ui/button'
 
   let count = $state(0)
 

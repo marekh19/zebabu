@@ -3,7 +3,8 @@
   "style": "default",
   "tailwind": {
     "config": "",
-    "css": ""
+    "css": "",
+    "baseColor": "yellow"
   },
   "aliases": {
     "components": "$lib/components",

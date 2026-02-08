@@ -3,7 +3,7 @@
 **Epic:** User Authentication & Profile Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,12 +23,12 @@ Implement user registration functionality using Better Auth. Users should be abl
 
 ## Acceptance Criteria
 
-- [ ] Registration form accessible at `/auth/register`
-- [ ] Email validation (valid format, unique)
-- [ ] Password requirements enforced (min 8 chars, mix of letters/numbers)
-- [ ] Error messages displayed for validation failures
-- [ ] Successful registration redirects to budget list page
-- [ ] User session automatically created after registration
+- [x] Registration form accessible at `/auth/register`
+- [x] Email validation (valid format, unique)
+- [x] Password requirements enforced (min 8 chars, mix of letters/numbers)
+- [x] Error messages displayed for validation failures
+- [x] Successful registration redirects to budget list page
+- [x] User session automatically created after registration
 - [ ] Primary currency defaults to CZK
 - [ ] Locale defaults to cs-CZ
 

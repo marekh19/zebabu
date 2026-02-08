@@ -14,15 +14,9 @@
       "cache": false,
       "persistent": true
     },
-    "check": {
-      "dependsOn": ["^build"]
-    },
-    "lint": {
-      "dependsOn": ["^build"]
-    },
-    "test": {
-      "dependsOn": ["^build"]
-    },
+    "check": {},
+    "lint": {},
+    "test": {},
     "clean": {
       "cache": false
     }
