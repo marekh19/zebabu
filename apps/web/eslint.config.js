@@ -51,4 +51,11 @@ export default defineConfig(
       'svelte/no-navigation-without-resolve': 'off',
     },
   },
+  // TypeScript rules
+  {
+    rules: {
+      // Enformace usage of type instead of interface
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+    },
+  },
 )

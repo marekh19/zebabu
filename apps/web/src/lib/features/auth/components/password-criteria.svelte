@@ -3,7 +3,7 @@
   import Check from '@lucide/svelte/icons/check'
   import Circle from '@lucide/svelte/icons/circle'
 
-  interface Props {
+  type Props = {
     password: string
   }
 
