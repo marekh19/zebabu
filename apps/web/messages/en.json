@@ -78,5 +78,7 @@
   "dashboard_title": "Dashboard",
   "dashboard_greeting": "Hello, {name}!",
   "logout_button": "Log out",
-  "logout_submitting": "Logging out..."
+  "logout_submitting": "Logging out...",
+  "sidebar_app_name": "Zebabu",
+  "sidebar_nav_dashboard": "Dashboard"
 }

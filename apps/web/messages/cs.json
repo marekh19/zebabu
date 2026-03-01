@@ -75,8 +75,10 @@
   "reset_password_success": "Heslo bylo úspěšně obnoveno. Nyní se můžete přihlásit.",
   "reset_password_invalid_token": "Tento odkaz je neplatný nebo vypršel.",
   "reset_password_back_to_forgot": "Požádat o nový odkaz",
-  "dashboard_title": "Nástěnka",
+  "dashboard_title": "Přehled",
   "dashboard_greeting": "Ahoj, {name}!",
   "logout_button": "Odhlásit se",
-  "logout_submitting": "Odhlašování..."
+  "logout_submitting": "Odhlašování...",
+  "sidebar_app_name": "Zebabu",
+  "sidebar_nav_dashboard": "Přehled"
 }
