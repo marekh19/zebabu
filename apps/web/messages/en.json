@@ -54,5 +54,9 @@
   "verify_email_resend": "Resend verification email",
   "verify_email_resend_success": "Verification email sent!",
   "verify_email_resend_cooldown": "Resend available in {seconds}s",
-  "verify_email_login_link": "Back to login"
+  "verify_email_login_link": "Back to login",
+  "dashboard_title": "Dashboard",
+  "dashboard_greeting": "Hello, {name}!",
+  "logout_button": "Log out",
+  "logout_submitting": "Logging out..."
 }

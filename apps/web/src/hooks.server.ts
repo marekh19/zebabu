@@ -15,7 +15,15 @@ const handleParaglide: Handle = ({ event, resolve }) =>
     })
   })
 
-const handleAuth: Handle = ({ event, resolve }) =>
-  svelteKitHandler({ event, resolve, auth, building })
+const handleAuth: Handle = async ({ event, resolve }) => {
+  const response = await auth.api.getSession({
+    headers: event.request.headers,
+  })
+
+  event.locals.session = response?.session ?? null
+  event.locals.user = response?.user ?? null
+
+  return svelteKitHandler({ event, resolve, auth, building })
+}
 
 export const handle: Handle = sequence(handleParaglide, handleAuth)

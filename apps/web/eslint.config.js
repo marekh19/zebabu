@@ -66,4 +66,11 @@ export default defineConfig(
       '@typescript-eslint/no-import-type-side-effects': 'error',
     },
   },
+  // Declaration files require `interface` for namespace augmentation
+  {
+    files: ['**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/consistent-type-definitions': 'off',
+    },
+  },
 )

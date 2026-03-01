@@ -54,5 +54,9 @@
   "verify_email_resend": "Znovu odeslat ověřovací e-mail",
   "verify_email_resend_success": "Ověřovací e-mail odeslán!",
   "verify_email_resend_cooldown": "Znovu odeslat za {seconds}s",
-  "verify_email_login_link": "Zpět na přihlášení"
+  "verify_email_login_link": "Zpět na přihlášení",
+  "dashboard_title": "Nástěnka",
+  "dashboard_greeting": "Ahoj, {name}!",
+  "logout_button": "Odhlásit se",
+  "logout_submitting": "Odhlašování..."
 }
