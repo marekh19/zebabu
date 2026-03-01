@@ -6,16 +6,16 @@
   import * as Breadcrumb from '$lib/components/ui/breadcrumb'
   import { Separator } from '$lib/components/ui/separator'
   import * as Sidebar from '$lib/components/ui/sidebar'
-  import * as m from '$lib/paraglide/messages'
+  import { sidebarRoutes } from '$lib/config/navigation'
   import type { Snippet } from 'svelte'
 
   type Props = { children: Snippet }
 
   let { children }: Props = $props()
 
-  const segmentLabels: Record<string, () => string> = {
-    dashboard: m.sidebar_nav_dashboard,
-  }
+  const segmentLabels = Object.fromEntries(
+    sidebarRoutes.map((route) => [route.segment, route.label]),
+  )
 
   const breadcrumbs = $derived.by(() => {
     const pathname = page.url.pathname

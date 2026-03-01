@@ -3,8 +3,8 @@
   import { page } from '$app/state'
   import NavUser from '$lib/components/nav-user.svelte'
   import * as Sidebar from '$lib/components/ui/sidebar'
+  import { sidebarRoutes } from '$lib/config/navigation'
   import * as m from '$lib/paraglide/messages'
-  import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard'
   import type { ComponentProps } from 'svelte'
 
   type Props = ComponentProps<typeof Sidebar.Root> & {
@@ -34,20 +34,22 @@
   <Sidebar.Content>
     <Sidebar.Group>
       <Sidebar.Menu>
-        <Sidebar.MenuItem>
-          <Sidebar.MenuButton
-            isActive={page.url.pathname === resolve('/dashboard') ||
-              page.url.pathname.startsWith(resolve('/dashboard') + '/')}
-            tooltipContent={m.sidebar_nav_dashboard()}
-          >
-            {#snippet child({ props })}
-              <a href={resolve('/dashboard')} {...props}>
-                <LayoutDashboardIcon />
-                <span>{m.sidebar_nav_dashboard()}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-        </Sidebar.MenuItem>
+        {#each sidebarRoutes as route (route.path)}
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton
+              isActive={page.url.pathname === resolve(route.path) ||
+                page.url.pathname.startsWith(resolve(route.path) + '/')}
+              tooltipContent={route.label()}
+            >
+              {#snippet child({ props })}
+                <a href={resolve(route.path)} {...props}>
+                  <route.icon />
+                  <span>{route.label()}</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+          </Sidebar.MenuItem>
+        {/each}
       </Sidebar.Menu>
     </Sidebar.Group>
   </Sidebar.Content>

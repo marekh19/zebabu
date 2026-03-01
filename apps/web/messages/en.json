@@ -80,5 +80,7 @@
   "logout_button": "Log out",
   "logout_submitting": "Logging out...",
   "sidebar_app_name": "Zebabu",
-  "sidebar_nav_dashboard": "Dashboard"
+  "sidebar_nav_dashboard": "Dashboard",
+  "sidebar_nav_budgets": "Budgets",
+  "budgets_title": "Budgets"
 }

@@ -80,5 +80,7 @@
   "logout_button": "Odhlásit se",
   "logout_submitting": "Odhlašování...",
   "sidebar_app_name": "Zebabu",
-  "sidebar_nav_dashboard": "Přehled"
+  "sidebar_nav_dashboard": "Přehled",
+  "sidebar_nav_budgets": "Rozpočty",
+  "budgets_title": "Rozpočty"
 }
