@@ -9,10 +9,19 @@
   import * as Form from '$lib/components/ui/form'
   import { Input } from '$lib/components/ui/input'
   import { resolve } from '$app/paths'
-  import { goto } from '$app/navigation'
   import PasswordCriteria from '$lib/features/auth/components/password-criteria.svelte'
 
+  type Props = {
+    onSuccess: (email: string) => void
+  }
+
+  const { onSuccess }: Props = $props()
+
   let serverError = $state('')
+
+  function buildCallbackURL(email: string) {
+    return `${resolve('/auth/login')}?email=${encodeURIComponent(email)}`
+  }
 
   const signupSchema = createSignupSchema()
   const form = superForm(defaults(zod4(signupSchema)), {
@@ -27,6 +36,7 @@
         name: updatedForm.data.name,
         email: updatedForm.data.email,
         password: updatedForm.data.password,
+        callbackURL: buildCallbackURL(updatedForm.data.email),
       })
 
       if (error) {
@@ -34,7 +44,7 @@
         return
       }
 
-      goto(resolve('/(private)/dashboard'))
+      onSuccess(updatedForm.data.email)
     },
   })
 

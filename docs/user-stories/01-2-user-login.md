@@ -23,13 +23,13 @@ Implement user login functionality using Better Auth. Users should be able to au
 
 ## Acceptance Criteria
 
-- [ ] Login form accessible at `/auth/login`
-- [ ] Email and password fields required
-- [ ] Error message for invalid credentials
-- [ ] Successful login creates session and redirects to `/budgets`
-- [ ] "Forgot password?" link visible
-- [ ] "Don't have an account?" link to registration
-- [ ] Form uses progressive enhancement
+- [x] Login form accessible at `/auth/login`
+- [x] Email and password fields required
+- [x] Error message for invalid credentials
+- [ ] Successful login creates session and redirects to `/budgets` ⚠️ Currently redirects to `/(private)/dashboard`
+- [ ] "Forgot password?" link visible ⚠️ Text shown but not a clickable link (`<p>` instead of `<a>`)
+- [x] "Don't have an account?" link to registration
+- [x] Form uses client-side validation with Superforms SPA mode (progressive enhancement omitted — Better Auth requires client SDK)
 
 ---
 

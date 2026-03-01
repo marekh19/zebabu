@@ -16,6 +16,7 @@
     "db:generate": "pnpm --filter @zebabu/web db:generate",
     "db:migrate": "pnpm --filter @zebabu/web db:migrate",
     "db:studio": "pnpm --filter @zebabu/web db:studio",
+    "redis:studio": "pnpm --filter @zebabu/web redis:studio",
     "prepare": "husky"
   },
   "devDependencies": {
