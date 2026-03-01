@@ -1,7 +1,7 @@
 import { EMAIL_FROM, RESEND_API_KEY } from '$env/static/private'
 import { redis } from '$lib/server/cache'
 import { db } from '$lib/server/db'
-import { sendVerificationEmail } from '@zebabu/emails'
+import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
@@ -15,8 +15,12 @@ export const auth = betterAuth({
     requireEmailVerification: true,
 
     async sendResetPassword({ user, url }) {
-      // TODO: Plugin email provider
-      console.log(`Sent reset password to ${user.email}: ${url}`)
+      await sendPasswordResetEmail({
+        to: user.email,
+        url,
+        from: EMAIL_FROM,
+        apiKey: RESEND_API_KEY,
+      })
     },
   },
 
@@ -87,6 +91,7 @@ export const auth = betterAuth({
     customRules: {
       '/sign-up/email': { window: 60, max: 5 }, // 5/min
       '/sign-in/email': { window: 60, max: 10 }, // 10/min
+      '/forget-password': { window: 60, max: 3 }, // 3/min
     },
   },
 

@@ -7,14 +7,9 @@ import {
 import * as m from '$lib/paraglide/messages'
 import { z } from 'zod/v4'
 
-export function createSignupSchema() {
+export function createResetPasswordSchema() {
   return z
     .object({
-      name: z
-        .string()
-        .min(2, { message: m.auth_validation_name_min() })
-        .max(50, { message: m.auth_validation_name_max() }),
-      email: z.email({ message: m.auth_validation_email() }),
       password: z
         .string()
         .min(PASSWORD_MIN_LENGTH, { message: m.auth_validation_password_min() })

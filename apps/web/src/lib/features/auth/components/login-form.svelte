@@ -93,7 +93,12 @@
       </Form.Field>
 
       <p class="text-muted-foreground text-sm">
-        {m.login_forgot_password()}
+        <a
+          href={resolve('/auth/forgot-password')}
+          class="text-primary underline-offset-4 hover:underline"
+        >
+          {m.login_forgot_password()}
+        </a>
       </p>
 
       <Form.Button class="w-full" disabled={$submitting}>

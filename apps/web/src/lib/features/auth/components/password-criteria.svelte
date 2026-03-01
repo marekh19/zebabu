@@ -1,5 +1,10 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
+  import {
+    PASSWORD_HAS_LETTER,
+    PASSWORD_HAS_NUMBER,
+    PASSWORD_MIN_LENGTH,
+  } from '$lib/features/auth/constants/password-rules'
   import Check from '@lucide/svelte/icons/check'
   import Circle from '@lucide/svelte/icons/circle'
 
@@ -9,9 +14,9 @@
 
   const { password }: Props = $props()
 
-  const hasMinLength = $derived(password.length >= 8)
-  const hasLetter = $derived(/[a-zA-Z]/.test(password))
-  const hasNumber = $derived(/\d/.test(password))
+  const hasMinLength = $derived(password.length >= PASSWORD_MIN_LENGTH)
+  const hasLetter = $derived(PASSWORD_HAS_LETTER.test(password))
+  const hasNumber = $derived(PASSWORD_HAS_NUMBER.test(password))
 </script>
 
 {#if password.length > 0}

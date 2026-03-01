@@ -2,7 +2,7 @@ import React from 'react'
 import { sendEmail } from './send'
 import VerificationEmail from './templates/verification-email'
 
-interface SendVerificationEmailOptions {
+type SendVerificationEmailOptions = {
   to: string
   url: string
   from: string

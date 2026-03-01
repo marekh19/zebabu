@@ -8,6 +8,7 @@ const errorCodeToMessage = {
   INVALID_EMAIL_OR_PASSWORD: m.auth_error_invalid_credentials,
   EMAIL_NOT_VERIFIED: m.auth_error_email_not_verified,
   TOO_MANY_REQUESTS: m.auth_error_too_many_requests,
+  INVALID_TOKEN: m.reset_password_invalid_token,
 } as const
 
 export function getAuthError(code: string): string {
