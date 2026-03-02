@@ -7,29 +7,29 @@
   import * as m from '$lib/paraglide/messages'
   import type { ComponentProps } from 'svelte'
 
+  type SidebarRoutePath = (typeof sidebarRoutes)[number]['path']
+
   type Props = ComponentProps<typeof Sidebar.Root> & {
     user: { name: string; email: string; image: string | null }
   }
 
   let { user, ...restProps }: Props = $props()
+
+  const checkIsRouteActive = (path: SidebarRoutePath) =>
+    page.url.pathname === resolve(path) ||
+    page.url.pathname.startsWith(resolve(path) + '/')
 </script>
 
 <Sidebar.Root variant="floating" collapsible="offcanvas" {...restProps}>
   <Sidebar.Header>
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton size="lg" class="pointer-events-none">
-          <div
-            class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
-          >
-            <span class="text-sm font-bold">Z</span>
-          </div>
-          <span class="truncate text-lg font-semibold"
-            >{m.sidebar_app_name()}</span
-          >
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
+    <div class="flex h-12 items-center gap-2 px-2">
+      <div
+        class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+      >
+        <span class="text-sm font-bold">Z</span>
+      </div>
+      <span class="truncate text-lg font-semibold">{m.sidebar_app_name()}</span>
+    </div>
   </Sidebar.Header>
   <Sidebar.Content>
     <Sidebar.Group>
@@ -37,8 +37,7 @@
         {#each sidebarRoutes as route (route.path)}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton
-              isActive={page.url.pathname === resolve(route.path) ||
-                page.url.pathname.startsWith(resolve(route.path) + '/')}
+              isActive={checkIsRouteActive(route.path)}
               tooltipContent={route.label()}
             >
               {#snippet child({ props })}
