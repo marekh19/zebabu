@@ -57,6 +57,7 @@
     "better-auth": "^1.5.0",
     "clsx": "^2.1.1",
     "mode-watcher": "^1.1.0",
+    "nanoid": "^5.1.6",
     "narrowland": "^1.5.0",
     "postgres": "^3.4.8",
     "redis": "^5.11.0",
