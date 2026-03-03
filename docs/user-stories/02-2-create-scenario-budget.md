@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** 🟡 In Progress
 
 ---
 
@@ -23,14 +23,14 @@ Implement scenario budget creation functionality. Unlike monthly budgets (tied t
 
 ## Acceptance Criteria
 
-- [ ] Budget creation form includes "Scenario" option
-- [ ] Scenario budget requires only a name (no month/year)
-- [ ] Name must be unique per user (optional constraint)
-- [ ] System auto-creates default "Income" and "Expenses" categories
-- [ ] Success message shown after creation
-- [ ] User redirected to newly created budget view
-- [ ] Scenario budgets listed separately from monthly budgets
-- [ ] No limit on number of scenario budgets per user
+- [x] Budget creation form includes "Scenario" option
+- [x] Scenario budget requires only a name (no month/year)
+- [ ] Name must be unique per user (optional constraint) <!-- Not enforced — no uniqueness check in service or DB constraint -->
+- [x] System auto-creates default "Income" and "Expenses" categories
+- [ ] Success message shown after creation <!-- No toast/flash message implemented -->
+- [ ] User redirected to newly created budget view <!-- No redirect; no /budgets/[id] route exists yet -->
+- [ ] Scenario budgets listed separately from monthly budgets <!-- Budget list shows all types interleaved, no grouping -->
+- [x] No limit on number of scenario budgets per user
 
 ---
 

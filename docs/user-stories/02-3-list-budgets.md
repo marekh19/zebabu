@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** 🟡 In Progress
 
 ---
 
@@ -23,15 +23,15 @@ Implement a budget list page that displays all user's budgets organized by type 
 
 ## Acceptance Criteria
 
-- [ ] Budget list accessible at `/budgets`
-- [ ] Budgets grouped by type (Monthly, Scenario)
-- [ ] Monthly budgets sorted by year and month (newest first)
-- [ ] Scenario budgets sorted alphabetically by name
-- [ ] Each budget shows: name, type indicator, created date
-- [ ] Click on budget navigates to detail page
-- [ ] Quick actions available: View, Duplicate, Delete
-- [ ] Empty state shown when no budgets exist
-- [ ] Loading state shown while fetching
+- [x] Budget list accessible at `/budgets`
+- [ ] Budgets grouped by type (Monthly, Scenario) <!-- All budgets shown in a single flat grid, no grouping or tabs -->
+- [x] Monthly budgets sorted by year and month (newest first) <!-- DB query uses year DESC, month DESC — but scenario budgets with NULL month/year sort first in PostgreSQL DESC -->
+- [x] Scenario budgets sorted alphabetically by name <!-- Fallback sort is name ASC -->
+- [ ] Each budget shows: name, type indicator, created date <!-- Name and type badge shown; created date missing from cards -->
+- [ ] Click on budget navigates to detail page <!-- Cards not clickable; no /budgets/[id] route exists yet -->
+- [ ] Quick actions available: View, Duplicate, Delete <!-- No quick actions implemented -->
+- [x] Empty state shown when no budgets exist
+- [ ] Loading state shown while fetching <!-- No skeleton/loading state implemented -->
 
 ---
 
