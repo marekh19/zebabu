@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db'
-import { budget, category } from '$lib/server/db/schema'
+import { budget, category, transaction } from '$lib/server/db/schema'
 import { and, asc, desc, eq } from 'drizzle-orm'
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
@@ -18,6 +18,22 @@ export function listBudgetsByUser(userId: string) {
   return db.query.budget.findMany({
     where: eq(budget.userId, userId),
     orderBy: [desc(budget.year), desc(budget.month), asc(budget.name)],
+  })
+}
+
+export function findBudgetById(budgetId: string) {
+  return db.query.budget.findFirst({
+    where: eq(budget.id, budgetId),
+    with: {
+      categories: {
+        orderBy: asc(category.sortOrder),
+        with: {
+          transactions: {
+            orderBy: asc(transaction.sortOrder),
+          },
+        },
+      },
+    },
   })
 }
 

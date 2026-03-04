@@ -65,6 +65,7 @@ export default defineConfig(
         },
       ],
       '@typescript-eslint/no-import-type-side-effects': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
     },
   },
   // Declaration files require `interface` for namespace augmentation

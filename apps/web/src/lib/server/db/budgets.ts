@@ -1,7 +1,9 @@
 import { relations } from 'drizzle-orm'
 import {
+  boolean,
   index,
   integer,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -64,6 +66,29 @@ export const category = pgTable(
   (table) => [index('category_budgetId_idx').on(table.budgetId)],
 )
 
+export const transaction = pgTable(
+  'transaction',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => category.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    note: text('note'),
+    amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+    isPaid: boolean('is_paid').notNull().default(false),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index('transaction_categoryId_idx').on(table.categoryId)],
+)
+
 export const budgetRelations = relations(budget, ({ one, many }) => ({
   user: one(user, {
     fields: [budget.userId],
@@ -72,9 +97,17 @@ export const budgetRelations = relations(budget, ({ one, many }) => ({
   categories: many(category),
 }))
 
-export const categoryRelations = relations(category, ({ one }) => ({
+export const categoryRelations = relations(category, ({ one, many }) => ({
   budget: one(budget, {
     fields: [category.budgetId],
     references: [budget.id],
+  }),
+  transactions: many(transaction),
+}))
+
+export const transactionRelations = relations(transaction, ({ one }) => ({
+  category: one(category, {
+    fields: [transaction.categoryId],
+    references: [category.id],
   }),
 }))

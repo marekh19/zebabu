@@ -9,7 +9,10 @@ declare global {
       session: Session['session'] | null
       user: Session['user'] | null
     }
-    // interface PageData {}
+    interface PageData {
+      /** Maps dynamic path segments (e.g. an ID) to display labels for breadcrumbs. */
+      breadcrumbSegments?: Record<string, string>
+    }
     // interface PageState {}
     // interface Platform {}
   }

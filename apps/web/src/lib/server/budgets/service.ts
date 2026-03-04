@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db'
 import {
+  findBudgetById,
   findMonthlyBudget,
   insertBudget,
   insertCategories,
@@ -78,4 +79,27 @@ export async function createScenarioBudget(
 
 export function listBudgets(userId: string) {
   return listBudgetsByUser(userId)
+}
+
+type BudgetDetail = NonNullable<Awaited<ReturnType<typeof findBudgetById>>>
+
+type GetBudgetDetailResult =
+  | { budget: BudgetDetail; error?: never }
+  | { budget?: never; error: 'not_found' | 'access_denied' }
+
+export async function getBudgetDetail(
+  budgetId: string,
+  userId: string,
+): Promise<GetBudgetDetailResult> {
+  const found = await findBudgetById(budgetId)
+
+  if (!found) {
+    return { error: 'not_found' }
+  }
+
+  if (found.userId !== userId) {
+    return { error: 'access_denied' }
+  }
+
+  return { budget: found }
 }

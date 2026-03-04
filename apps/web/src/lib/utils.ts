@@ -1,3 +1,4 @@
+import { getLocale } from '$lib/paraglide/runtime'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -14,4 +15,11 @@ export type WithoutChildren<T> = T extends { children?: unknown }
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & {
   ref?: U | null
+}
+
+export function formatDecimal(value: number | string): string {
+  return new Intl.NumberFormat(getLocale(), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value))
 }

@@ -6,12 +6,13 @@ import {
   listBudgets,
 } from '$lib/server/budgets/service'
 import { fail } from '@sveltejs/kit'
+import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ locals }) => {
-  const budgets = await listBudgets(locals.user!.id)
+  const budgets = await listBudgets(ensureDefined(locals.user).id)
   const form = await superValidate(zod4(createCreateBudgetSchema()))
 
   return { budgets, form }
@@ -25,14 +26,17 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    const userId = locals.user!.id
+    const userId = ensureDefined(locals.user).id
     const { type, month, year, name } = form.data
 
     try {
       if (type === 'monthly') {
-        await createMonthlyBudget(userId, { month: month!, year: year! })
+        await createMonthlyBudget(userId, {
+          month: ensureDefined(month),
+          year: ensureDefined(year),
+        })
       } else {
-        await createScenarioBudget(userId, { name: name! })
+        await createScenarioBudget(userId, { name: ensureDefined(name) })
       }
     } catch (error) {
       if (error instanceof DuplicateMonthlyBudgetError) {

@@ -15,6 +15,13 @@
       "when": 1772538775333,
       "tag": "0001_rare_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772570949149,
+      "tag": "0002_faithful_leader",
+      "breakpoints": true
     }
   ]
 }
