@@ -7,20 +7,17 @@
   import MoonIcon from '@lucide/svelte/icons/moon'
   import MonitorIcon from '@lucide/svelte/icons/monitor'
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down'
+  import type { Component } from 'svelte'
 
   const modes = ['light', 'dark', 'system'] as const
 
-  const icons = {
-    light: SunIcon,
-    dark: MoonIcon,
-    system: MonitorIcon,
-  } as const
+  type Theme = (typeof modes)[number]
 
-  const names = {
-    light: m.theme_light,
-    dark: m.theme_dark,
-    system: m.theme_system,
-  } as const
+  const themeOptions = {
+    light: { label: m.theme_light, icon: SunIcon },
+    dark: { label: m.theme_dark, icon: MoonIcon },
+    system: { label: m.theme_system, icon: MonitorIcon },
+  } as const satisfies Record<Theme, { label: () => string; icon: Component }>
 
   let currentMode = $derived(userPrefersMode.current)
 </script>
@@ -39,10 +36,10 @@
   <DropdownMenu.Content align="end">
     <DropdownMenu.RadioGroup bind:value={currentMode}>
       {#each modes as mode (mode)}
-        {@const Icon = icons[mode]}
+        {@const Icon = themeOptions[mode].icon}
         <DropdownMenu.RadioItem value={mode} onSelect={() => setMode(mode)}>
           <Icon class="size-4" />
-          <span>{names[mode]()}</span>
+          <span>{themeOptions[mode].label()}</span>
         </DropdownMenu.RadioItem>
       {/each}
     </DropdownMenu.RadioGroup>
