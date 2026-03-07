@@ -30,5 +30,5 @@
     <Badge variant="secondary">{typeBadge}</Badge>
   </div>
 
-  <BudgetBoard categories={data.budget.categories} />
+  <BudgetBoard budgetCategories={data.budget.budgetCategories} />
 </div>

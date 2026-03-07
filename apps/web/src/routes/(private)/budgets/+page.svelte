@@ -2,17 +2,21 @@
   import * as m from '$lib/paraglide/messages'
   import BudgetList from '$lib/features/budgets/components/budget-list.svelte'
   import CreateBudgetFab from '$lib/features/budgets/components/create-budget-fab.svelte'
-  import CreateBudgetDialog from '$lib/features/budgets/components/create-budget-dialog.svelte'
+  import CreateBudgetDialog, {
+    errorMessages,
+  } from '$lib/features/budgets/components/create-budget-dialog.svelte'
+  import { isString, isKeyOf } from 'narrowland'
 
   let { data, form: actionData } = $props()
 
   let dialogOpen = $state(false)
 
-  const duplicateError = $derived(
-    actionData != null &&
-      'duplicateError' in actionData &&
-      !!actionData.duplicateError,
-  )
+  const error = $derived.by(() => {
+    if (actionData == null || !('error' in actionData)) return undefined
+    const value = actionData.error
+    if (isString(value) && isKeyOf(value, errorMessages)) return value
+    return undefined
+  })
 </script>
 
 <div class="flex flex-col items-start gap-6">
@@ -26,6 +30,6 @@
 <CreateBudgetDialog
   bind:open={dialogOpen}
   data={data.form}
-  {duplicateError}
+  {error}
   onOpenChange={(v) => (dialogOpen = v)}
 />

@@ -1,3 +1,14 @@
+<script module lang="ts">
+  import * as m from '$lib/paraglide/messages'
+
+  export type CreateBudgetError = keyof typeof errorMessages
+
+  export const errorMessages = {
+    duplicate: m.budgets_error_duplicate,
+    unexpected: m.budgets_error_unexpected,
+  } satisfies Record<string, () => string>
+</script>
+
 <script lang="ts">
   import {
     superForm,
@@ -5,12 +16,11 @@
     type SuperValidated,
   } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
-  import * as m from '$lib/paraglide/messages'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Form from '$lib/components/ui/form'
   import * as Select from '$lib/components/ui/select'
   import { Input } from '$lib/components/ui/input'
-  import { Button } from '$lib/components/ui/button'
+  import { buttonVariants } from '$lib/components/ui/button'
   import { createCreateBudgetSchema } from '$lib/features/budgets/schemas/create-budget-schema'
   import {
     getMonthName,
@@ -23,16 +33,11 @@
   type Props = {
     open: boolean
     data: SuperValidated<Infer<CreateBudgetSchema>>
-    duplicateError: boolean
+    error: CreateBudgetError | undefined
     onOpenChange: (open: boolean) => void
   }
 
-  let {
-    open = $bindable(),
-    data,
-    duplicateError,
-    onOpenChange,
-  }: Props = $props()
+  let { open = $bindable(), data, error, onOpenChange }: Props = $props()
 
   const createBudgetSchema = createCreateBudgetSchema()
 
@@ -55,16 +60,15 @@
 
   const isMonthly = $derived($formData.type === 'monthly')
 
-  function handleOpenChange(value: boolean) {
-    if (value) {
+  $effect(() => {
+    if (open) {
       const now = new Date()
       $formData.type = 'monthly'
       $formData.month = now.getMonth() + 1
       $formData.year = now.getFullYear()
       $formData.name = undefined
     }
-    onOpenChange(value)
-  }
+  })
 
   const selectedMonthLabel = $derived(
     $formData.month ? getMonthName($formData.month) : undefined,
@@ -81,7 +85,7 @@
   )
 </script>
 
-<Dialog.Root {open} onOpenChange={handleOpenChange}>
+<Dialog.Root {open} {onOpenChange}>
   <Dialog.Content class="sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{m.budgets_create_title()}</Dialog.Title>
@@ -89,9 +93,9 @@
     </Dialog.Header>
 
     <form method="POST" action="?/create" use:enhance class="space-y-4">
-      {#if duplicateError}
+      {#if error}
         <p class="text-destructive text-sm font-medium">
-          {m.budgets_error_duplicate()}
+          {errorMessages[error]()}
         </p>
       {/if}
 
@@ -194,10 +198,8 @@
       {/if}
 
       <Dialog.Footer>
-        <Dialog.Close>
-          <Button variant="outline" type="button"
-            >{m.budgets_create_cancel()}</Button
-          >
+        <Dialog.Close class={buttonVariants({ variant: 'outline' })}>
+          {m.budgets_create_cancel()}
         </Dialog.Close>
         <Form.Button disabled={$submitting}>
           {$submitting

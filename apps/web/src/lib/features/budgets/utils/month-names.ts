@@ -29,14 +29,14 @@ export function getMonthAbbrev(month: number): string {
 
 export function getBudgetDisplayName(budget: {
   type: string
-  name: string
+  name: string | null
   month: number | null
   year: number | null
 }): string {
   if (budget.type === 'monthly' && budget.month && budget.year) {
     return `${getMonthName(budget.month)} ${budget.year}`
   }
-  return budget.name
+  return budget.name ?? ''
 }
 
 export function getMonthOptions(): { value: string; label: string }[] {

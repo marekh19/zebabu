@@ -3,27 +3,29 @@
   import { formatDecimal } from '$lib/utils'
   import TransactionRow from './transaction-row.svelte'
   import type {
+    budgetCategory as budgetCategoryTable,
     category as categoryTable,
     transaction as transactionTable,
   } from '$lib/server/db/schema'
 
-  type Category = typeof categoryTable.$inferSelect & {
+  type BudgetCategory = typeof budgetCategoryTable.$inferSelect & {
+    category: typeof categoryTable.$inferSelect
     transactions: (typeof transactionTable.$inferSelect)[]
   }
 
   type Props = {
-    category: Category
+    budgetCategory: BudgetCategory
   }
 
-  let { category }: Props = $props()
+  let { budgetCategory }: Props = $props()
 
   const total = $derived(
-    category.transactions.reduce((sum, t) => sum + Number(t.amount), 0),
+    budgetCategory.transactions.reduce((sum, t) => sum + Number(t.amount), 0),
   )
 
   const formattedTotal = $derived(formatDecimal(total))
 
-  const isIncome = $derived(category.type === 'income')
+  const isIncome = $derived(budgetCategory.category.type === 'income')
 </script>
 
 <div class="flex w-70 shrink-0 flex-col rounded-lg border">
@@ -32,7 +34,9 @@
       ? 'bg-emerald-500/10'
       : 'bg-muted'}"
   >
-    <span class="truncate text-sm font-semibold">{category.name}</span>
+    <span class="truncate text-sm font-semibold"
+      >{budgetCategory.category.name}</span
+    >
     <span
       class="text-xs {isIncome
         ? 'text-emerald-600 dark:text-emerald-400'
@@ -52,12 +56,12 @@
   </div>
 
   <div class="flex flex-1 flex-col gap-0.5 p-1.5">
-    {#if category.transactions.length === 0}
+    {#if budgetCategory.transactions.length === 0}
       <p class="text-muted-foreground px-2 py-3 text-center text-xs">
         {m.budget_detail_no_transactions()}
       </p>
     {:else}
-      {#each category.transactions as t (t.id)}
+      {#each budgetCategory.transactions as t (t.id)}
         <TransactionRow transaction={t} />
       {/each}
     {/if}

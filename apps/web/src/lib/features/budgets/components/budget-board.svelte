@@ -1,22 +1,27 @@
 <script lang="ts">
   import CategoryColumn from './category-column.svelte'
-  import type { category, transaction } from '$lib/server/db/schema'
+  import type {
+    budgetCategory,
+    category,
+    transaction,
+  } from '$lib/server/db/schema'
 
-  type Category = typeof category.$inferSelect & {
+  type BudgetCategory = typeof budgetCategory.$inferSelect & {
+    category: typeof category.$inferSelect
     transactions: (typeof transaction.$inferSelect)[]
   }
 
   type Props = {
-    categories: Category[]
+    budgetCategories: BudgetCategory[]
   }
 
-  let { categories }: Props = $props()
+  let { budgetCategories }: Props = $props()
 </script>
 
 <div class="overflow-x-auto pb-4">
   <div class="flex gap-4">
-    {#each categories as cat (cat.id)}
-      <CategoryColumn category={cat} />
+    {#each budgetCategories as bc (bc.id)}
+      <CategoryColumn budgetCategory={bc} />
     {/each}
   </div>
 </div>

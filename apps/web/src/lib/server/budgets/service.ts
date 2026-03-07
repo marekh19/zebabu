@@ -1,26 +1,15 @@
+import * as m from '$lib/paraglide/messages'
 import { db } from '$lib/server/db'
+import { ensureDefined } from 'narrowland'
 import {
   findBudgetById,
+  findCategoryDefinitionsByName,
   findMonthlyBudget,
   insertBudget,
-  insertCategories,
+  insertBudgetCategories,
+  insertCategoryDefinitions,
   listBudgetsByUser,
 } from './repository'
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
 
 export class DuplicateMonthlyBudgetError extends Error {
   constructor() {
@@ -29,11 +18,47 @@ export class DuplicateMonthlyBudgetError extends Error {
   }
 }
 
-function defaultCategories(budgetId: string) {
+function getDefaultCategories() {
   return [
-    { budgetId, name: 'Income', type: 'income' as const, sortOrder: 0 },
-    { budgetId, name: 'Expenses', type: 'expense' as const, sortOrder: 1 },
+    {
+      name: m.category_default_income(),
+      type: 'income' as const,
+      sortOrder: 0,
+    },
+    {
+      name: m.category_default_expense(),
+      type: 'expense' as const,
+      sortOrder: 1,
+    },
   ]
+}
+
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+async function createDefaultBudgetCategories(
+  tx: DbTransaction,
+  userId: string,
+  budgetId: string,
+) {
+  const categories = getDefaultCategories()
+
+  await insertCategoryDefinitions(
+    tx,
+    categories.map(({ name, type }) => ({ userId, name, type })),
+  )
+
+  const names = categories.map((c) => c.name)
+  const definitions = await findCategoryDefinitionsByName(tx, userId, names)
+  const idsByName = new Map(definitions.map((d) => [d.name, d.id]))
+
+  await insertBudgetCategories(
+    tx,
+    categories.map(({ name, sortOrder }) => ({
+      budgetId,
+      categoryId: ensureDefined(idsByName.get(name)),
+      sortOrder,
+    })),
+  )
 }
 
 export async function createMonthlyBudget(
@@ -45,17 +70,15 @@ export async function createMonthlyBudget(
     throw new DuplicateMonthlyBudgetError()
   }
 
-  const name = `${MONTH_NAMES[month - 1]} ${year}`
-
   return db.transaction(async (tx) => {
     const [inserted] = await insertBudget(tx, {
       userId,
-      name,
+      name: null,
       type: 'monthly',
       month,
       year,
     })
-    await insertCategories(tx, defaultCategories(inserted.id))
+    await createDefaultBudgetCategories(tx, userId, inserted.id)
     return inserted
   })
 }
@@ -72,7 +95,7 @@ export async function createScenarioBudget(
       month: null,
       year: null,
     })
-    await insertCategories(tx, defaultCategories(inserted.id))
+    await createDefaultBudgetCategories(tx, userId, inserted.id)
     return inserted
   })
 }

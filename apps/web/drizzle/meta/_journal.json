@@ -22,6 +22,20 @@
       "when": 1772570949149,
       "tag": "0002_faithful_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772747549373,
+      "tag": "0003_heavy_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772840456972,
+      "tag": "0004_careless_the_initiative",
+      "breakpoints": true
     }
   ]
 }

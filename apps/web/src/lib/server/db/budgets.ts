@@ -11,7 +11,7 @@ import {
   unique,
 } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
-import { user } from './schema'
+import { account, session, user } from '../../auth/schema'
 
 export const budgetTypeEnum = pgEnum('budget_type', ['monthly', 'scenario'])
 export const categoryTypeEnum = pgEnum('category_type', ['income', 'expense'])
@@ -25,7 +25,7 @@ export const budget = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
+    name: text('name'),
     type: budgetTypeEnum('type').notNull(),
     month: integer('month'),
     year: integer('year'),
@@ -51,19 +51,46 @@ export const category = pgTable(
     id: text('id')
       .primaryKey()
       .$defaultFn(() => nanoid()),
-    budgetId: text('budget_id')
+    userId: text('user_id')
       .notNull()
-      .references(() => budget.id, { onDelete: 'cascade' }),
+      .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     type: categoryTypeEnum('type').notNull(),
-    sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('category_budgetId_idx').on(table.budgetId)],
+  (table) => [
+    index('category_userId_idx').on(table.userId),
+    unique('category_userId_name_unique').on(table.userId, table.name),
+  ],
+)
+
+export const budgetCategory = pgTable(
+  'budget_category',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    budgetId: text('budget_id')
+      .notNull()
+      .references(() => budget.id, { onDelete: 'cascade' }),
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => category.id, { onDelete: 'restrict' }),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('budgetCategory_budgetId_idx').on(table.budgetId),
+    index('budgetCategory_categoryId_idx').on(table.categoryId),
+    unique('budgetCategory_budgetId_categoryId_unique').on(
+      table.budgetId,
+      table.categoryId,
+    ),
+  ],
 )
 
 export const transaction = pgTable(
@@ -72,9 +99,9 @@ export const transaction = pgTable(
     id: text('id')
       .primaryKey()
       .$defaultFn(() => nanoid()),
-    categoryId: text('category_id')
+    budgetCategoryId: text('budget_category_id')
       .notNull()
-      .references(() => category.id, { onDelete: 'cascade' }),
+      .references(() => budgetCategory.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     note: text('note'),
     amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
@@ -86,28 +113,54 @@ export const transaction = pgTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('transaction_categoryId_idx').on(table.categoryId)],
+  (table) => [
+    index('transaction_budgetCategoryId_idx').on(table.budgetCategoryId),
+  ],
 )
+
+// --- Relations ---
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+  budgets: many(budget),
+  categories: many(category),
+}))
 
 export const budgetRelations = relations(budget, ({ one, many }) => ({
   user: one(user, {
     fields: [budget.userId],
     references: [user.id],
   }),
-  categories: many(category),
+  budgetCategories: many(budgetCategory),
 }))
 
 export const categoryRelations = relations(category, ({ one, many }) => ({
-  budget: one(budget, {
-    fields: [category.budgetId],
-    references: [budget.id],
+  user: one(user, {
+    fields: [category.userId],
+    references: [user.id],
   }),
-  transactions: many(transaction),
+  budgetCategories: many(budgetCategory),
 }))
 
+export const budgetCategoryRelations = relations(
+  budgetCategory,
+  ({ one, many }) => ({
+    budget: one(budget, {
+      fields: [budgetCategory.budgetId],
+      references: [budget.id],
+    }),
+    category: one(category, {
+      fields: [budgetCategory.categoryId],
+      references: [category.id],
+    }),
+    transactions: many(transaction),
+  }),
+)
+
 export const transactionRelations = relations(transaction, ({ one }) => ({
-  category: one(category, {
-    fields: [transaction.categoryId],
-    references: [category.id],
+  budgetCategory: one(budgetCategory, {
+    fields: [transaction.budgetCategoryId],
+    references: [budgetCategory.id],
   }),
 }))

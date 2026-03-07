@@ -26,7 +26,10 @@
   }
 </script>
 
-<a href={resolve(`/budgets/${b.id}`)} class="block cursor-pointer">
+<a
+  href={resolve(`/budgets/${b.id}`)}
+  class="focus-visible:ring-ring/50 block cursor-pointer rounded-xl outline-none focus-visible:ring-[3px]"
+>
   <Card.Root
     class="gap-0 py-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
   >

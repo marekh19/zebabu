@@ -11,10 +11,10 @@
 </script>
 
 <Button
-  size="icon-lg"
+  size="icon-xl"
   class="fixed right-6 bottom-6 z-50 rounded-full shadow-lg"
   aria-label={m.budgets_create_fab_label()}
   {onclick}
 >
-  <PlusIcon class="size-5" />
+  <PlusIcon class="size-6" />
 </Button>

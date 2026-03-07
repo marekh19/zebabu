@@ -40,9 +40,10 @@ export const actions: Actions = {
       }
     } catch (error) {
       if (error instanceof DuplicateMonthlyBudgetError) {
-        return fail(409, { form, duplicateError: true })
+        return fail(409, { form, error: 'duplicate' as const })
       }
-      throw error
+      console.error('Budget creation failed:', error)
+      return fail(500, { form, error: 'unexpected' as const })
     }
 
     return { form }
