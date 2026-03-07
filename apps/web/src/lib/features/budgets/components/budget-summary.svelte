@@ -1,11 +1,6 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
   import { formatDecimal } from '$lib/utils'
-  import type {
-    budgetCategory,
-    category,
-    transaction,
-  } from '$lib/server/db/schema'
   import { IsMobile } from '$lib/hooks/is-mobile.svelte'
   import TrendingUpIcon from '@lucide/svelte/icons/trending-up'
   import TrendingDownIcon from '@lucide/svelte/icons/trending-down'
@@ -13,11 +8,7 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert'
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert'
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down'
-
-  type BudgetCategory = typeof budgetCategory.$inferSelect & {
-    category: typeof category.$inferSelect
-    transactions: (typeof transaction.$inferSelect)[]
-  }
+  import type { BudgetCategory } from '../types'
 
   type Props = {
     budgetCategories: BudgetCategory[]

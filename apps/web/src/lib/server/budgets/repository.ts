@@ -51,6 +51,26 @@ export function insertBudget(
   return tx.insert(budget).values(values).returning()
 }
 
+export function updateBudgetCategorySortOrders(
+  tx: DbTransaction,
+  budgetId: string,
+  items: { id: string; sortOrder: number }[],
+) {
+  return Promise.all(
+    items.map((item) =>
+      tx
+        .update(budgetCategory)
+        .set({ sortOrder: item.sortOrder })
+        .where(
+          and(
+            eq(budgetCategory.id, item.id),
+            eq(budgetCategory.budgetId, budgetId),
+          ),
+        ),
+    ),
+  )
+}
+
 export function insertBudgetCategories(
   tx: DbTransaction,
   values: (typeof budgetCategory.$inferInsert)[],

@@ -142,5 +142,7 @@
   "month_november": "Listopad",
   "month_december": "Prosinec",
   "logout_success": "Byli jste úspěšně odhlášeni",
-  "budgets_create_success": "Rozpočet \"{name}\" vytvořen"
+  "budgets_create_success": "Rozpočet \"{name}\" vytvořen",
+  "budget_detail_reorder_handle": "Přetáhněte pro změnu pořadí",
+  "budget_detail_reorder_error": "Nepodařilo se uložit nové pořadí"
 }

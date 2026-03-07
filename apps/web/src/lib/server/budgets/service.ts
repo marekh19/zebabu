@@ -7,6 +7,7 @@ import {
   insertBudget,
   insertBudgetCategories,
   listBudgetsByUser,
+  updateBudgetCategorySortOrders,
 } from './repository'
 
 export class DuplicateMonthlyBudgetError extends Error {
@@ -86,6 +87,28 @@ export async function createScenarioBudget(
     await linkUserCategoriesToBudget(tx, userId, inserted.id)
     return inserted
   })
+}
+
+export async function reorderBudgetCategories(
+  budgetId: string,
+  userId: string,
+  items: { id: string; sortOrder: number }[],
+): Promise<{ error?: 'not_found' | 'access_denied' }> {
+  const found = await findBudgetById(budgetId)
+
+  if (!found) {
+    return { error: 'not_found' }
+  }
+
+  if (found.userId !== userId) {
+    return { error: 'access_denied' }
+  }
+
+  await db.transaction((tx) =>
+    updateBudgetCategorySortOrders(tx, budgetId, items),
+  )
+
+  return {}
 }
 
 export function listBudgets(userId: string) {
