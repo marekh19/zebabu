@@ -6,10 +6,10 @@ Signup exists but email verification is stubbed (console.log). Need real email d
 
 ## Steps
 
-- [ ] **Step 1: Scaffold `packages/emails`** — Create package with react-email + Resend, tsup build, verification email template, generic `sendEmail` utility
-- [ ] **Step 2: Wire emails into Better Auth** — Add `@zebabu/emails` dep, update `.env.example`, replace `sendVerificationEmail` stub with real implementation, set `autoSignInAfterVerification: false`
-- [ ] **Step 3: 2-step signup form** — Add `callbackURL` to signup call, show "check your email" card on success with resend button (60s cooldown), i18n keys
-- [ ] **Step 4: Login email prefill + URL cleanup** — Read `email` from URL params after verification redirect, prefill login form, clean URL with `replaceState`
+- [x] **Step 1: Scaffold `packages/emails`** — Create package with react-email + Resend, tsup build, verification email template, generic `sendEmail` utility
+- [x] **Step 2: Wire emails into Better Auth** — Add `@zebabu/emails` dep, update `.env.example`, replace `sendVerificationEmail` stub with real implementation, set `autoSignInAfterVerification: false`
+- [x] **Step 3: 2-step signup form** — Add `callbackURL` to signup call, show "check your email" card on success with resend button (60s cooldown), i18n keys
+- [x] **Step 4: Login email prefill + URL cleanup** — Read `email` from URL params after verification redirect, prefill login form, clean URL with `replaceState`
 
 ## Key files
 

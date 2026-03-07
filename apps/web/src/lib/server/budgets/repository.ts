@@ -14,6 +14,12 @@ export function findMonthlyBudget(userId: string, month: number, year: number) {
   })
 }
 
+export function findScenarioBudget(userId: string, name: string) {
+  return db.query.budget.findFirst({
+    where: and(eq(budget.userId, userId), eq(budget.name, name)),
+  })
+}
+
 export function listBudgetsByUser(userId: string) {
   return db.query.budget.findMany({
     where: eq(budget.userId, userId),

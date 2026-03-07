@@ -3,9 +3,10 @@ import {
   createMonthlyBudget,
   createScenarioBudget,
   DuplicateMonthlyBudgetError,
+  DuplicateScenarioBudgetError,
   listBudgets,
 } from '$lib/server/budgets/service'
-import { fail } from '@sveltejs/kit'
+import { fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
@@ -29,23 +30,27 @@ export const actions: Actions = {
     const userId = ensureDefined(locals.user).id
     const { type, month, year, name } = form.data
 
+    let budgetId: string
     try {
-      if (type === 'monthly') {
-        await createMonthlyBudget(userId, {
-          month: ensureDefined(month),
-          year: ensureDefined(year),
-        })
-      } else {
-        await createScenarioBudget(userId, { name: ensureDefined(name) })
-      }
+      const budget =
+        type === 'monthly'
+          ? await createMonthlyBudget(userId, {
+              month: ensureDefined(month),
+              year: ensureDefined(year),
+            })
+          : await createScenarioBudget(userId, { name: ensureDefined(name) })
+      budgetId = budget.id
     } catch (error) {
       if (error instanceof DuplicateMonthlyBudgetError) {
-        return fail(409, { form, error: 'duplicate' as const })
+        return fail(409, { form, error: 'duplicate_monthly' as const })
+      }
+      if (error instanceof DuplicateScenarioBudgetError) {
+        return fail(409, { form, error: 'duplicate_scenario' as const })
       }
       console.error('Budget creation failed:', error)
       return fail(500, { form, error: 'unexpected' as const })
     }
 
-    return { form }
+    redirect(303, `/budgets/${budgetId}`)
   },
 }

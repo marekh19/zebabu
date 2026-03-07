@@ -23,13 +23,11 @@ Implement validation to enforce the business rule that users can only have one m
 
 ## Acceptance Criteria
 
-- [ ] Database unique constraint on (userId, month, year)
-- [ ] Validation in create budget action
+- [x] Database unique constraint on (userId, month, year)
+- [x] Validation in create budget action
 - [ ] Validation in duplicate budget action
-- [ ] Clear error message when attempting to create duplicate
+- [x] Clear error message when attempting to create duplicate
 - [ ] Error message suggests viewing existing budget
-- [ ] Validation does not apply to scenario budgets
-- [ ] User can create multiple scenario budgets with same name (no restriction)
 
 ---
 

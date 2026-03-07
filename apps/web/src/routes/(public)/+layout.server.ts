@@ -4,6 +4,6 @@ import type { LayoutServerLoad } from './$types'
 
 export const load: LayoutServerLoad = ({ locals }) => {
   if (locals.user) {
-    redirect(302, resolve('/dashboard'))
+    redirect(302, resolve('/(private)/budgets'))
   }
 }

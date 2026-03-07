@@ -107,6 +107,7 @@
   "budgets_validation_name_required": "Název je povinný pro scénářové rozpočty",
   "budgets_validation_name_max": "Název může mít nejvýše 200 znaků",
   "budgets_error_duplicate": "Měsíční rozpočet pro tento měsíc a rok již existuje",
+  "budgets_error_duplicate_scenario": "Scénářový rozpočet s tímto názvem již existuje",
   "budgets_error_unexpected": "Něco se pokazilo. Zkuste to znovu.",
   "budgets_section_monthly": "Měsíční rozpočty",
   "budgets_section_scenario": "Scénářové rozpočty",
@@ -122,6 +123,12 @@
   "budget_detail_type_expense": "Výdaje",
   "category_default_income": "Příjmy",
   "category_default_expense": "Výdaje",
+  "budget_summary_title": "Přehled",
+  "budget_summary_income": "Celkové příjmy",
+  "budget_summary_expenses": "Celkové výdaje",
+  "budget_summary_balance_zero": "Vyrovnaný",
+  "budget_summary_balance_unallocated": "Nepřiděleno",
+  "budget_summary_balance_over": "Přečerpáno",
   "month_january": "Leden",
   "month_february": "Únor",
   "month_march": "Březen",
@@ -133,5 +140,7 @@
   "month_september": "Září",
   "month_october": "Říjen",
   "month_november": "Listopad",
-  "month_december": "Prosinec"
+  "month_december": "Prosinec",
+  "logout_success": "Byli jste úspěšně odhlášeni",
+  "budgets_create_success": "Rozpočet \"{name}\" vytvořen"
 }

@@ -3,6 +3,7 @@ import { db } from '$lib/server/db'
 import {
   findBudgetById,
   findMonthlyBudget,
+  findScenarioBudget,
   insertBudget,
   insertBudgetCategories,
   listBudgetsByUser,
@@ -12,6 +13,13 @@ export class DuplicateMonthlyBudgetError extends Error {
   constructor() {
     super('A monthly budget already exists for this month and year')
     this.name = 'DuplicateMonthlyBudgetError'
+  }
+}
+
+export class DuplicateScenarioBudgetError extends Error {
+  constructor() {
+    super('A scenario budget with this name already exists')
+    this.name = 'DuplicateScenarioBudgetError'
   }
 }
 
@@ -62,6 +70,11 @@ export async function createScenarioBudget(
   userId: string,
   { name }: { name: string },
 ) {
+  const existing = await findScenarioBudget(userId, name)
+  if (existing) {
+    throw new DuplicateScenarioBudgetError()
+  }
+
   return db.transaction(async (tx) => {
     const [inserted] = await insertBudget(tx, {
       userId,

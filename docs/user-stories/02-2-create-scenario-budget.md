@@ -25,11 +25,11 @@ Implement scenario budget creation functionality. Unlike monthly budgets (tied t
 
 - [x] Budget creation form includes "Scenario" option
 - [x] Scenario budget requires only a name (no month/year)
-- [ ] Name must be unique per user (optional constraint) <!-- Not enforced — no uniqueness check in service or DB constraint -->
+- [x] Name must be unique per user (optional constraint) <!-- Not enforced — no uniqueness check in service or DB constraint -->
 - [x] System auto-creates default "Income" and "Expenses" categories
-- [ ] Success message shown after creation <!-- No toast/flash message implemented -->
-- [ ] User redirected to newly created budget view <!-- No redirect; no /budgets/[id] route exists yet -->
-- [ ] Scenario budgets listed separately from monthly budgets <!-- Budget list shows all types interleaved, no grouping -->
+- [x] Success message shown after creation <!-- No toast/flash message implemented -->
+- [x] User redirected to newly created budget view <!-- No redirect; no /budgets/[id] route exists yet -->
+- [x] Scenario budgets listed separately from monthly budgets <!-- Budget list shows all types interleaved, no grouping -->
 - [x] No limit on number of scenario budgets per user
 
 ---

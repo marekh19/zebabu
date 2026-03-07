@@ -7,6 +7,7 @@
   import * as Sidebar from '$lib/components/ui/sidebar'
   import * as m from '$lib/paraglide/messages'
   import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down'
+  import { toast } from 'svelte-sonner'
   import LogOutIcon from '@lucide/svelte/icons/log-out'
 
   type Props = {
@@ -29,6 +30,7 @@
   async function logout() {
     loggingOut = true
     await authClient.signOut()
+    toast.success(m.logout_success())
     goto(resolve('/auth/login'))
   }
 </script>

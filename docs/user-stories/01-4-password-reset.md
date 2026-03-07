@@ -23,15 +23,14 @@ Implement a password reset flow where users can request a password reset link vi
 
 ## Acceptance Criteria
 
-- [ ] "Forgot password?" link available on login page
-- [ ] Password reset request form accepts email
-- [ ] System sends reset email with secure token link
-- [ ] Reset link expires after 1 hour
-- [ ] Reset page validates token before showing form
-- [ ] New password must meet requirements (min 8 chars, letters+numbers)
-- [ ] Success message shown after password reset
-- [ ] User automatically logged in after successful reset
-- [ ] Invalid/expired tokens show appropriate error messages
+- [x] "Forgot password?" link available on login page
+- [x] Password reset request form accepts email
+- [x] System sends reset email with secure token link
+- [x] Reset link expires after 1 hour
+- [x] Reset page validates token before showing form
+- [x] New password must meet requirements (min 8 chars, letters+numbers)
+- [x] Success message shown after password reset
+- [x] Invalid/expired tokens show appropriate error messages
 
 ---
 

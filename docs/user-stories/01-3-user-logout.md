@@ -23,11 +23,11 @@ Implement logout functionality that terminates the user's session and redirects 
 
 ## Acceptance Criteria
 
-- [ ] Logout button accessible in main navigation/header
-- [ ] Clicking logout terminates the session
-- [ ] User redirected to `/auth/login` after logout
-- [ ] Session cookie cleared/invalidated
-- [ ] Attempting to access protected routes after logout redirects to login
+- [x] Logout button accessible in main navigation/header
+- [x] Clicking logout terminates the session
+- [x] User redirected to `/auth/login` after logout
+- [x] Session cookie cleared/invalidated
+- [x] Attempting to access protected routes after logout redirects to login
 - [ ] Success message shown after logout (optional)
 
 ---

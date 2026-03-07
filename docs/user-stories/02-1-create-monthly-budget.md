@@ -28,8 +28,8 @@ Implement the ability to create a new monthly budget for a specific month and ye
 - [x] System prevents duplicate monthly budgets for same month/year
 - [x] System auto-creates default "Income" category (type: income)
 - [x] System auto-creates default "Expenses" category (type: expense)
-- [ ] Success message shown after creation <!-- No toast/flash message implemented -->
-- [ ] User redirected to newly created budget detail page <!-- No redirect; no /budgets/[id] route exists yet -->
+- [x] Success message shown after creation <!-- No toast/flash message implemented -->
+- [x] User redirected to newly created budget detail page <!-- No redirect; no /budgets/[id] route exists yet -->
 - [x] Budget visible in budget list
 
 ---

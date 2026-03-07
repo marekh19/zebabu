@@ -33,7 +33,7 @@
         return
       }
 
-      goto(resolve('/(private)/dashboard'))
+      goto(resolve('/(private)/budgets'))
     },
   })
 

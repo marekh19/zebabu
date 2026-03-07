@@ -107,6 +107,7 @@
   "budgets_validation_name_required": "Name is required for scenario budgets",
   "budgets_validation_name_max": "Name must be at most 200 characters",
   "budgets_error_duplicate": "A monthly budget for this month and year already exists",
+  "budgets_error_duplicate_scenario": "A scenario budget with this name already exists",
   "budgets_error_unexpected": "Something went wrong. Please try again.",
   "budgets_section_monthly": "Monthly Budgets",
   "budgets_section_scenario": "Scenario Budgets",
@@ -122,6 +123,12 @@
   "budget_detail_type_expense": "Expenses",
   "category_default_income": "Income",
   "category_default_expense": "Expenses",
+  "budget_summary_title": "Summary",
+  "budget_summary_income": "Total Income",
+  "budget_summary_expenses": "Total Expenses",
+  "budget_summary_balance_zero": "Balanced",
+  "budget_summary_balance_unallocated": "Unallocated",
+  "budget_summary_balance_over": "Over Budget",
   "month_january": "January",
   "month_february": "February",
   "month_march": "March",
@@ -133,5 +140,7 @@
   "month_september": "September",
   "month_october": "October",
   "month_november": "November",
-  "month_december": "December"
+  "month_december": "December",
+  "logout_success": "You have been logged out",
+  "budgets_create_success": "Budget \"{name}\" created"
 }

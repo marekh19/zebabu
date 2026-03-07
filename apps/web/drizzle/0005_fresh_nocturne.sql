@@ -1,0 +1,1 @@
+ALTER TABLE "budget" ADD CONSTRAINT "budget_userId_name_unique" UNIQUE("user_id","name");

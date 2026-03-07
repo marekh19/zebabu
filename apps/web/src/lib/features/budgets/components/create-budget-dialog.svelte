@@ -4,7 +4,8 @@
   export type CreateBudgetError = keyof typeof errorMessages
 
   export const errorMessages = {
-    duplicate: m.budgets_error_duplicate,
+    duplicate_monthly: m.budgets_error_duplicate,
+    duplicate_scenario: m.budgets_error_duplicate_scenario,
     unexpected: m.budgets_error_unexpected,
   } satisfies Record<string, () => string>
 </script>
@@ -16,6 +17,7 @@
     type SuperValidated,
   } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
+  import { toast } from 'svelte-sonner'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Form from '$lib/components/ui/form'
   import * as Select from '$lib/components/ui/select'
@@ -23,6 +25,7 @@
   import { buttonVariants } from '$lib/components/ui/button'
   import { createCreateBudgetSchema } from '$lib/features/budgets/schemas/create-budget-schema'
   import {
+    getBudgetDisplayName,
     getMonthName,
     getMonthOptions,
   } from '$lib/features/budgets/utils/month-names'
@@ -47,8 +50,15 @@
     dataType: 'json',
     validators: zod4(createBudgetSchema),
     onResult({ result }) {
-      if (result.type === 'success') {
+      if (result.type === 'redirect') {
         onOpenChange(false)
+        const displayName = getBudgetDisplayName({
+          ...$formData,
+          name: $formData.name ?? null,
+          month: $formData.month ?? null,
+          year: $formData.year ?? null,
+        })
+        toast.success(m.budgets_create_success({ name: displayName }))
       }
     },
   })

@@ -23,15 +23,15 @@ Implement the budget detail page that displays the complete budget with all cate
 
 ## Acceptance Criteria
 
-- [ ] Budget detail accessible at `/budgets/[id]`
-- [ ] Page shows budget name and type
-- [ ] All categories displayed as columns
-- [ ] All transactions displayed as cards within categories
-- [ ] Budget summary shown (total income, expenses, balance)
-- [ ] Real-time calculations update as data changes
-- [ ] Loading state while fetching data
-- [ ] 404 error for invalid budget ID
-- [ ] Authorization check (user owns budget)
+- [x] Budget detail accessible at `/budgets/[id]`
+- [x] Page shows budget name and type
+- [x] All categories displayed as columns
+- [x] All transactions displayed as cards within categories
+- [x] Budget summary shown (total income, expenses, balance)
+- [x] Real-time calculations update as data changes
+- [x] Loading state while fetching data
+- [x] 404 error for invalid budget ID
+- [x] Authorization check (user owns budget)
 
 ---
 

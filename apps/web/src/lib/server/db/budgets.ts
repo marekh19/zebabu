@@ -42,6 +42,7 @@ export const budget = pgTable(
       table.month,
       table.year,
     ),
+    unique('budget_userId_name_unique').on(table.userId, table.name),
   ],
 )
 
