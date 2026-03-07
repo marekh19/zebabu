@@ -5,7 +5,7 @@ import {
   PASSWORD_MIN_LENGTH,
 } from '$lib/features/auth/constants/password-rules'
 import * as m from '$lib/paraglide/messages'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 export function createResetPasswordSchema() {
   return z
