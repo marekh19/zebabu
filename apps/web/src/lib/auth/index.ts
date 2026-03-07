@@ -1,5 +1,6 @@
 import { EMAIL_FROM, RESEND_API_KEY } from '$env/static/private'
 import { redis } from '$lib/server/cache'
+import { seedDefaultCategories } from '$lib/server/categories/service'
 import { db } from '$lib/server/db'
 import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
@@ -39,11 +40,19 @@ export const auth = betterAuth({
   },
 
   // ─── Database ──────────────────────────────────────────────
-  // PostgreSQL as the primary database for users, accounts, etc.
-  // Use your preferred adapter (drizzle, prisma, kysely, etc.)
   database: drizzleAdapter(db, {
     provider: 'pg',
   }),
+
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await seedDefaultCategories(user.id)
+        },
+      },
+    },
+  },
 
   // ─── Secondary Storage (Redis) ─────────────────────────────
   // Handles sessions + rate limiting. Replaces DB queries with

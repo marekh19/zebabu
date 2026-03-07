@@ -1,13 +1,10 @@
-import * as m from '$lib/paraglide/messages'
+import { findCategoriesByUser } from '$lib/server/categories/repository'
 import { db } from '$lib/server/db'
-import { ensureDefined } from 'narrowland'
 import {
   findBudgetById,
-  findCategoryDefinitionsByName,
   findMonthlyBudget,
   insertBudget,
   insertBudgetCategories,
-  insertCategoryDefinitions,
   listBudgetsByUser,
 } from './repository'
 
@@ -18,45 +15,23 @@ export class DuplicateMonthlyBudgetError extends Error {
   }
 }
 
-function getDefaultCategories() {
-  return [
-    {
-      name: m.category_default_income(),
-      type: 'income' as const,
-      sortOrder: 0,
-    },
-    {
-      name: m.category_default_expense(),
-      type: 'expense' as const,
-      sortOrder: 1,
-    },
-  ]
-}
-
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
-async function createDefaultBudgetCategories(
+async function linkUserCategoriesToBudget(
   tx: DbTransaction,
   userId: string,
   budgetId: string,
 ) {
-  const categories = getDefaultCategories()
+  const categories = await findCategoriesByUser(tx, userId)
 
-  await insertCategoryDefinitions(
-    tx,
-    categories.map(({ name, type }) => ({ userId, name, type })),
-  )
-
-  const names = categories.map((c) => c.name)
-  const definitions = await findCategoryDefinitionsByName(tx, userId, names)
-  const idsByName = new Map(definitions.map((d) => [d.name, d.id]))
+  if (categories.length === 0) return
 
   await insertBudgetCategories(
     tx,
-    categories.map(({ name, sortOrder }) => ({
+    categories.map((cat, index) => ({
       budgetId,
-      categoryId: ensureDefined(idsByName.get(name)),
-      sortOrder,
+      categoryId: cat.id,
+      sortOrder: index,
     })),
   )
 }
@@ -78,7 +53,7 @@ export async function createMonthlyBudget(
       month,
       year,
     })
-    await createDefaultBudgetCategories(tx, userId, inserted.id)
+    await linkUserCategoriesToBudget(tx, userId, inserted.id)
     return inserted
   })
 }
@@ -95,7 +70,7 @@ export async function createScenarioBudget(
       month: null,
       year: null,
     })
-    await createDefaultBudgetCategories(tx, userId, inserted.id)
+    await linkUserCategoriesToBudget(tx, userId, inserted.id)
     return inserted
   })
 }
