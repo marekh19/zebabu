@@ -23,7 +23,7 @@
       <h1 class="text-2xl font-bold">{displayName}</h1>
       <Badge variant="secondary">{typeBadge}</Badge>
     </div>
-    <BudgetActions budgetId={data.budget.id} />
+    <BudgetActions triggerSize="lg" budgetId={data.budget.id} />
   </div>
 
   <BudgetSummary budgetCategories={data.budget.budgetCategories} />

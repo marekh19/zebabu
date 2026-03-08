@@ -9,13 +9,14 @@
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical'
   import Trash2Icon from '@lucide/svelte/icons/trash-2'
   import { toast } from 'svelte-sonner'
+  import { cn } from '$lib/utils'
 
   type Props = {
     budgetId: string
-    triggerSize?: 'icon-sm' | 'icon'
+    triggerSize?: 'md' | 'lg'
   }
 
-  let { budgetId, triggerSize = 'icon' }: Props = $props()
+  let { budgetId, triggerSize = 'md' }: Props = $props()
 
   let confirmOpen = $state(false)
   let deleting = $state(false)
@@ -35,14 +36,14 @@
     {#snippet child({ props })}
       <Button
         variant="ghost"
-        size={triggerSize}
+        size={triggerSize === 'md' ? 'icon' : 'icon-lg'}
         {...props}
         onclick={(e: MouseEvent) => {
           e.preventDefault()
           e.stopPropagation()
         }}
       >
-        <EllipsisVerticalIcon />
+        <EllipsisVerticalIcon class={cn(triggerSize === 'lg' && 'size-5')} />
         <span class="sr-only">{m.budgets_actions_label()}</span>
       </Button>
     {/snippet}
@@ -75,6 +76,8 @@
   method="POST"
   action="?/delete"
   bind:this={formEl}
+  aria-hidden="true"
+  class="absolute"
   use:enhance={() => {
     deleting = true
     confirmOpen = false
