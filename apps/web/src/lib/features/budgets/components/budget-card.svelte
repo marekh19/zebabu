@@ -10,6 +10,7 @@
     getMonthName,
   } from '$lib/features/budgets/utils/month-names'
   import type { budget } from '$lib/server/db/schema'
+  import BudgetActions from './budget-actions.svelte'
 
   type Budget = typeof budget.$inferSelect
 
@@ -71,6 +72,7 @@
           </p>
         </div>
       {/if}
+      <BudgetActions budgetId={b.id} triggerSize="icon-sm" />
     </div>
   </Card.Root>
 </a>

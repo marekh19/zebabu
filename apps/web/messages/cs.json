@@ -144,5 +144,8 @@
   "logout_success": "Byli jste úspěšně odhlášeni",
   "budgets_create_success": "Rozpočet \"{name}\" vytvořen",
   "budget_detail_reorder_handle": "Přetáhněte pro změnu pořadí",
-  "budget_detail_reorder_error": "Nepodařilo se uložit nové pořadí"
+  "budget_detail_reorder_error": "Nepodařilo se uložit nové pořadí",
+  "budgets_actions_label": "Akce",
+  "budgets_actions_delete": "Smazat",
+  "budgets_actions_duplicate": "Duplikovat"
 }
