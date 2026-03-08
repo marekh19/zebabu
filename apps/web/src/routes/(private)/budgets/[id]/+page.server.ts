@@ -1,8 +1,9 @@
+import { resolve } from '$app/paths'
 import { getBudgetDisplayName } from '$lib/features/budgets/utils/month-names'
-import { getBudgetDetail } from '$lib/server/budgets/service'
-import { error } from '@sveltejs/kit'
+import { deleteBudget, getBudgetDetail } from '$lib/server/budgets/service'
+import { error, fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
-import type { PageServerLoad } from './$types'
+import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const userId = ensureDefined(locals.user).id
@@ -23,4 +24,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       [params.id]: getBudgetDisplayName(result.budget),
     },
   }
+}
+
+export const actions: Actions = {
+  delete: async ({ params, locals }) => {
+    const userId = ensureDefined(locals.user).id
+    const result = await deleteBudget(params.id, userId)
+
+    if (result.error === 'not_found') return fail(404)
+    if (result.error === 'access_denied') return fail(403)
+
+    redirect(303, resolve('/budgets'))
+  },
 }

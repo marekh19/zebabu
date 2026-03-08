@@ -1,10 +1,14 @@
 <script lang="ts">
+  import { enhance } from '$app/forms'
+  import { invalidateAll } from '$app/navigation'
   import { Button } from '$lib/components/ui/button'
+  import ConfirmDialog from '$lib/components/confirm-dialog.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
   import * as m from '$lib/paraglide/messages'
   import CopyIcon from '@lucide/svelte/icons/copy'
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical'
   import Trash2Icon from '@lucide/svelte/icons/trash-2'
+  import { toast } from 'svelte-sonner'
 
   type Props = {
     budgetId: string
@@ -13,14 +17,16 @@
 
   let { budgetId, triggerSize = 'icon' }: Props = $props()
 
-  function handleDuplicate() {
-    // TODO: implement duplicate
-    console.log('duplicate', budgetId)
-  }
+  let confirmOpen = $state(false)
+  let deleting = $state(false)
+  let formEl: HTMLFormElement
 
   function handleDelete() {
-    // TODO: implement delete
-    console.log('delete', budgetId)
+    confirmOpen = true
+  }
+
+  function handleDuplicate() {
+    // TODO: implement duplicate
   }
 </script>
 
@@ -53,3 +59,35 @@
     </DropdownMenu.Item>
   </DropdownMenu.Content>
 </DropdownMenu.Root>
+
+<ConfirmDialog
+  open={confirmOpen}
+  onOpenChange={(open) => (confirmOpen = open)}
+  title={m.budgets_delete_confirm_title()}
+  description={m.budgets_delete_confirm_description()}
+  confirmLabel={m.budgets_delete_confirm_label()}
+  cancelLabel={m.budgets_delete_cancel_label()}
+  loading={deleting}
+  onConfirm={() => formEl.requestSubmit()}
+/>
+
+<form
+  method="POST"
+  action="?/delete"
+  bind:this={formEl}
+  use:enhance={() => {
+    deleting = true
+    confirmOpen = false
+    return async ({ result, update }) => {
+      deleting = false
+      if (result.type === 'success') {
+        toast.success(m.budgets_delete_success())
+        await invalidateAll()
+      } else if (result.type === 'redirect') {
+        await update()
+      }
+    }
+  }}
+>
+  <input type="hidden" name="budgetId" value={budgetId} />
+</form>

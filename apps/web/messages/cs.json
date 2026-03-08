@@ -147,5 +147,10 @@
   "budget_detail_reorder_error": "Nepodařilo se uložit nové pořadí",
   "budgets_actions_label": "Akce",
   "budgets_actions_delete": "Smazat",
-  "budgets_actions_duplicate": "Duplikovat"
+  "budgets_actions_duplicate": "Duplikovat",
+  "budgets_delete_confirm_title": "Smazat rozpočet?",
+  "budgets_delete_confirm_description": "Tato akce trvale smaže rozpočet a všechna jeho data. Tuto akci nelze vrátit zpět.",
+  "budgets_delete_confirm_label": "Smazat",
+  "budgets_delete_cancel_label": "Zrušit",
+  "budgets_delete_success": "Rozpočet smazán"
 }

@@ -1,6 +1,7 @@
 import { findCategoriesByUser } from '$lib/server/categories/repository'
 import { db } from '$lib/server/db'
 import {
+  deleteBudgetById,
   findBudgetById,
   findMonthlyBudget,
   findScenarioBudget,
@@ -107,6 +108,25 @@ export async function reorderBudgetCategories(
   await db.transaction((tx) =>
     updateBudgetCategorySortOrders(tx, budgetId, items),
   )
+
+  return {}
+}
+
+export async function deleteBudget(
+  budgetId: string,
+  userId: string,
+): Promise<{ error?: 'not_found' | 'access_denied' }> {
+  const found = await findBudgetById(budgetId)
+
+  if (!found) {
+    return { error: 'not_found' }
+  }
+
+  if (found.userId !== userId) {
+    return { error: 'access_denied' }
+  }
+
+  await deleteBudgetById(budgetId)
 
   return {}
 }

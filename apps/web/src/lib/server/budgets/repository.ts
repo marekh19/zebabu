@@ -71,6 +71,10 @@ export function updateBudgetCategorySortOrders(
   )
 }
 
+export function deleteBudgetById(budgetId: string) {
+  return db.delete(budget).where(eq(budget.id, budgetId))
+}
+
 export function insertBudgetCategories(
   tx: DbTransaction,
   values: (typeof budgetCategory.$inferInsert)[],

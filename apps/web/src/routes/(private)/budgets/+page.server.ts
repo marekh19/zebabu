@@ -2,6 +2,7 @@ import { createCreateBudgetSchema } from '$lib/features/budgets/schemas/create-b
 import {
   createMonthlyBudget,
   createScenarioBudget,
+  deleteBudget,
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
   listBudgets,
@@ -52,5 +53,22 @@ export const actions: Actions = {
     }
 
     redirect(303, `/budgets/${budgetId}`)
+  },
+
+  delete: async ({ request, locals }) => {
+    const data = await request.formData()
+    const budgetId = data.get('budgetId')
+
+    if (typeof budgetId !== 'string') {
+      return fail(400)
+    }
+
+    const userId = ensureDefined(locals.user).id
+    const result = await deleteBudget(budgetId, userId)
+
+    if (result.error === 'not_found') return fail(404)
+    if (result.error === 'access_denied') return fail(403)
+
+    return { deleted: true }
   },
 }
