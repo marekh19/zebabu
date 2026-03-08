@@ -208,7 +208,10 @@
       {/if}
 
       <Dialog.Footer>
-        <Dialog.Close class={buttonVariants({ variant: 'outline' })}>
+        <Dialog.Close
+          type="button"
+          class={buttonVariants({ variant: 'outline' })}
+        >
           {m.budgets_create_cancel()}
         </Dialog.Close>
         <Form.Button disabled={$submitting}>
