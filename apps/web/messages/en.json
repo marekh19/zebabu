@@ -152,5 +152,11 @@
   "budgets_delete_confirm_description": "This will permanently delete the budget and all its data. This action cannot be undone.",
   "budgets_delete_confirm_label": "Delete",
   "budgets_delete_cancel_label": "Cancel",
-  "budgets_delete_success": "Budget deleted"
+  "budgets_delete_success": "Budget deleted",
+  "budgets_duplicate_title": "Duplicate budget",
+  "budgets_duplicate_description": "Choose the target period or name for the duplicate",
+  "budgets_duplicate_submit": "Duplicate",
+  "budgets_duplicate_submitting": "Duplicating...",
+  "budgets_duplicate_cancel": "Cancel",
+  "budgets_duplicate_success": "Budget duplicated"
 }

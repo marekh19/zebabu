@@ -72,7 +72,7 @@
           </p>
         </div>
       {/if}
-      <BudgetActions budgetId={b.id} triggerSize="icon-sm" />
+      <BudgetActions budget={b} />
     </div>
   </Card.Root>
 </a>

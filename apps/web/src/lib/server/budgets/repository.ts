@@ -79,5 +79,12 @@ export function insertBudgetCategories(
   tx: DbTransaction,
   values: (typeof budgetCategory.$inferInsert)[],
 ) {
-  return tx.insert(budgetCategory).values(values)
+  return tx.insert(budgetCategory).values(values).returning()
+}
+
+export function insertTransactions(
+  tx: DbTransaction,
+  values: (typeof transaction.$inferInsert)[],
+) {
+  return tx.insert(transaction).values(values)
 }

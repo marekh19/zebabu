@@ -1,8 +1,10 @@
 import { createCreateBudgetSchema } from '$lib/features/budgets/schemas/create-budget-schema'
+import { createDuplicateBudgetSchema } from '$lib/features/budgets/schemas/duplicate-budget-schema'
 import {
   createMonthlyBudget,
   createScenarioBudget,
   deleteBudget,
+  duplicateBudget,
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
   listBudgets,
@@ -53,6 +55,36 @@ export const actions: Actions = {
     }
 
     redirect(303, `/budgets/${budgetId}`)
+  },
+
+  duplicate: async ({ request, locals }) => {
+    const form = await superValidate(
+      request,
+      zod4(createDuplicateBudgetSchema()),
+    )
+
+    if (!form.valid) return fail(400, { form })
+
+    const userId = ensureDefined(locals.user).id
+
+    try {
+      const result = await duplicateBudget(
+        form.data.sourceBudgetId,
+        userId,
+        form.data,
+      )
+      if (result.error === 'not_found') return fail(404)
+      if (result.error === 'access_denied') return fail(403)
+      redirect(303, `/budgets/${ensureDefined(result.budget).id}`)
+    } catch (error) {
+      if (error instanceof DuplicateMonthlyBudgetError) {
+        return fail(409, { form, error: 'duplicate_monthly' as const })
+      }
+      if (error instanceof DuplicateScenarioBudgetError) {
+        return fail(409, { form, error: 'duplicate_scenario' as const })
+      }
+      throw error
+    }
   },
 
   delete: async ({ request, locals }) => {

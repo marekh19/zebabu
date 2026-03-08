@@ -3,6 +3,7 @@
   import { invalidateAll } from '$app/navigation'
   import { Button } from '$lib/components/ui/button'
   import ConfirmDialog from '$lib/components/confirm-dialog.svelte'
+  import DuplicateBudgetDialog from './duplicate-budget-dialog.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
   import * as m from '$lib/paraglide/messages'
   import CopyIcon from '@lucide/svelte/icons/copy'
@@ -10,15 +11,19 @@
   import Trash2Icon from '@lucide/svelte/icons/trash-2'
   import { toast } from 'svelte-sonner'
   import { cn } from '$lib/utils'
+  import type { budget } from '$lib/server/db/schema'
+
+  type Budget = typeof budget.$inferSelect
 
   type Props = {
-    budgetId: string
+    budget: Budget
     triggerSize?: 'md' | 'lg'
   }
 
-  let { budgetId, triggerSize = 'md' }: Props = $props()
+  let { budget: b, triggerSize = 'md' }: Props = $props()
 
   let confirmOpen = $state(false)
+  let duplicateOpen = $state(false)
   let deleting = $state(false)
   let formEl: HTMLFormElement
 
@@ -27,7 +32,7 @@
   }
 
   function handleDuplicate() {
-    // TODO: implement duplicate
+    duplicateOpen = true
   }
 </script>
 
@@ -61,6 +66,12 @@
   </DropdownMenu.Content>
 </DropdownMenu.Root>
 
+<DuplicateBudgetDialog
+  open={duplicateOpen}
+  onOpenChange={(o) => (duplicateOpen = o)}
+  sourceBudget={b}
+/>
+
 <ConfirmDialog
   open={confirmOpen}
   onOpenChange={(open) => (confirmOpen = open)}
@@ -92,5 +103,5 @@
     }
   }}
 >
-  <input type="hidden" name="budgetId" value={budgetId} />
+  <input type="hidden" name="budgetId" value={b.id} />
 </form>

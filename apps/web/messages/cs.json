@@ -152,5 +152,11 @@
   "budgets_delete_confirm_description": "Tato akce trvale smaže rozpočet a všechna jeho data. Tuto akci nelze vrátit zpět.",
   "budgets_delete_confirm_label": "Smazat",
   "budgets_delete_cancel_label": "Zrušit",
-  "budgets_delete_success": "Rozpočet smazán"
+  "budgets_delete_success": "Rozpočet smazán",
+  "budgets_duplicate_title": "Duplikovat rozpočet",
+  "budgets_duplicate_description": "Zvolte cílové období nebo název pro duplikát",
+  "budgets_duplicate_submit": "Duplikovat",
+  "budgets_duplicate_submitting": "Duplikování...",
+  "budgets_duplicate_cancel": "Zrušit",
+  "budgets_duplicate_success": "Rozpočet duplikován"
 }
