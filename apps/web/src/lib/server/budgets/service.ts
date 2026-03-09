@@ -4,6 +4,7 @@ import { ensureDefined } from 'narrowland'
 import {
   deleteBudgetById,
   findBudgetById,
+  findBudgetOwner,
   findMonthlyBudget,
   findScenarioBudget,
   insertBudget,
@@ -52,12 +53,10 @@ export async function createMonthlyBudget(
   userId: string,
   { month, year }: { month: number; year: number },
 ) {
-  const existing = await findMonthlyBudget(userId, month, year)
-  if (existing) {
-    throw new DuplicateMonthlyBudgetError()
-  }
-
   return db.transaction(async (tx) => {
+    const existing = await findMonthlyBudget(userId, month, year, tx)
+    if (existing) throw new DuplicateMonthlyBudgetError()
+
     const [inserted] = await insertBudget(tx, {
       userId,
       name: null,
@@ -74,12 +73,10 @@ export async function createScenarioBudget(
   userId: string,
   { name }: { name: string },
 ) {
-  const existing = await findScenarioBudget(userId, name)
-  if (existing) {
-    throw new DuplicateScenarioBudgetError()
-  }
-
   return db.transaction(async (tx) => {
+    const existing = await findScenarioBudget(userId, name, tx)
+    if (existing) throw new DuplicateScenarioBudgetError()
+
     const [inserted] = await insertBudget(tx, {
       userId,
       name,
@@ -97,7 +94,7 @@ export async function reorderBudgetCategories(
   userId: string,
   items: { id: string; sortOrder: number }[],
 ): Promise<{ error?: 'not_found' | 'access_denied' }> {
-  const found = await findBudgetById(budgetId)
+  const found = await findBudgetOwner(budgetId)
 
   if (!found) {
     return { error: 'not_found' }
@@ -118,7 +115,7 @@ export async function deleteBudget(
   budgetId: string,
   userId: string,
 ): Promise<{ error?: 'not_found' | 'access_denied' }> {
-  const found = await findBudgetById(budgetId)
+  const found = await findBudgetOwner(budgetId)
 
   if (!found) {
     return { error: 'not_found' }

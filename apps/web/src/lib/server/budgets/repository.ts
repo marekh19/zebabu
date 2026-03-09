@@ -1,11 +1,16 @@
 import { db } from '$lib/server/db'
 import { budget, budgetCategory, transaction } from '$lib/server/db/schema'
-import { and, asc, desc, eq } from 'drizzle-orm'
+import { type SQL, and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
-export function findMonthlyBudget(userId: string, month: number, year: number) {
-  return db.query.budget.findFirst({
+export function findMonthlyBudget(
+  userId: string,
+  month: number,
+  year: number,
+  tx?: DbTransaction,
+) {
+  return (tx ?? db).query.budget.findFirst({
     where: and(
       eq(budget.userId, userId),
       eq(budget.month, month),
@@ -14,8 +19,12 @@ export function findMonthlyBudget(userId: string, month: number, year: number) {
   })
 }
 
-export function findScenarioBudget(userId: string, name: string) {
-  return db.query.budget.findFirst({
+export function findScenarioBudget(
+  userId: string,
+  name: string,
+  tx?: DbTransaction,
+) {
+  return (tx ?? db).query.budget.findFirst({
     where: and(eq(budget.userId, userId), eq(budget.name, name)),
   })
 }
@@ -44,6 +53,13 @@ export function findBudgetById(budgetId: string) {
   })
 }
 
+export function findBudgetOwner(budgetId: string) {
+  return db.query.budget.findFirst({
+    where: eq(budget.id, budgetId),
+    columns: { id: true, userId: true },
+  })
+}
+
 export function insertBudget(
   tx: DbTransaction,
   values: typeof budget.$inferInsert,
@@ -51,24 +67,34 @@ export function insertBudget(
   return tx.insert(budget).values(values).returning()
 }
 
-export function updateBudgetCategorySortOrders(
+export async function updateBudgetCategorySortOrders(
   tx: DbTransaction,
   budgetId: string,
   items: { id: string; sortOrder: number }[],
 ) {
-  return Promise.all(
-    items.map((item) =>
-      tx
-        .update(budgetCategory)
-        .set({ sortOrder: item.sortOrder })
-        .where(
-          and(
-            eq(budgetCategory.id, item.id),
-            eq(budgetCategory.budgetId, budgetId),
-          ),
-        ),
-    ),
-  )
+  if (items.length === 0) return
+
+  const sqlChunks: SQL[] = [sql`(case`]
+  const ids: string[] = []
+
+  for (const item of items) {
+    sqlChunks.push(
+      sql`when ${budgetCategory.id} = ${item.id} then ${item.sortOrder}`,
+    )
+    ids.push(item.id)
+  }
+
+  sqlChunks.push(sql`end)`)
+
+  return tx
+    .update(budgetCategory)
+    .set({ sortOrder: sql.join(sqlChunks, sql.raw(' ')) })
+    .where(
+      and(
+        eq(budgetCategory.budgetId, budgetId),
+        inArray(budgetCategory.id, ids),
+      ),
+    )
 }
 
 export function deleteBudgetById(budgetId: string) {
