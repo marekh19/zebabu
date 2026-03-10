@@ -5,6 +5,7 @@
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
   import TransactionRow from './transaction-row.svelte'
   import type { BudgetCategory } from '../types'
+  import { colorClasses } from '$lib/features/categories/colors'
 
   type Props = {
     budgetCategory: BudgetCategory
@@ -25,8 +26,6 @@
 
   const formattedTotal = $derived(formatDecimal(total))
 
-  const isIncome = $derived(budgetCategory.category.type === 'income')
-
   const dragging = $derived(isDragSource.current && !isOverlay)
 </script>
 
@@ -38,9 +37,9 @@
       : ''} {isOverlay ? 'ring-primary/25 shadow-xl ring-2' : ''}"
   >
     <div
-      class="flex items-center gap-1 rounded-t-lg px-3 py-2.5 {isIncome
-        ? 'bg-emerald-500/10'
-        : 'bg-muted'}"
+      class="flex items-center gap-1 rounded-t-lg px-3 py-2.5 {colorClasses[
+        budgetCategory.category.color
+      ].header}"
     >
       <div
         class="text-muted-foreground hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 -ml-1.5 shrink-0 cursor-grab rounded-sm outline-none focus-visible:ring-[3px] active:cursor-grabbing"
@@ -53,11 +52,10 @@
         >{budgetCategory.category.name}</span
       >
       <span
-        class="shrink-0 text-xs {isIncome
-          ? 'text-emerald-600 dark:text-emerald-400'
-          : 'text-muted-foreground'}"
+        class="shrink-0 text-xs {colorClasses[budgetCategory.category.color]
+          .badge}"
       >
-        {isIncome
+        {budgetCategory.category.type === 'income'
           ? m.budget_detail_type_income()
           : m.budget_detail_type_expense()}
       </span>

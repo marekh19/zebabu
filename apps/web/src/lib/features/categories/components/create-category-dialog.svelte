@@ -23,6 +23,7 @@
   import { Input } from '$lib/components/ui/input'
   import { buttonVariants } from '$lib/components/ui/button'
   import { createCreateCategorySchema } from '$lib/features/categories/schemas/create-category-schema'
+  import { categoryColors, colorClasses } from '$lib/features/categories/colors'
 
   type CreateCategorySchema = ReturnType<typeof createCreateCategorySchema>
 
@@ -56,6 +57,7 @@
     if (open) {
       $formData.name = ''
       $formData.type = 'expense'
+      $formData.color = 'slate'
     }
   })
 
@@ -124,6 +126,32 @@
                 />
               </Select.Content>
             </Select.Root>
+          {/snippet}
+        </Form.Control>
+        <Form.FieldErrors />
+      </Form.Field>
+
+      <Form.Field {form} name="color">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>{m.categories_create_color_label()}</Form.Label>
+            <div {...props} class="flex flex-wrap gap-2" role="radiogroup">
+              {#each categoryColors as color (color)}
+                <button
+                  type="button"
+                  aria-label={color}
+                  aria-checked={$formData.color === color}
+                  role="radio"
+                  class="size-6 rounded-full {colorClasses[color]
+                    .circle} ring-offset-background focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none {$formData.color ===
+                  color
+                    ? 'ring-2 ring-current ring-offset-2'
+                    : ''}"
+                  style="color: var(--color-{color}-500)"
+                  onclick={() => ($formData.color = color)}
+                ></button>
+              {/each}
+            </div>
           {/snippet}
         </Form.Control>
         <Form.FieldErrors />

@@ -43,6 +43,13 @@
       "when": 1772894206428,
       "tag": "0005_fresh_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773179102753,
+      "tag": "0006_furry_black_crow",
+      "breakpoints": true
     }
   ]
 }

@@ -177,5 +177,7 @@
   "categories_error_duplicate": "Kategorie s tímto názvem již existuje",
   "categories_error_unexpected": "Něco se pokazilo. Zkuste to znovu.",
   "categories_type_income": "Příjem",
-  "categories_type_expense": "Výdaj"
+  "categories_type_expense": "Výdaj",
+  "categories_create_color_label": "Barva",
+  "categories_validation_color_required": "Prosím vyberte barvu"
 }

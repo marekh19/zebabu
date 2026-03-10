@@ -6,6 +6,7 @@
   import { Badge } from '$lib/components/ui/badge'
   import { isString, isKeyOf } from 'narrowland'
   import FloatingActionButton from '$lib/components/floating-action-button.svelte'
+  import { colorClasses } from '$lib/features/categories/colors'
 
   let { data, form: actionData } = $props()
 
@@ -30,7 +31,13 @@
         <li
           class="flex items-center justify-between rounded-lg border px-4 py-3"
         >
-          <span class="font-medium">{cat.name}</span>
+          <span class="flex items-center gap-2 font-medium">
+            <span
+              class="size-3 rounded-full {colorClasses[cat.color]
+                .circle} shrink-0"
+            ></span>
+            {cat.name}
+          </span>
           <Badge variant={cat.type === 'income' ? 'default' : 'secondary'}>
             {cat.type === 'income'
               ? m.categories_type_income()

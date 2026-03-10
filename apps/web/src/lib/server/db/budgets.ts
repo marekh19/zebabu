@@ -15,6 +15,16 @@ import { account, session, user } from '../../auth/schema'
 
 export const budgetTypeEnum = pgEnum('budget_type', ['monthly', 'scenario'])
 export const categoryTypeEnum = pgEnum('category_type', ['income', 'expense'])
+export const categoryColorEnum = pgEnum('category_color', [
+  'slate',
+  'rose',
+  'emerald',
+  'amber',
+  'sky',
+  'violet',
+  'orange',
+  'teal',
+])
 
 export const budget = pgTable(
   'budget',
@@ -57,6 +67,7 @@ export const category = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     type: categoryTypeEnum('type').notNull(),
+    color: categoryColorEnum('color').notNull().default('slate'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()

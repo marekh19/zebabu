@@ -177,5 +177,7 @@
   "categories_error_duplicate": "A category with this name already exists",
   "categories_error_unexpected": "Something went wrong. Please try again.",
   "categories_type_income": "Income",
-  "categories_type_expense": "Expense"
+  "categories_type_expense": "Expense",
+  "categories_create_color_label": "Color",
+  "categories_validation_color_required": "Please select a color"
 }

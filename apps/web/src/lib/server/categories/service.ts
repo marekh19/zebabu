@@ -1,3 +1,4 @@
+import type { CategoryColor } from '$lib/features/categories/colors'
 import * as m from '$lib/paraglide/messages'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
@@ -17,14 +18,24 @@ export class DuplicateCategoryError extends Error {
 
 export function seedDefaultCategories(userId: string) {
   return insertCategories([
-    { userId, name: m.category_default_income(), type: 'income' },
-    { userId, name: m.category_default_expense(), type: 'expense' },
+    {
+      userId,
+      name: m.category_default_income(),
+      type: 'income',
+      color: 'emerald',
+    },
+    {
+      userId,
+      name: m.category_default_expense(),
+      type: 'expense',
+      color: 'rose',
+    },
   ])
 }
 
 export async function createCategory(
   userId: string,
-  data: { name: string; type: 'income' | 'expense' },
+  data: { name: string; type: 'income' | 'expense'; color: CategoryColor },
 ) {
   return db.transaction(async (tx) => {
     const existing = await findCategoryByName(tx, userId, data.name)
