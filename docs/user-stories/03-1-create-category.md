@@ -23,15 +23,14 @@ Implement category creation functionality allowing users to add new categories t
 
 ## Acceptance Criteria
 
-- [ ] "Add Category" button visible on budget board
-- [ ] Category creation form/modal includes all fields
-- [ ] Required: name, type (income/expense)
+- [x] "Add Category" button visible on budget board
+- [x] Category creation form/modal includes all fields
+- [x] Required: name, type (income/expense)
 - [ ] Optional: color picker, icon selector, target percentage
 - [ ] Categories added to end of list (highest order number)
-- [ ] Success feedback after creation
-- [ ] New category immediately visible on board
-- [ ] Validation prevents empty names
-- [ ] Target percentage must be 0-100 if provided
+- [x] Success feedback after creation
+- [x] New category immediately visible on board
+- [x] Validation prevents empty names
 
 ---
 

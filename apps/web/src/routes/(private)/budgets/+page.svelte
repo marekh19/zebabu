@@ -1,11 +1,11 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
   import BudgetList from '$lib/features/budgets/components/budget-list.svelte'
-  import CreateBudgetFab from '$lib/features/budgets/components/create-budget-fab.svelte'
   import CreateBudgetDialog, {
     errorMessages,
   } from '$lib/features/budgets/components/create-budget-dialog.svelte'
   import { isString, isKeyOf } from 'narrowland'
+  import FloatingActionButton from '$lib/components/floating-action-button.svelte'
 
   let { data, form: actionData } = $props()
 
@@ -25,7 +25,10 @@
   <BudgetList budgets={data.budgets} />
 </div>
 
-<CreateBudgetFab onclick={() => (dialogOpen = true)} />
+<FloatingActionButton
+  onclick={() => (dialogOpen = true)}
+  ariaLabel={m.budgets_create_fab_label()}
+/>
 
 <CreateBudgetDialog
   bind:open={dialogOpen}

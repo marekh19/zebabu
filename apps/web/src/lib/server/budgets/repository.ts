@@ -84,7 +84,7 @@ export async function updateBudgetCategorySortOrders(
     ids.push(item.id)
   }
 
-  sqlChunks.push(sql`end)`)
+  sqlChunks.push(sql`end)::integer`)
 
   return tx
     .update(budgetCategory)

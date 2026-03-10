@@ -1,4 +1,4 @@
-import { findCategoriesByUser } from '$lib/server/categories/repository'
+import { findCategoriesByUserTx } from '$lib/server/categories/repository'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
 import {
@@ -35,7 +35,7 @@ async function linkUserCategoriesToBudget(
   userId: string,
   budgetId: string,
 ) {
-  const categories = await findCategoriesByUser(tx, userId)
+  const categories = await findCategoriesByUserTx(tx, userId)
 
   if (categories.length === 0) return
 
