@@ -5,9 +5,18 @@ import { ensureDefined } from 'narrowland'
 import {
   findCategoriesByUser,
   findCategoryByName,
+  findCategoryByNameExcluding,
   insertCategories,
   insertCategoryTx,
+  updateCategoryTx,
 } from './repository'
+
+export class CategoryNotFoundError extends Error {
+  constructor() {
+    super('Category not found')
+    this.name = 'CategoryNotFoundError'
+  }
+}
 
 export class DuplicateCategoryError extends Error {
   constructor() {
@@ -48,4 +57,24 @@ export async function createCategory(
 
 export function listCategories(userId: string) {
   return findCategoriesByUser(userId)
+}
+
+export async function updateCategory(
+  categoryId: string,
+  userId: string,
+  data: { name: string; color: CategoryColor },
+) {
+  return db.transaction(async (tx) => {
+    const duplicate = await findCategoryByNameExcluding(
+      tx,
+      userId,
+      data.name,
+      categoryId,
+    )
+    if (duplicate) throw new DuplicateCategoryError()
+
+    const [updated] = await updateCategoryTx(tx, categoryId, data)
+    if (!updated) throw new CategoryNotFoundError()
+    return ensureDefined(updated)
+  })
 }

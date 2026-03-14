@@ -179,5 +179,17 @@
   "categories_type_income": "Income",
   "categories_type_expense": "Expense",
   "categories_create_color_label": "Color",
-  "categories_validation_color_required": "Please select a color"
+  "categories_validation_color_required": "Please select a color",
+  "categories_actions_label": "Actions",
+  "categories_actions_edit": "Edit",
+  "categories_actions_delete": "Delete",
+  "categories_edit_title": "Edit category",
+  "categories_edit_description": "Update the name or color of this category",
+  "categories_edit_submit": "Save",
+  "categories_edit_submitting": "Saving...",
+  "categories_edit_cancel": "Cancel",
+  "categories_edit_success": "Category \"{name}\" updated",
+  "categories_edit_type_label": "Type",
+  "categories_edit_type_immutable_note": "Type cannot be changed after creation",
+  "categories_error_not_found": "Category not found"
 }

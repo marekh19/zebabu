@@ -1,8 +1,11 @@
 import { createCreateCategorySchema } from '$lib/features/categories/schemas/create-category-schema'
+import { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
 import {
+  CategoryNotFoundError,
   createCategory,
   DuplicateCategoryError,
   listCategories,
+  updateCategory,
 } from '$lib/server/categories/service'
 import { fail } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
@@ -13,8 +16,9 @@ import type { Actions, PageServerLoad } from './$types'
 export const load: PageServerLoad = async ({ locals }) => {
   const categories = await listCategories(ensureDefined(locals.user).id)
   const form = await superValidate(zod4(createCreateCategorySchema()))
+  const editForm = await superValidate(zod4(createUpdateCategorySchema()))
 
-  return { categories, form }
+  return { categories, form, editForm }
 }
 
 export const actions: Actions = {
@@ -41,5 +45,34 @@ export const actions: Actions = {
     }
 
     return { form }
+  },
+
+  update: async ({ request, locals }) => {
+    const editForm = await superValidate(
+      request,
+      zod4(createUpdateCategorySchema()),
+    )
+
+    if (!editForm.valid) {
+      return fail(400, { editForm })
+    }
+
+    const userId = ensureDefined(locals.user).id
+    const { categoryId, name, color } = editForm.data
+
+    try {
+      await updateCategory(categoryId, userId, { name, color })
+    } catch (error) {
+      if (error instanceof DuplicateCategoryError) {
+        return fail(409, { editForm, error: 'duplicate' as const })
+      }
+      if (error instanceof CategoryNotFoundError) {
+        return fail(404, { editForm, error: 'not_found' as const })
+      }
+      console.error('Category update failed:', error)
+      return fail(500, { editForm, error: 'unexpected' as const })
+    }
+
+    return { editForm }
   },
 }

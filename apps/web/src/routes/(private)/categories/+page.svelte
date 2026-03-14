@@ -3,6 +3,7 @@
   import CreateCategoryDialog, {
     errorMessages,
   } from '$lib/features/categories/components/create-category-dialog.svelte'
+  import CategoryActions from '$lib/features/categories/components/category-actions.svelte'
   import { Badge } from '$lib/components/ui/badge'
   import { isString, isKeyOf } from 'narrowland'
   import FloatingActionButton from '$lib/components/floating-action-button.svelte'
@@ -38,11 +39,14 @@
             ></span>
             {cat.name}
           </span>
-          <Badge variant={cat.type === 'income' ? 'default' : 'secondary'}>
-            {cat.type === 'income'
-              ? m.categories_type_income()
-              : m.categories_type_expense()}
-          </Badge>
+          <div class="flex items-center gap-2">
+            <Badge variant={cat.type === 'income' ? 'default' : 'secondary'}>
+              {cat.type === 'income'
+                ? m.categories_type_income()
+                : m.categories_type_expense()}
+            </Badge>
+            <CategoryActions category={cat} editForm={data.editForm} />
+          </div>
         </li>
       {/each}
     </ul>

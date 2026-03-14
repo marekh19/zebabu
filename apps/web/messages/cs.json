@@ -179,5 +179,17 @@
   "categories_type_income": "Příjem",
   "categories_type_expense": "Výdaj",
   "categories_create_color_label": "Barva",
-  "categories_validation_color_required": "Prosím vyberte barvu"
+  "categories_validation_color_required": "Prosím vyberte barvu",
+  "categories_actions_label": "Akce",
+  "categories_actions_edit": "Upravit",
+  "categories_actions_delete": "Smazat",
+  "categories_edit_title": "Upravit kategorii",
+  "categories_edit_description": "Aktualizujte název nebo barvu této kategorie",
+  "categories_edit_submit": "Uložit",
+  "categories_edit_submitting": "Ukládání...",
+  "categories_edit_cancel": "Zrušit",
+  "categories_edit_success": "Kategorie \"{name}\" upravena",
+  "categories_edit_type_label": "Typ",
+  "categories_edit_type_immutable_note": "Typ nelze po vytvoření změnit",
+  "categories_error_not_found": "Kategorie nenalezena"
 }

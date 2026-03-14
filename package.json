@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "turbo clean && rm -rf node_modules",
-    "db:start": "docker compose up",
+    "db:start": "docker compose up -d",
     "db:push": "pnpm --filter @zebabu/web db:push",
     "db:generate": "pnpm --filter @zebabu/web db:generate",
     "db:migrate": "pnpm --filter @zebabu/web db:migrate",
