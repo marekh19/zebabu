@@ -191,5 +191,12 @@
   "categories_edit_success": "Kategorie \"{name}\" upravena",
   "categories_edit_type_label": "Typ",
   "categories_edit_type_immutable_note": "Typ nelze po vytvoření změnit",
-  "categories_error_not_found": "Kategorie nenalezena"
+  "categories_error_not_found": "Kategorie nenalezena",
+  "categories_delete_confirm_title": "Smazat kategorii?",
+  "categories_delete_confirm_description": "Tato akce trvale smaže kategorii \"{name}\". Tuto akci nelze vrátit zpět.",
+  "categories_delete_confirm_label": "Smazat",
+  "categories_delete_cancel_label": "Zrušit",
+  "categories_delete_success": "Kategorie smazána",
+  "categories_error_last_of_type": "Musíte mít alespoň jednu kategorii typu {type}",
+  "categories_error_in_use": "Tato kategorie se používá v jednom nebo více rozpočtech a nelze ji smazat"
 }

@@ -3,7 +3,11 @@ import * as m from '$lib/paraglide/messages'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
 import {
+  countCategoriesByTypeTx,
+  deleteCategoryTx,
+  findBudgetCategoryByCategoryIdTx,
   findCategoriesByUser,
+  findCategoryByIdTx,
   findCategoryByName,
   findCategoryByNameExcluding,
   insertCategories,
@@ -15,6 +19,20 @@ export class CategoryNotFoundError extends Error {
   constructor() {
     super('Category not found')
     this.name = 'CategoryNotFoundError'
+  }
+}
+
+export class LastCategoryOfTypeError extends Error {
+  constructor() {
+    super('Cannot delete the last category of this type')
+    this.name = 'LastCategoryOfTypeError'
+  }
+}
+
+export class CategoryInUseError extends Error {
+  constructor() {
+    super('Category is used in one or more budgets')
+    this.name = 'CategoryInUseError'
   }
 }
 
@@ -57,6 +75,21 @@ export async function createCategory(
 
 export function listCategories(userId: string) {
   return findCategoriesByUser(userId)
+}
+
+export async function deleteCategory(categoryId: string, userId: string) {
+  return db.transaction(async (tx) => {
+    const cat = await findCategoryByIdTx(tx, categoryId, userId)
+    if (!cat) throw new CategoryNotFoundError()
+
+    const typeCount = await countCategoriesByTypeTx(tx, userId, cat.type)
+    if (typeCount <= 1) throw new LastCategoryOfTypeError()
+
+    const inUse = await findBudgetCategoryByCategoryIdTx(tx, categoryId)
+    if (inUse) throw new CategoryInUseError()
+
+    await deleteCategoryTx(tx, categoryId)
+  })
 }
 
 export async function updateCategory(

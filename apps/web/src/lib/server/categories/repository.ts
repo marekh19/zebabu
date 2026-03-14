@@ -1,7 +1,7 @@
 import type { CategoryColor } from '$lib/features/categories/colors'
 import { db } from '$lib/server/db'
-import { category } from '$lib/server/db/schema'
-import { and, asc, eq, ne } from 'drizzle-orm'
+import { budgetCategory, category } from '$lib/server/db/schema'
+import { and, asc, count, eq, ne } from 'drizzle-orm'
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
@@ -53,6 +53,42 @@ export function findCategoryByNameExcluding(
       ne(category.id, excludeId),
     ),
   })
+}
+
+export function findCategoryByIdTx(
+  tx: DbTransaction,
+  categoryId: string,
+  userId: string,
+) {
+  return tx.query.category.findFirst({
+    where: and(eq(category.id, categoryId), eq(category.userId, userId)),
+  })
+}
+
+export async function countCategoriesByTypeTx(
+  tx: DbTransaction,
+  userId: string,
+  type: 'income' | 'expense',
+) {
+  const [row] = await tx
+    .select({ value: count() })
+    .from(category)
+    .where(and(eq(category.userId, userId), eq(category.type, type)))
+  return row?.value ?? 0
+}
+
+export function findBudgetCategoryByCategoryIdTx(
+  tx: DbTransaction,
+  categoryId: string,
+) {
+  return tx.query.budgetCategory.findFirst({
+    where: eq(budgetCategory.categoryId, categoryId),
+    columns: { id: true },
+  })
+}
+
+export function deleteCategoryTx(tx: DbTransaction, categoryId: string) {
+  return tx.delete(category).where(eq(category.id, categoryId))
 }
 
 export function updateCategoryTx(

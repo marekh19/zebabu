@@ -1,9 +1,12 @@
 import { createCreateCategorySchema } from '$lib/features/categories/schemas/create-category-schema'
 import { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
 import {
+  CategoryInUseError,
   CategoryNotFoundError,
   createCategory,
+  deleteCategory,
   DuplicateCategoryError,
+  LastCategoryOfTypeError,
   listCategories,
   updateCategory,
 } from '$lib/server/categories/service'
@@ -74,5 +77,34 @@ export const actions: Actions = {
     }
 
     return { editForm }
+  },
+
+  delete: async ({ request, locals }) => {
+    const data = await request.formData()
+    const categoryId = data.get('categoryId')
+
+    if (typeof categoryId !== 'string' || categoryId.length === 0) {
+      return fail(400, { error: 'invalid' as const })
+    }
+
+    const userId = ensureDefined(locals.user).id
+
+    try {
+      await deleteCategory(categoryId, userId)
+    } catch (error) {
+      if (error instanceof LastCategoryOfTypeError) {
+        return fail(409, { error: 'last_of_type' as const })
+      }
+      if (error instanceof CategoryInUseError) {
+        return fail(409, { error: 'in_use' as const })
+      }
+      if (error instanceof CategoryNotFoundError) {
+        return fail(404, { error: 'not_found' as const })
+      }
+      console.error('Category deletion failed:', error)
+      return fail(500, { error: 'unexpected' as const })
+    }
+
+    return {}
   },
 }

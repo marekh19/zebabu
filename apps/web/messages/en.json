@@ -191,5 +191,12 @@
   "categories_edit_success": "Category \"{name}\" updated",
   "categories_edit_type_label": "Type",
   "categories_edit_type_immutable_note": "Type cannot be changed after creation",
-  "categories_error_not_found": "Category not found"
+  "categories_error_not_found": "Category not found",
+  "categories_delete_confirm_title": "Delete category?",
+  "categories_delete_confirm_description": "This will permanently delete the \"{name}\" category. This action cannot be undone.",
+  "categories_delete_confirm_label": "Delete",
+  "categories_delete_cancel_label": "Cancel",
+  "categories_delete_success": "Category deleted",
+  "categories_error_last_of_type": "You must have at least one {type} category",
+  "categories_error_in_use": "This category is used in one or more budgets and cannot be deleted"
 }
