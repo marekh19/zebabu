@@ -198,5 +198,8 @@
   "categories_delete_cancel_label": "Cancel",
   "categories_delete_success": "Category deleted",
   "categories_error_last_of_type": "You must have at least one {type} category",
-  "categories_error_in_use": "This category is used in one or more budgets and cannot be deleted"
+  "categories_error_in_use": "This category is used in one or more budgets and cannot be deleted",
+  "categories_usage_unused": "Unused",
+  "categories_usage_one_budget": "Used in 1 budget",
+  "categories_usage_budgets": "Used in {count} budgets"
 }

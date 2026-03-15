@@ -3,6 +3,33 @@ import { db } from '$lib/server/db'
 import { budgetCategory, category } from '$lib/server/db/schema'
 import { and, asc, count, eq, ne } from 'drizzle-orm'
 
+export async function findCategoriesWithBudgetUsageByUser(userId: string) {
+  return db
+    .select({
+      id: category.id,
+      userId: category.userId,
+      name: category.name,
+      type: category.type,
+      color: category.color,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+      budgetUsageCount: count(budgetCategory.id),
+    })
+    .from(category)
+    .leftJoin(budgetCategory, eq(category.id, budgetCategory.categoryId))
+    .where(eq(category.userId, userId))
+    .groupBy(
+      category.id,
+      category.userId,
+      category.name,
+      category.type,
+      category.color,
+      category.createdAt,
+      category.updatedAt,
+    )
+    .orderBy(asc(category.name))
+}
+
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 export function insertCategories(values: (typeof category.$inferInsert)[]) {

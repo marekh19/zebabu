@@ -198,5 +198,8 @@
   "categories_delete_cancel_label": "Zrušit",
   "categories_delete_success": "Kategorie smazána",
   "categories_error_last_of_type": "Musíte mít alespoň jednu kategorii typu {type}",
-  "categories_error_in_use": "Tato kategorie se používá v jednom nebo více rozpočtech a nelze ji smazat"
+  "categories_error_in_use": "Tato kategorie se používá v jednom nebo více rozpočtech a nelze ji smazat",
+  "categories_usage_unused": "Nepoužívána",
+  "categories_usage_one_budget": "Použita v 1 rozpočtu",
+  "categories_usage_budgets": "Použita v {count} rozpočtech"
 }

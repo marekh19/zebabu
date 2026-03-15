@@ -3,11 +3,9 @@
   import CreateCategoryDialog, {
     errorMessages,
   } from '$lib/features/categories/components/create-category-dialog.svelte'
-  import CategoryActions from '$lib/features/categories/components/category-actions.svelte'
-  import { Badge } from '$lib/components/ui/badge'
+  import CategoryCard from '$lib/features/categories/components/category-card.svelte'
   import { isString, isKeyOf } from 'narrowland'
   import FloatingActionButton from '$lib/components/floating-action-button.svelte'
-  import { colorClasses } from '$lib/features/categories/colors'
 
   let { data, form: actionData } = $props()
 
@@ -27,29 +25,15 @@
   {#if data.categories.length === 0}
     <p class="text-muted-foreground">{m.categories_empty_state()}</p>
   {:else}
-    <ul class="w-full space-y-2">
+    <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {#each data.categories as cat (cat.id)}
-        <li
-          class="flex items-center justify-between rounded-lg border px-4 py-3"
-        >
-          <span class="flex items-center gap-2 font-medium">
-            <span
-              class="size-3 rounded-full {colorClasses[cat.color]
-                .circle} shrink-0"
-            ></span>
-            {cat.name}
-          </span>
-          <div class="flex items-center gap-2">
-            <Badge variant={cat.type === 'income' ? 'default' : 'secondary'}>
-              {cat.type === 'income'
-                ? m.categories_type_income()
-                : m.categories_type_expense()}
-            </Badge>
-            <CategoryActions category={cat} editForm={data.editForm} />
-          </div>
-        </li>
+        <CategoryCard
+          category={cat}
+          budgetUsageCount={cat.budgetUsageCount}
+          editForm={data.editForm}
+        />
       {/each}
-    </ul>
+    </div>
   {/if}
 </div>
 

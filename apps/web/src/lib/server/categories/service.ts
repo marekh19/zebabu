@@ -6,7 +6,7 @@ import {
   countCategoriesByTypeTx,
   deleteCategoryTx,
   findBudgetCategoryByCategoryIdTx,
-  findCategoriesByUser,
+  findCategoriesWithBudgetUsageByUser,
   findCategoryByIdTx,
   findCategoryByName,
   findCategoryByNameExcluding,
@@ -74,7 +74,7 @@ export async function createCategory(
 }
 
 export function listCategories(userId: string) {
-  return findCategoriesByUser(userId)
+  return findCategoriesWithBudgetUsageByUser(userId)
 }
 
 export async function deleteCategory(categoryId: string, userId: string) {
