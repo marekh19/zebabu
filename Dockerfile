@@ -31,14 +31,6 @@ ENV DATABASE_URL=postgres://build:build@localhost/build \
 # Build SvelteKit app
 RUN pnpm --filter @zebabu/web build
 
-# Compile migration script using esbuild (already available as a vite dep).
-# Bundles drizzle-orm + postgres into a single file so the runner needs no devDeps.
-RUN node_modules/.bin/esbuild apps/web/src/migrate.ts \
-  --bundle \
-  --platform=node \
-  --format=esm \
-  --outfile=apps/web/build/migrate.mjs
-
 # Create standalone production node_modules — resolves @zebabu/emails workspace
 # dep into a flat directory with no symlinks (required for multi-stage copy)
 RUN pnpm --filter @zebabu/web deploy --prod /app/standalone
@@ -48,13 +40,17 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Production node_modules (flat, workspace deps resolved)
+# Production node_modules (flat, workspace deps resolved, includes drizzle-orm)
 COPY --from=builder /app/standalone/node_modules ./node_modules
-# Compiled SvelteKit server + bundled migration script
+# Compiled SvelteKit server
 COPY --from=builder /app/apps/web/build          ./build
 # SQL migration files read by migrate.mjs at runtime
 COPY --from=builder /app/apps/web/drizzle        ./drizzle
+# Plain JS migration runner — no compilation needed, imports from node_modules
+COPY apps/web/src/migrate.mjs                    ./migrate.mjs
+# Required for Node.js module resolution ("type": "module")
+COPY apps/web/package.json                       ./package.json
 
 EXPOSE 3000
 # Run pending migrations (idempotent), then start the server
-CMD ["sh", "-c", "node build/migrate.mjs && node build/index.js"]
+CMD ["sh", "-c", "node migrate.mjs && node build"]
