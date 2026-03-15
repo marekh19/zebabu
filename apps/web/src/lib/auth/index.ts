@@ -1,4 +1,4 @@
-import { EMAIL_FROM, RESEND_API_KEY } from '$env/static/private'
+import { env } from '$env/dynamic/private'
 import { redis } from '$lib/server/cache'
 import { seedDefaultCategories } from '$lib/server/categories/service'
 import { db } from '$lib/server/db'
@@ -19,8 +19,8 @@ export const auth = betterAuth({
       await sendPasswordResetEmail({
         to: user.email,
         url,
-        from: EMAIL_FROM,
-        apiKey: RESEND_API_KEY,
+        from: env.EMAIL_FROM,
+        apiKey: env.RESEND_API_KEY,
       })
     },
   },
@@ -33,8 +33,8 @@ export const auth = betterAuth({
       await sendVerificationEmail({
         to: user.email,
         url,
-        from: EMAIL_FROM,
-        apiKey: RESEND_API_KEY,
+        from: env.EMAIL_FROM,
+        apiKey: env.RESEND_API_KEY,
       })
     },
   },
