@@ -36,6 +36,9 @@ jobs:
       - name: Lint
         run: pnpm run lint:check
 
+      - name: Paraglide compile
+        run: pnpm --filter @zebabu/web exec paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+
       - name: Typecheck
         run: pnpm run typecheck
 
