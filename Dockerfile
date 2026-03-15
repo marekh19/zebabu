@@ -19,6 +19,15 @@ COPY apps/      ./apps/
 # Build workspace dep first — apps/web imports @zebabu/emails
 RUN pnpm --filter @zebabu/emails build
 
+# Dummy env vars required by SvelteKit's post-build analyse phase,
+# which executes server code to detect prerendered routes.
+# These never reach the runner stage.
+ENV DATABASE_URL=postgres://build:build@localhost/build \
+    REDIS_URL=redis://localhost:6379 \
+    BETTER_AUTH_SECRET=build-secret \
+    BETTER_AUTH_BASE_URL=http://localhost:3000 \
+    APP_URL=http://localhost:3000
+
 # Build SvelteKit app
 RUN pnpm --filter @zebabu/web build
 
