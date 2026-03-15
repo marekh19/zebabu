@@ -16,6 +16,7 @@
       "persistent": true
     },
     "typecheck": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "lint:check": {
