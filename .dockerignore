@@ -1,38 +1,16 @@
-# Ignore everything
-**
+**/node_modules
+**/dist
+**/out
+**/.svelte-kit
 
-# Root workspace files
-!package.json
-!pnpm-lock.yaml
-!pnpm-workspace.yaml
+**/.cache
+**/.turbo
 
-# packages/tsconfig (needed for emails typecheck during build)
-!packages/
-!packages/tsconfig/
-!packages/tsconfig/package.json
-!packages/tsconfig/*.json
+.git
+**/.vscode
+**/.idea
 
-# packages/emails (workspace dep of apps/web)
-!packages/emails/
-!packages/emails/package.json
-!packages/emails/tsconfig.json
-!packages/emails/src/
-!packages/emails/src/**
+**/.DS_Store
 
-# apps/web
-!apps/
-!apps/web/
-!apps/web/package.json
-!apps/web/tsconfig.json
-!apps/web/svelte.config.js
-!apps/web/vite.config.ts
-!apps/web/src/
-!apps/web/src/**
-!apps/web/static/
-!apps/web/static/**
-!apps/web/messages/
-!apps/web/messages/**
-!apps/web/project.inlang/
-!apps/web/project.inlang/**
-!apps/web/drizzle/
-!apps/web/drizzle/**
+**/.env*
+!**/.env.example
