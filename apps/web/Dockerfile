@@ -17,15 +17,15 @@ COPY apps/      ./apps/
 
 RUN bun run --filter @zebabu/emails build
 
-# Required by SvelteKit's post-build analyse phase (executes server code to
-# detect prerendered routes). Never reach the runner stage.
-ENV DATABASE_URL=postgres://build:build@localhost/build \
+# Dummy values required only by SvelteKit's post-build analyse phase, which
+# executes server code to detect prerendered routes. Inlined into the RUN
+# command so they never persist as image metadata.
+RUN DATABASE_URL=postgres://build:build@localhost/build \
     REDIS_URL=redis://localhost:6379 \
     BETTER_AUTH_SECRET=build-secret \
     BETTER_AUTH_BASE_URL=http://localhost:3000 \
-    APP_URL=http://localhost:3000
-
-RUN bun run --filter @zebabu/web build
+    APP_URL=http://localhost:3000 \
+    bun run --filter @zebabu/web build
 
 # ── Runner: minimal production image ─────────────────────────────────────────
 FROM base AS runner
@@ -61,7 +61,7 @@ USER bunuser
 WORKDIR /app/apps/web
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD wget --quiet --spider http://localhost:3000 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget -qO /dev/null http://localhost:3000/ || exit 1
 
 CMD ["sh", "-c", "bun migrate.mjs && bun ./build/index.js"]
