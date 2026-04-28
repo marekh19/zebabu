@@ -1,6 +1,6 @@
+import { SQL } from 'bun'
 import { drizzle } from 'drizzle-orm/bun-sql'
 import { migrate } from 'drizzle-orm/bun-sql/migrator'
-import { SQL } from 'bun'
 
 if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL is not set')

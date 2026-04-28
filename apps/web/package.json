@@ -19,6 +19,19 @@
     "db:studio": "drizzle-kit studio",
     "redis:studio": "redis-commander --redis-host localhost --redis-port 6379"
   },
+  "dependencies": {
+    "@dnd-kit-svelte/svelte": "^0.1.6",
+    "@dnd-kit/helpers": "^0.2.4",
+    "@zebabu/emails": "workspace:*",
+    "better-auth": "^1.5.0",
+    "clsx": "^2.1.1",
+    "mode-watcher": "^1.1.0",
+    "nanoid": "^5.1.6",
+    "narrowland": "^1.5.0",
+    "drizzle-orm": "^0.45.1",
+    "tailwind-merge": "^3.5.0",
+    "tw-animate-css": "^1.0.0"
+  },
   "devDependencies": {
     "@eslint/compat": "^2.0.1",
     "@eslint/js": "^10.0.1",
@@ -51,18 +64,5 @@
     "vite-plugin-devtools-json": "^1.0.0",
     "vitest": "^4.0.18",
     "zod": "^4.3.6"
-  },
-  "dependencies": {
-    "@dnd-kit-svelte/svelte": "^0.1.6",
-    "@dnd-kit/helpers": "^0.2.4",
-    "@zebabu/emails": "workspace:*",
-    "better-auth": "^1.5.0",
-    "clsx": "^2.1.1",
-    "mode-watcher": "^1.1.0",
-    "nanoid": "^5.1.6",
-    "narrowland": "^1.5.0",
-    "drizzle-orm": "^0.45.1",
-    "tailwind-merge": "^3.5.0",
-    "tw-animate-css": "^1.0.0"
   }
 }
