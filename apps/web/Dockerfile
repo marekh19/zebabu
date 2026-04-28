@@ -62,6 +62,6 @@ WORKDIR /app/apps/web
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -qO /dev/null http://localhost:3000/ || exit 1
+  CMD wget -qO /dev/null http://127.0.0.1:3000/ || exit 1
 
 CMD ["sh", "-c", "bun migrate.mjs && bun ./build/index.js"]
