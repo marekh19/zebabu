@@ -1,37 +1,13 @@
 services:
-  web:
-    build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
-    ports:
-      - 3000:3000
-    environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-postgres}
-      - REDIS_URL=redis://redis:6379
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-change-me-in-production}
-      - BETTER_AUTH_BASE_URL=${BETTER_AUTH_BASE_URL:-http://localhost:3000}
-      - APP_URL=${APP_URL:-http://localhost:3000}
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      test:
-        ['CMD-SHELL', 'wget --quiet --spider http://localhost:3000 || exit 1']
-
   db:
     image: postgres:18-alpine
     restart: unless-stopped
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pg_data:/var/lib/postgresql
     healthcheck:
