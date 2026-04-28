@@ -929,7 +929,7 @@ zebabu/
 ├── drizzle.config.ts
 ├── svelte.config.js
 ├── package.json
-├── pnpm-workspace.yaml
+├── bun.lock
 └── vite.config.ts
 ```
 

@@ -41,7 +41,7 @@ Implement drag-and-drop functionality for category reordering using @dnd-kit/sve
 - `src/routes/(app)/budgets/[id]/+page.server.ts` - Add reorderCategories action
 - `src/lib/server/modules/category/service.ts` - Reorder logic
 - `src/lib/components/budget/BudgetBoard.svelte` - Implement drag-and-drop
-- Install: `pnpm add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
+- Install: `bun add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
 
 ### Implementation Steps
 

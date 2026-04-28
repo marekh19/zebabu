@@ -48,7 +48,7 @@ Implement user registration functionality using Better Auth. Users should be abl
 ### Implementation Steps
 
 1. **Set up Better Auth**
-   - Install Better Auth package: `pnpm add better-auth`
+   - Install Better Auth package: `bun add better-auth`
    - Configure Better Auth in `src/lib/server/auth.ts`
    - Set up session management in `hooks.server.ts`
 

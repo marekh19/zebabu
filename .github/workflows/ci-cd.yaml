@@ -18,35 +18,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Format check
-        run: pnpm run format:check
+        run: bun run format:check
 
       - name: Lint
-        run: pnpm run lint:check
+        run: bun run lint:check
 
       - name: Write .env for typecheck
         run: cp apps/web/.env.example apps/web/.env
 
       - name: Paraglide compile
-        run: pnpm --filter @zebabu/web exec paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+        run: cd apps/web && bunx paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
 
       - name: Typecheck
-        run: pnpm run typecheck
+        run: bun run typecheck
 
       - name: Build
-        run: pnpm run build
+        run: bun run build
 
   deploy:
     name: Deploy

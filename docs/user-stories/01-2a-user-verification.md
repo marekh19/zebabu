@@ -23,6 +23,6 @@ Signup exists but email verification is stubbed (console.log). Need real email d
 
 ## Verification
 
-After all steps: `pnpm run lint && pnpm -w run format && pnpm run check`
+After all steps: `bun run lint && bun run format && bun run check`
 
 Manual e2e: signup → same page shows "check your email" → click link from console/email → login page with email prefilled → login succeeds

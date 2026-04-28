@@ -11,13 +11,13 @@
 
 ## Commands and Outcome Validation
 
-This project is setup with `pnpm` so always use pnpm commands
+This project is setup with `bun` so always use bun commands
 
 After each feature implementation validate by linting and typechecking
 
-1. `pnpm run lint`
-2. `pnpm run format`
-3. `pnpm run check`
+1. `bun run lint`
+2. `bun run format`
+3. `bun run check`
 
 ## Plan mode
 

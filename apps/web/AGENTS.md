@@ -4,7 +4,7 @@ Make sure to always use paraglide and store translation strings in json instead 
 
 # Database
 
-Always use `pnpm run db:migrate` instead of `pnpm run db:push`
+Always use `bun run db:migrate` instead of `bun run db:push`
 
 # Typesafety and type narrowing
 

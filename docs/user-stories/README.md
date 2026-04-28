@@ -113,7 +113,7 @@ Estimated time to MVP: 4-6 sprints (8-12 weeks)
 2. Read the acceptance criteria and implementation steps
 3. Mark checkboxes as you complete each step
 4. Update the status in this README when complete
-5. Run validation commands: `pnpm run lint`, `pnpm run format`, `pnpm run check`
+5. Run validation commands: `bun run lint`, `bun run format`, `bun run check`
 
 ## Conventions
 

@@ -26,16 +26,16 @@ A personal budget management web app for tracking income, expenses, and transact
 | Sessions        | Redis 8                       |
 | Email           | Resend + React Email          |
 | Build           | Vite 7 + Turbo (monorepo)     |
-| Package Manager | pnpm                          |
+| Package Manager | bun                           |
 
 ## Getting Started
 
-**Prerequisites:** Node.js v24+, pnpm v10+, Docker
+**Prerequisites:** Node.js v24+, Bun v1+, Docker
 
 ### 1. Install dependencies
 
 ```bash
-pnpm install
+bun install
 ```
 
 ### 2. Configure environment variables
@@ -68,32 +68,32 @@ EMAIL_FROM="Zebabu <verify@zebabu.com>"
 ### 3. Start local services
 
 ```bash
-pnpm run db:start        # starts PostgreSQL + Redis via Docker
+bun run db:start        # starts PostgreSQL + Redis via Docker
 ```
 
 ### 4. Run database migrations
 
 ```bash
-pnpm run db:migrate
+bun run db:migrate
 ```
 
 ### 5. Start dev server
 
 ```bash
-pnpm run dev             # web app at http://localhost:3000
+bun run dev             # web app at http://localhost:3000
 ```
 
 ## Commands
 
-| Command                 | Description              |
-| ----------------------- | ------------------------ |
-| `pnpm run dev`          | Start development server |
-| `pnpm run build`        | Production build         |
-| `pnpm run lint`         | ESLint                   |
-| `pnpm run format`       | Prettier                 |
-| `pnpm run check`        | TypeScript type check    |
-| `pnpm run test`         | Run tests                |
-| `pnpm run db:start`     | Start Docker services    |
-| `pnpm run db:migrate`   | Run database migrations  |
-| `pnpm run db:studio`    | Open Drizzle Studio      |
-| `pnpm run redis:studio` | Open Redis Commander     |
+| Command                | Description              |
+| ---------------------- | ------------------------ |
+| `bun run dev`          | Start development server |
+| `bun run build`        | Production build         |
+| `bun run lint`         | ESLint                   |
+| `bun run format`       | Prettier                 |
+| `bun run check`        | TypeScript type check    |
+| `bun run test`         | Run tests                |
+| `bun run db:start`     | Start Docker services    |
+| `bun run db:migrate`   | Run database migrations  |
+| `bun run db:studio`    | Open Drizzle Studio      |
+| `bun run redis:studio` | Open Redis Commander     |

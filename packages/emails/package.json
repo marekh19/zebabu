@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "bun build ./src/index.ts --outdir dist --format esm --target node && tsc --declaration --emitDeclarationOnly",
     "dev": "email dev -p 3001 --dir src/templates",
     "typecheck": "tsc --noEmit"
   },
@@ -22,7 +22,7 @@
     "resend": "^6.9.3"
   },
   "devDependencies": {
-    "@react-email/preview-server": "^5.2.9",
+    "@react-email/preview-server": "5.2.11",
     "@types/node": "^25.3.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
