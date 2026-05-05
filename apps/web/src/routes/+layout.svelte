@@ -13,7 +13,7 @@
 </svelte:head>
 
 <ModeWatcher />
-<Toaster />
+<Toaster position="top-center" />
 
 <div class="min-h-svh">
   {@render children()}
