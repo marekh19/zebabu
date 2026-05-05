@@ -36,7 +36,7 @@
     "@eslint/compat": "^2.0.1",
     "@eslint/js": "^10.0.1",
     "@inlang/paraglide-js": "^2.18.0",
-    "@internationalized/date": "^3.10.0",
+    "@internationalized/date": "^3.12.1",
     "@lucide/svelte": "^1.14.0",
     "@sveltejs/kit": "^2.59.1",
     "@sveltejs/vite-plugin-svelte": "^7.1.0",
