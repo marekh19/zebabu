@@ -33,7 +33,7 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-svelte": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.8.0",
-    "turbo": "^2.8.12"
+    "turbo": "^2.9.12"
   },
   "engines": {
     "bun": ">=1"
