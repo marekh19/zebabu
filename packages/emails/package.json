@@ -23,12 +23,12 @@
   },
   "devDependencies": {
     "@react-email/preview-server": "5.2.10",
-    "@react-email/ui": "6.1.4",
-    "@types/node": "^25.8.0",
+    "@react-email/ui": "6.3.2",
+    "@types/node": "^25.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@zebabu/tsconfig": "workspace:*",
-    "react-email": "^6.1.4",
+    "react-email": "^6.3.2",
     "typescript": "^6.0.3"
   }
 }
