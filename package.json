@@ -25,15 +25,15 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.0.2",
-    "@commitlint/config-conventional": "^21.0.2",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7",
-    "prettier": "^3.8.4",
+    "lint-staged": "^17.1.0",
+    "prettier": "^3.9.5",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "prettier-plugin-svelte": "^4.1.0",
-    "prettier-plugin-tailwindcss": "^0.8.0",
-    "turbo": "^2.9.18"
+    "prettier-plugin-svelte": "^4.1.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.10.5"
   },
   "engines": {
     "bun": ">=1"
