@@ -168,8 +168,7 @@ export async function updateTransaction(
             name="note"
             bind:value={$form.note}
             rows="3"
-            placeholder="Optional notes"
-          ></textarea>
+            placeholder="Optional notes"></textarea>
         </label>
 
         <div class="modal-actions">
