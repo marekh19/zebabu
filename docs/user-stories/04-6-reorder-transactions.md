@@ -79,8 +79,8 @@ export async function reorderTransactions(
 
   async function handleReorder(transactionIds: string[]) {
     // Optimistic update
-    localTransactions = transactionIds.map(
-      (id) => localTransactions.find((t) => t.id === id)!,
+    localTransactions = transactionIds.map((id) =>
+      localTransactions.find((t) => t.id === id)!,
     )
 
     // Persist to server
