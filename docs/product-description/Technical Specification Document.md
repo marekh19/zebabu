@@ -8,7 +8,9 @@ date: 2026-01-20
 **Version:** 1.0  
 **Date:** January 20, 2026  
 **Author:** Technical Team  
-**Status:** Approved for Development
+**Status:** Historical plan; superseded by current user stories, domain docs, and ADRs
+
+> The original Category ownership model in this document is obsolete. Categories belong to a User and are reusable across Budgets through BudgetCategory, as recorded in `apps/web/docs/adr/0001-reuse-categories-across-budgets.md`.
 
 ---
 

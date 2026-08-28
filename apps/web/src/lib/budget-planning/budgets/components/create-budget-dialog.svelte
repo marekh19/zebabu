@@ -23,14 +23,14 @@
   import * as Select from '$lib/components/ui/select'
   import { Input } from '$lib/components/ui/input'
   import { buttonVariants } from '$lib/components/ui/button'
-  import { createCreateBudgetSchema } from '$lib/features/budgets/schemas/create-budget-schema'
+  import { createCreateBudgetSchema } from '$lib/budget-planning/budgets/schemas/create-budget-schema'
   import {
     getBudgetDisplayName,
     getMonthName,
     getMonthOptions,
-  } from '$lib/features/budgets/utils/month-names'
-  import { getYearOptions } from '$lib/features/budgets/utils/year-options'
-  import { BudgetType } from '$lib/features/budgets/types'
+  } from '$lib/budget-planning/budgets/utils/month-names'
+  import { getYearOptions } from '$lib/budget-planning/budgets/utils/year-options'
+  import { BudgetType } from '$lib/budget-planning/budgets/types'
 
   type CreateBudgetSchema = ReturnType<typeof createCreateBudgetSchema>
 

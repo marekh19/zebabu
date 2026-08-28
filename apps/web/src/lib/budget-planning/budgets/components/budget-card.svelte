@@ -8,8 +8,8 @@
   import {
     getMonthAbbrev,
     getMonthName,
-  } from '$lib/features/budgets/utils/month-names'
-  import { BudgetType } from '$lib/features/budgets/types'
+  } from '$lib/budget-planning/budgets/utils/month-names'
+  import { BudgetType } from '$lib/budget-planning/budgets/types'
   import type { budget } from '$lib/server/db/schema'
   import BudgetActions from './budget-actions.svelte'
 

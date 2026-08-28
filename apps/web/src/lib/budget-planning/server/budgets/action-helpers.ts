@@ -1,9 +1,9 @@
-import { createDuplicateBudgetSchema } from '$lib/features/budgets/schemas/duplicate-budget-schema'
+import { createDuplicateBudgetSchema } from '$lib/budget-planning/budgets/schemas/duplicate-budget-schema'
 import {
   duplicateBudget,
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
-} from '$lib/server/budgets/service'
+} from '$lib/budget-planning/server/budgets/service'
 import { fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'

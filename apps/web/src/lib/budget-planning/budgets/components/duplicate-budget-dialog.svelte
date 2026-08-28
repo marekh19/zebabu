@@ -18,13 +18,13 @@
   import * as Select from '$lib/components/ui/select'
   import { Input } from '$lib/components/ui/input'
   import { buttonVariants } from '$lib/components/ui/button'
-  import { createDuplicateBudgetSchema } from '$lib/features/budgets/schemas/duplicate-budget-schema'
+  import { createDuplicateBudgetSchema } from '$lib/budget-planning/budgets/schemas/duplicate-budget-schema'
   import {
     getMonthName,
     getMonthOptions,
-  } from '$lib/features/budgets/utils/month-names'
-  import { getYearOptions } from '$lib/features/budgets/utils/year-options'
-  import { BudgetType } from '$lib/features/budgets/types'
+  } from '$lib/budget-planning/budgets/utils/month-names'
+  import { getYearOptions } from '$lib/budget-planning/budgets/utils/year-options'
+  import { BudgetType } from '$lib/budget-planning/budgets/types'
   import type { budget } from '$lib/server/db/schema'
 
   type Budget = typeof budget.$inferSelect

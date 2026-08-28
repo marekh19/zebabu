@@ -1,14 +1,14 @@
 import { resolve } from '$app/paths'
-import { createCreateBudgetSchema } from '$lib/features/budgets/schemas/create-budget-schema'
-import { handleDuplicateBudgetAction } from '$lib/server/budgets/action-helpers'
+import { createCreateBudgetSchema } from '$lib/budget-planning'
 import {
   createMonthlyBudget,
   createScenarioBudget,
   deleteBudget,
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
+  handleDuplicateBudgetAction,
   listBudgets,
-} from '$lib/server/budgets/service'
+} from '$lib/budget-planning/server'
 import { fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'

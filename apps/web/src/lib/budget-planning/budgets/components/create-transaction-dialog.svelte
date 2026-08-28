@@ -14,7 +14,7 @@
   import * as Form from '$lib/components/ui/form'
   import { buttonVariants } from '$lib/components/ui/button'
   import { Input } from '$lib/components/ui/input'
-  import { createCreateTransactionSchema } from '$lib/features/budgets/schemas/create-transaction-schema'
+  import { createCreateTransactionSchema } from '$lib/budget-planning/budgets/schemas/create-transaction-schema'
   import { shouldAcceptDialogOpenChange } from './transaction-dialog'
   import { toast } from 'svelte-sonner'
   import {

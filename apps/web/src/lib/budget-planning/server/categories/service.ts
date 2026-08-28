@@ -1,5 +1,5 @@
-import type { CategoryColor } from '$lib/features/categories/colors'
-import { CategoryType } from '$lib/features/categories/types'
+import type { CategoryColor } from '$lib/budget-planning/categories/colors'
+import { CategoryType } from '$lib/budget-planning/categories/types'
 import * as m from '$lib/paraglide/messages'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'

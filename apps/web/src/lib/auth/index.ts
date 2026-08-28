@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private'
-import { seedDefaultCategories } from '$lib/server/categories/service'
+import { seedDefaultCategories } from '$lib/budget-planning/server'
 import { db } from '$lib/server/db'
 import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'

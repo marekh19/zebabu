@@ -12,7 +12,7 @@
   import EditCategoryDialog from './edit-category-dialog.svelte'
   import type { category } from '$lib/server/db/schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
-  import type { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
+  import type { createUpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
 
   type Category = typeof category.$inferSelect
   type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>

@@ -10,7 +10,7 @@ vi.mock('$lib/server/db', () => ({
   db: { transaction: mocks.transaction },
 }))
 
-vi.mock('$lib/server/categories/repository', () => ({
+vi.mock('$lib/budget-planning/server/categories/repository', () => ({
   findCategoriesByUserTx: vi.fn(),
   findCategoryById: vi.fn(),
 }))

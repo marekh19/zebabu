@@ -1,4 +1,4 @@
-import { BudgetType } from '$lib/features/budgets/types'
+import { BudgetType } from '$lib/budget-planning/budgets/types'
 import * as m from '$lib/paraglide/messages'
 import { getLocale } from '$lib/paraglide/runtime'
 

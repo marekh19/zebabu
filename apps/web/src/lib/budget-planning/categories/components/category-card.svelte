@@ -2,12 +2,12 @@
   import * as m from '$lib/paraglide/messages'
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
-  import { colorClasses } from '$lib/features/categories/colors'
-  import { CategoryType } from '$lib/features/categories/types'
+  import { colorClasses } from '$lib/budget-planning/categories/colors'
+  import { CategoryType } from '$lib/budget-planning/categories/types'
   import CategoryActions from './category-actions.svelte'
   import type { category } from '$lib/server/db/schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
-  import type { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
+  import type { createUpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
 
   type Category = typeof category.$inferSelect
   type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>

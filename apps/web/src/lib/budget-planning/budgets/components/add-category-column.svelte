@@ -3,7 +3,7 @@
   import PlusIcon from '@lucide/svelte/icons/plus'
   import AddBudgetCategoryDialog from './add-budget-category-dialog.svelte'
   import type { AvailableCategory } from '../types'
-  import type { addBudgetCategorySchema } from '$lib/features/budgets/schemas/add-budget-category-schema'
+  import type { addBudgetCategorySchema } from '$lib/budget-planning/budgets/schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
   import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
 

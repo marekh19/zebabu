@@ -6,8 +6,8 @@
   import TransactionRow from './transaction-row.svelte'
   import AddTransactionRow from './add-transaction-row.svelte'
   import type { BudgetCategory } from '../types'
-  import { colorClasses } from '$lib/features/categories/colors'
-  import { CategoryType } from '$lib/features/categories/types'
+  import { colorClasses } from '$lib/budget-planning/categories/colors'
+  import { CategoryType } from '$lib/budget-planning/categories/types'
 
   const CATEGORY_TYPE_LABELS = {
     [CategoryType.Income]: m.budget_detail_type_income,

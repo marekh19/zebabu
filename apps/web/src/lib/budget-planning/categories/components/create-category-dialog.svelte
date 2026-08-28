@@ -1,11 +1,10 @@
 <script module lang="ts">
   import * as m from '$lib/paraglide/messages'
 
-  export type EditCategoryError = keyof typeof editErrorMessages
+  export type CreateCategoryError = keyof typeof errorMessages
 
-  export const editErrorMessages = {
+  export const errorMessages = {
     duplicate: m.categories_error_duplicate,
-    not_found: m.categories_error_not_found,
     unexpected: m.categories_error_unexpected,
   } as const satisfies Record<string, () => string>
 </script>
@@ -20,82 +19,75 @@
   import { toast } from 'svelte-sonner'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Form from '$lib/components/ui/form'
-  import { Badge } from '$lib/components/ui/badge'
+  import * as Select from '$lib/components/ui/select'
   import { Input } from '$lib/components/ui/input'
   import { buttonVariants } from '$lib/components/ui/button'
-  import { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
-  import { categoryColors, colorClasses } from '$lib/features/categories/colors'
-  import { CategoryType } from '$lib/features/categories/types'
-  import type { category } from '$lib/server/db/schema'
+  import { createCreateCategorySchema } from '$lib/budget-planning/categories/schemas/create-category-schema'
+  import {
+    categoryColors,
+    colorClasses,
+  } from '$lib/budget-planning/categories/colors'
+  import { CategoryType } from '$lib/budget-planning/categories/types'
 
-  type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
-  type Category = typeof category.$inferSelect
+  type CreateCategorySchema = ReturnType<typeof createCreateCategorySchema>
 
   type Props = {
     open: boolean
+    data: SuperValidated<Infer<CreateCategorySchema>>
+    error: CreateCategoryError | undefined
     onOpenChange: (open: boolean) => void
-    data: SuperValidated<Infer<UpdateCategorySchema>>
-    category: Category
   }
 
-  let {
-    open = $bindable(),
-    onOpenChange,
-    data,
-    category: cat,
-  }: Props = $props()
+  let { open = $bindable(), data, error, onOpenChange }: Props = $props()
 
-  const updateCategorySchema = createUpdateCategorySchema()
+  const createCategorySchema = createCreateCategorySchema()
 
   // svelte-ignore state_referenced_locally
   // superForm captures initial data intentionally; reactivity is handled internally via use:enhance (https://github.com/sveltejs/svelte/issues/11883)
   const form = superForm(data, {
     dataType: 'json',
-    validators: zod4(updateCategorySchema),
+    validators: zod4(createCategorySchema),
     onResult({ result }) {
       if (result.type === 'success') {
         onOpenChange(false)
-        toast.success(m.categories_edit_success({ name: $formData.name }))
+        toast.success(m.categories_create_success({ name: $formData.name }))
       }
     },
   })
 
-  const { form: formData, enhance, submitting, errors } = form
-
-  $effect(() => {
-    if (open) {
-      $formData.categoryId = cat.id
-      $formData.name = cat.name
-      $formData.color = cat.color
-    }
-  })
+  const { form: formData, enhance, submitting } = form
 
   const CATEGORY_TYPE_LABELS = {
     [CategoryType.Income]: m.categories_type_income,
     [CategoryType.Expense]: m.categories_type_expense,
   } as const satisfies Record<CategoryType, () => string>
 
-  const CATEGORY_TYPE_BADGE_VARIANT = {
-    [CategoryType.Income]: 'default',
-    [CategoryType.Expense]: 'secondary',
-  } as const satisfies Record<CategoryType, 'default' | 'secondary'>
+  $effect(() => {
+    if (open) {
+      $formData.name = ''
+      $formData.type = CategoryType.Expense
+      $formData.color = 'slate'
+    }
+  })
 
-  const typeLabel = $derived(CATEGORY_TYPE_LABELS[cat.type]())
+  const selectedTypeLabel = $derived(
+    $formData.type ? CATEGORY_TYPE_LABELS[$formData.type]() : undefined,
+  )
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
   <Dialog.Content class="sm:max-w-md">
     <Dialog.Header>
-      <Dialog.Title>{m.categories_edit_title()}</Dialog.Title>
-      <Dialog.Description>{m.categories_edit_description()}</Dialog.Description>
+      <Dialog.Title>{m.categories_create_title()}</Dialog.Title>
+      <Dialog.Description
+        >{m.categories_create_description()}</Dialog.Description
+      >
     </Dialog.Header>
 
-    <form method="POST" action="?/update" use:enhance class="space-y-4">
-      <input type="hidden" name="categoryId" value={$formData.categoryId} />
-
-      {#if $errors._errors}
+    <form method="POST" action="?/create" use:enhance class="space-y-4">
+      {#if error}
         <p class="text-destructive text-sm font-medium">
-          {$errors._errors.join(', ')}
+          {errorMessages[error]()}
         </p>
       {/if}
 
@@ -114,19 +106,36 @@
         <Form.FieldErrors />
       </Form.Field>
 
-      <div class="space-y-2">
-        <p class="text-sm leading-none font-medium">
-          {m.categories_edit_type_label()}
-        </p>
-        <div class="flex items-center gap-2">
-          <Badge variant={CATEGORY_TYPE_BADGE_VARIANT[cat.type]}>
-            {typeLabel}
-          </Badge>
-          <p class="text-muted-foreground text-xs">
-            {m.categories_edit_type_immutable_note()}
-          </p>
-        </div>
-      </div>
+      <Form.Field {form} name="type">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>{m.categories_create_type_label()}</Form.Label>
+            <Select.Root
+              type="single"
+              value={$formData.type}
+              onValueChange={(v) => {
+                if (v === CategoryType.Income || v === CategoryType.Expense)
+                  $formData.type = v
+              }}
+            >
+              <Select.Trigger {...props} class="w-full">
+                {selectedTypeLabel}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item
+                  value="income"
+                  label={m.categories_type_income()}
+                />
+                <Select.Item
+                  value="expense"
+                  label={m.categories_type_expense()}
+                />
+              </Select.Content>
+            </Select.Root>
+          {/snippet}
+        </Form.Control>
+        <Form.FieldErrors />
+      </Form.Field>
 
       <Form.Field {form} name="color">
         <Form.Control>
@@ -159,12 +168,12 @@
           type="button"
           class={buttonVariants({ variant: 'outline' })}
         >
-          {m.categories_edit_cancel()}
+          {m.categories_create_cancel()}
         </Dialog.Close>
         <Form.Button disabled={$submitting}>
           {$submitting
-            ? m.categories_edit_submitting()
-            : m.categories_edit_submit()}
+            ? m.categories_create_submitting()
+            : m.categories_create_submit()}
         </Form.Button>
       </Dialog.Footer>
     </form>

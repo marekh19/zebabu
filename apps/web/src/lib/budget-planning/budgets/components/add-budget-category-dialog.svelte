@@ -14,7 +14,7 @@
   import * as Form from '$lib/components/ui/form'
   import * as Select from '$lib/components/ui/select'
   import { buttonVariants } from '$lib/components/ui/button'
-  import { addBudgetCategorySchema } from '$lib/features/budgets/schemas/add-budget-category-schema'
+  import { addBudgetCategorySchema } from '$lib/budget-planning/budgets/schemas/add-budget-category-schema'
   import type { AvailableCategory } from '../types'
   import { toast } from 'svelte-sonner'
   import {

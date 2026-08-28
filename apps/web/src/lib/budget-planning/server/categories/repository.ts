@@ -1,4 +1,4 @@
-import type { CategoryColor } from '$lib/features/categories/colors'
+import type { CategoryColor } from '$lib/budget-planning/categories/colors'
 import { db } from '$lib/server/db'
 import { budgetCategory, category } from '$lib/server/db/schema'
 import { and, asc, count, eq, isNull, ne } from 'drizzle-orm'

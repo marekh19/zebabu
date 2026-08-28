@@ -1,8 +1,8 @@
-import { BudgetType } from '$lib/features/budgets/types'
+import { BudgetType } from '$lib/budget-planning/budgets/types'
 import {
   findCategoriesByUserTx,
   findCategoryById,
-} from '$lib/server/categories/repository'
+} from '$lib/budget-planning/server/categories/repository'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
 import {
