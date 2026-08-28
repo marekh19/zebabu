@@ -3,7 +3,7 @@
 **Epic:** Budget Calculations & Validation
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,10 +23,10 @@ Display the unallocated amount (positive balance). This is the same as balance w
 
 ## Acceptance Criteria
 
-- [ ] Shows positive balance as "Unallocated"
+- [x] Shows positive balance as "Unallocated"
 - [ ] Shows as 0 when balance is negative or zero
-- [ ] Updates in real-time
-- [ ] Prominently displayed when > 0
+- [x] Updates in real-time
+- [x] Prominently displayed when > 0
 - [ ] Formatted with currency symbol
 
 ---

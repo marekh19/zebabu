@@ -23,7 +23,7 @@ This is a duplicate of US-4.2 (Edit Transaction). The modal-based editing is par
 
 ## Acceptance Criteria
 
-- Same as US-4.2
+- [ ] Same as US-4.2
 
 ---
 

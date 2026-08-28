@@ -23,7 +23,7 @@ This is a duplicate of US-1.5. The primary currency setting is part of the user 
 
 ## Acceptance Criteria
 
-- Same as US-1.5 (Set Primary Currency)
+- [ ] Same as US-1.5 (Set Primary Currency)
 
 ---
 

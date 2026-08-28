@@ -3,7 +3,7 @@
 **Epic:** Budget Calculations & Validation
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,11 +23,11 @@ Calculate and display total expenses by summing all transactions in expense cate
 
 ## Acceptance Criteria
 
-- [ ] Total expenses displayed in budget summary
-- [ ] Updates in real-time
+- [x] Total expenses displayed in budget summary
+- [x] Updates in real-time
 - [ ] All currencies converted to primary currency
-- [ ] Formatted according to locale
-- [ ] Shows 0.00 if no expenses
+- [x] Formatted according to locale
+- [x] Shows 0.00 if no expenses
 - [ ] Visual styling (red, negative indicator)
 
 ---

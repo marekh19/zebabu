@@ -3,7 +3,7 @@
 **Epic:** Category Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,14 +23,14 @@ Implement drag-and-drop functionality for category reordering using @dnd-kit/sve
 
 ## Acceptance Criteria
 
-- [ ] Categories can be dragged horizontally
-- [ ] Visual feedback during drag (ghost element, placeholder)
-- [ ] Drop updates category order
-- [ ] Order persists to database
-- [ ] Optimistic UI updates
+- [x] Categories can be dragged horizontally
+- [x] Visual feedback during drag (ghost element, placeholder)
+- [x] Drop updates category order
+- [x] Order persists to database
+- [x] Optimistic UI updates
 - [ ] Smooth animations
-- [ ] Works on touch devices
-- [ ] Undo on error
+- [x] Works on touch devices
+- [x] Undo on error
 
 ---
 

@@ -3,7 +3,7 @@
 **Epic:** Budget Calculations & Validation
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,12 +23,12 @@ Implement a real-time warning system that alerts users when their total planned 
 
 ## Acceptance Criteria
 
-- [ ] Warning displayed when total expenses > total income
+- [x] Warning displayed when total expenses > total income
 - [ ] Warning shows exact amount over budget (e.g., "Over budget by 2,400 CZK")
-- [ ] Warning styled prominently (red color, exclamation icon)
-- [ ] Warning updates in real-time as user adds/edits/deletes transactions
-- [ ] Warning disappears when balance becomes zero or positive
-- [ ] Warning visible in budget summary section
+- [x] Warning styled prominently (red color, exclamation icon)
+- [x] Warning updates in real-time as user adds/edits/deletes transactions
+- [x] Warning disappears when balance becomes zero or positive
+- [x] Warning visible in budget summary section
 - [ ] Warning takes currency conversion into account
 
 ---

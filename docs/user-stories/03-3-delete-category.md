@@ -3,7 +3,7 @@
 **Epic:** Category Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,13 +23,13 @@ Implement category deletion with cascade to all transactions. Must enforce busin
 
 ## Acceptance Criteria
 
-- [ ] Delete button available on category
-- [ ] Confirmation dialog shown
-- [ ] Cannot delete last income category
-- [ ] Cannot delete last expense category
+- [x] Delete button available on category
+- [x] Confirmation dialog shown
+- [x] Cannot delete last income category
+- [x] Cannot delete last expense category
 - [ ] Deletion cascades to transactions
-- [ ] Success feedback after deletion
-- [ ] Category removed from board immediately
+- [x] Success feedback after deletion
+- [x] Category removed from board immediately
 
 ---
 

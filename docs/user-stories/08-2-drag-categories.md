@@ -3,7 +3,7 @@
 **Epic:** Trello-Like UI & Drag-and-Drop
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,7 +23,7 @@ This is a duplicate of US-3.4 (Reorder Categories via Drag & Drop). Included her
 
 ## Acceptance Criteria
 
-- Same as US-3.4
+- [x] Same as US-3.4
 
 ---
 

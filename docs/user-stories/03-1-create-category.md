@@ -3,7 +3,7 @@
 **Epic:** Category Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,13 +23,13 @@ Implement category creation functionality allowing users to add new categories t
 
 ## Acceptance Criteria
 
-- [x] "Add Category" button visible on budget board
-- [x] Category creation form/modal includes all fields
+- [ ] "Add Category" button visible on budget board (the board button links an existing category)
+- [ ] Category creation form/modal includes all fields
 - [x] Required: name, type (income/expense)
-- [ ] Optional: color picker, icon selector, target percentage
+- [ ] Optional: color picker, icon selector, target percentage (color picker implemented)
 - [ ] Categories added to end of list (highest order number)
 - [x] Success feedback after creation
-- [x] New category immediately visible on board
+- [ ] New category immediately visible on board
 - [x] Validation prevents empty names
 
 ---

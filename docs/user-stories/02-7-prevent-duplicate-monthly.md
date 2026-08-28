@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -25,7 +25,7 @@ Implement validation to enforce the business rule that users can only have one m
 
 - [x] Database unique constraint on (userId, month, year)
 - [x] Validation in create budget action
-- [ ] Validation in duplicate budget action
+- [x] Validation in duplicate budget action
 - [x] Clear error message when attempting to create duplicate
 - [ ] Error message suggests viewing existing budget
 

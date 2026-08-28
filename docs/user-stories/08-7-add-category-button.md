@@ -3,7 +3,7 @@
 **Epic:** Trello-Like UI & Drag-and-Drop
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** 🟡 In Progress
 
 ---
 
@@ -23,11 +23,11 @@ Provide a visible "+ Add Category" button on the budget board that opens the cat
 
 ## Acceptance Criteria
 
-- [ ] "+ Add Category" button visible on board
-- [ ] Button positioned at the end of category columns
+- [x] "+ Add Category" button visible on board
+- [x] Button positioned at the end of category columns
 - [ ] Clicking opens category creation modal
 - [ ] Same modal as used elsewhere (US-3.1)
-- [ ] New category appears immediately after creation
+- [x] New category appears immediately after creation
 - [ ] Button always accessible (sticky or visible)
 
 ---

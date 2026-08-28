@@ -23,12 +23,12 @@ Implement user registration functionality using Better Auth. Users should be abl
 
 ## Acceptance Criteria
 
-- [x] Registration form accessible at `/auth/register`
+- [ ] Registration form accessible at `/auth/register` (implemented at `/auth/signup`)
 - [x] Email validation (valid format, unique)
 - [x] Password requirements enforced (min 8 chars, mix of letters/numbers)
 - [x] Error messages displayed for validation failures
-- [x] Successful registration redirects to budget list page
-- [x] User session automatically created after registration
+- [ ] Successful registration redirects to budget list page (shows email verification step instead)
+- [ ] User session automatically created after registration (verification is required before login)
 - [ ] Primary currency defaults to CZK
 - [ ] Locale defaults to cs-CZ
 

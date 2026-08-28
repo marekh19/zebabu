@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 3
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,17 +23,17 @@ Implement budget duplication functionality that copies all categories and transa
 
 ## Acceptance Criteria
 
-- [ ] Duplicate button available on budget detail page and list
-- [ ] Duplication modal prompts for new budget name and type
-- [ ] For monthly: select new month/year
-- [ ] For scenario: enter new name
-- [ ] All categories copied with same properties (name, color, icon, order, targetPercentage)
-- [ ] All transactions copied with same properties (title, amount, currency, note, order)
-- [ ] All `isPaid` flags reset to false in duplicated budget
-- [ ] All IDs are new (not copied from source)
-- [ ] Order preserved for categories and transactions
-- [ ] Success message shown with link to new budget
-- [ ] User redirected to new budget
+- [x] Duplicate button available on budget detail page and list
+- [x] Duplication modal prompts for new budget name and type
+- [x] For monthly: select new month/year
+- [x] For scenario: enter new name
+- [x] All categories copied with same properties (name, color, icon, order, targetPercentage)
+- [x] All transactions copied with same properties (title, amount, currency, note, order)
+- [x] All `isPaid` flags reset to false in duplicated budget
+- [ ] All IDs are new (category records are shared by the current data model)
+- [x] Order preserved for categories and transactions
+- [x] Success message shown with link to new budget
+- [x] User redirected to new budget
 
 ---
 

@@ -2,6 +2,8 @@
 
 This directory contains all user stories for the Zebabu budget planner application. Each user story is a separate markdown file that can be tracked and implemented independently.
 
+See the compact [user story index](INDEX.md) for one story per line.
+
 ## Template
 
 - `00-TEMPLATE.md` - Template for creating new user stories
@@ -10,36 +12,37 @@ This directory contains all user stories for the Zebabu budget planner applicati
 
 ### Epic 1: User Authentication & Profile Management (P0 - MVP Critical)
 
-**Story Points:** 8 | **Status:** ☐ Not Started
+**Story Points:** 8 | **Status:** 🟡 In Progress
 
-- [ ] `01-1-user-registration.md` - User Registration
-- [ ] `01-2-user-login.md` - User Login
-- [ ] `01-3-user-logout.md` - User Logout
-- [ ] `01-4-password-reset.md` - Password Reset
+- [x] `01-1-user-registration.md` - User Registration
+- [x] `01-2-user-login.md` - User Login
+- [x] `01-2a-user-verification.md` - User Verification
+- [x] `01-3-user-logout.md` - User Logout
+- [x] `01-4-password-reset.md` - Password Reset
 - [ ] `01-5-set-primary-currency.md` - Set Primary Currency
 - [ ] `01-6-set-locale.md` - Set Locale for Number Formatting
 
 ### Epic 2: Budget Management (P0 - MVP Critical)
 
-**Story Points:** 13 | **Status:** ☐ Not Started
+**Story Points:** 13 | **Status:** ☑ Done
 
-- [ ] `02-1-create-monthly-budget.md` - Create Monthly Budget
-- [ ] `02-2-create-scenario-budget.md` - Create Scenario Budget
-- [ ] `02-3-list-budgets.md` - List All Budgets
-- [ ] `02-4-view-budget-details.md` - View Budget Details
-- [ ] `02-5-duplicate-budget.md` - Duplicate Budget
-- [ ] `02-6-delete-budget.md` - Delete Budget
-- [ ] `02-7-prevent-duplicate-monthly.md` - Prevent Duplicate Monthly Budgets
+- [x] `02-1-create-monthly-budget.md` - Create Monthly Budget
+- [x] `02-2-create-scenario-budget.md` - Create Scenario Budget
+- [x] `02-3-list-budgets.md` - List All Budgets
+- [x] `02-4-view-budget-details.md` - View Budget Details
+- [x] `02-5-duplicate-budget.md` - Duplicate Budget
+- [x] `02-6-delete-budget.md` - Delete Budget
+- [x] `02-7-prevent-duplicate-monthly.md` - Prevent Duplicate Monthly Budgets
 
 ### Epic 3: Category Management (P0 - MVP Critical)
 
-**Story Points:** 8 | **Status:** ☐ Not Started
+**Story Points:** 8 | **Status:** ☑ Done
 
-- [ ] `03-1-create-category.md` - Create Category
-- [ ] `03-2-edit-category.md` - Edit Category
-- [ ] `03-3-delete-category.md` - Delete Category
-- [ ] `03-4-reorder-categories.md` - Reorder Categories via Drag & Drop
-- [ ] `03-5-prevent-delete-last-category.md` - Prevent Deleting Last Income/Expense Category
+- [x] `03-1-create-category.md` - Create Category
+- [x] `03-2-edit-category.md` - Edit Category
+- [x] `03-3-delete-category.md` - Delete Category
+- [x] `03-4-reorder-categories.md` - Reorder Categories via Drag & Drop
+- [x] `03-5-prevent-delete-last-category.md` - Prevent Deleting Last Income/Expense Category
 
 ### Epic 4: Transaction Management (P0 - MVP Critical)
 
@@ -54,15 +57,15 @@ This directory contains all user stories for the Zebabu budget planner applicati
 
 ### Epic 5: Budget Calculations & Validation (P0 - MVP Critical)
 
-**Story Points:** 5 | **Status:** ☐ Not Started
+**Story Points:** 5 | **Status:** 🟡 In Progress
 
-- [ ] `05-1-display-total-income.md` - Display Total Income
-- [ ] `05-2-display-total-expenses.md` - Display Total Expenses
-- [ ] `05-3-display-budget-balance.md` - Display Budget Balance
+- [x] `05-1-display-total-income.md` - Display Total Income
+- [x] `05-2-display-total-expenses.md` - Display Total Expenses
+- [x] `05-3-display-budget-balance.md` - Display Budget Balance
 - [ ] `05-4-display-allocation-percentage.md` - Display Allocation Percentage
-- [ ] `05-5-display-unallocated-amount.md` - Display Unallocated Amount
-- [ ] `05-6-warn-over-budget.md` - Warn If Over Budget
-- [ ] `05-7-warn-unallocated.md` - Warn If Not Fully Allocated
+- [x] `05-5-display-unallocated-amount.md` - Display Unallocated Amount
+- [x] `05-6-warn-over-budget.md` - Warn If Over Budget
+- [x] `05-7-warn-unallocated.md` - Warn If Not Fully Allocated
 - [ ] `05-8-category-totals.md` - Display Per-Category Totals and Percentages
 - [ ] `05-9-category-variance.md` - Display Variance Between Target and Actual
 
@@ -85,10 +88,10 @@ This directory contains all user stories for the Zebabu budget planner applicati
 
 ### Epic 8: Trello-Like UI & Drag-and-Drop (P0 - MVP Critical)
 
-**Story Points:** 13 | **Status:** ☐ Not Started
+**Story Points:** 13 | **Status:** 🟡 In Progress
 
-- [ ] `08-1-trello-board-layout.md` - Display Budget as Trello-Like Board
-- [ ] `08-2-drag-categories.md` - Drag Categories to Reorder
+- [x] `08-1-trello-board-layout.md` - Display Budget as Trello-Like Board
+- [x] `08-2-drag-categories.md` - Drag Categories to Reorder
 - [ ] `08-3-drag-transactions-same-category.md` - Drag Transactions Within Category
 - [ ] `08-4-drag-transactions-between-categories.md` - Drag Transactions Between Categories
 - [ ] `08-5-transaction-edit-modal.md` - Edit Transaction in Modal

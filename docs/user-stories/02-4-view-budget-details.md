@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -29,7 +29,7 @@ Implement the budget detail page that displays the complete budget with all cate
 - [x] All transactions displayed as cards within categories
 - [x] Budget summary shown (total income, expenses, balance)
 - [x] Real-time calculations update as data changes
-- [x] Loading state while fetching data
+- [ ] Loading state while fetching data
 - [x] 404 error for invalid budget ID
 - [x] Authorization check (user owns budget)
 

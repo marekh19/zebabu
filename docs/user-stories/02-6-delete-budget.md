@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,14 +23,14 @@ Implement budget deletion functionality with confirmation dialog. Deleting a bud
 
 ## Acceptance Criteria
 
-- [ ] Delete button available on budget list and detail pages
-- [ ] Confirmation dialog shown before deletion
+- [x] Delete button available on budget list and detail pages
+- [x] Confirmation dialog shown before deletion
 - [ ] Confirmation shows budget name and warning about cascade
-- [ ] Successful deletion removes budget and all associated data
-- [ ] User redirected to budget list after deletion
-- [ ] Success message shown after deletion
-- [ ] Cannot delete other users' budgets
-- [ ] Database cascades deletion to categories and transactions
+- [x] Successful deletion removes budget and all associated data
+- [x] User redirected to budget list after deletion
+- [x] Success message shown after deletion
+- [x] Cannot delete other users' budgets
+- [x] Database cascades deletion to categories and transactions
 
 ---
 

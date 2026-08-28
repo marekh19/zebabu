@@ -23,7 +23,7 @@ This is a duplicate of US-4.6 (Reorder Transactions). Included here for complete
 
 ## Acceptance Criteria
 
-- Same as US-4.6
+- [ ] Same as US-4.6
 
 ---
 

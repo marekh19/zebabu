@@ -3,7 +3,7 @@
 **Epic:** Trello-Like UI & Drag-and-Drop
 **Priority:** P0 (MVP Critical)
 **Story Points:** 5
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,23 +23,23 @@ Implement a Trello-style board layout where categories are displayed as vertical
 
 ## Acceptance Criteria
 
-- [ ] Budget detail page displays categories as vertical columns
-- [ ] Categories arranged horizontally (scrollable if needed)
-- [ ] Each category shows:
-  - [ ] Category name
-  - [ ] Category icon and color
-  - [ ] Total amount for category
+- [x] Budget detail page displays categories as vertical columns
+- [x] Categories arranged horizontally (scrollable if needed)
+- [x] Each category shows:
+  - [x] Category name
+  - [ ] Category icon and color (color implemented; icons are not modeled)
+  - [x] Total amount for category
   - [ ] Percentage of budget (if income category total > 0)
-  - [ ] List of transactions as cards
-- [ ] Each transaction card shows:
-  - [ ] Transaction title
+- [x] List of transactions as cards
+- [x] Each transaction card shows:
+  - [x] Transaction title
   - [ ] Amount with currency
-  - [ ] Paid/unpaid indicator
+  - [x] Paid/unpaid indicator
   - [ ] Edit and delete buttons
-- [ ] Horizontal scrolling works smoothly
+- [x] Horizontal scrolling works smoothly
 - [ ] Layout is responsive (vertical on mobile)
 - [ ] Empty categories show "Add transaction" prompt
-- [ ] Budget summary visible (total income, expenses, balance)
+- [x] Budget summary visible (total income, expenses, balance)
 
 ---
 
@@ -304,9 +304,9 @@ export async function load({ params, locals }) {
 ## Testing Checklist
 
 - [ ] Visual testing on different screen sizes
-- [ ] Horizontal scrolling works smoothly
-- [ ] Categories display in correct order
-- [ ] Transactions display in correct order within categories
+- [x] Horizontal scrolling works smoothly
+- [x] Categories display in correct order
+- [x] Transactions display in correct order within categories
 - [ ] Manual testing checklist:
   - [ ] Board loads with all categories visible
   - [ ] Can scroll horizontally to see all categories

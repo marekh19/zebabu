@@ -23,7 +23,7 @@ This is a duplicate of US-4.5 (Move Transaction Between Categories). Included he
 
 ## Acceptance Criteria
 
-- Same as US-4.5
+- [ ] Same as US-4.5
 
 ---
 

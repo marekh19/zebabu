@@ -3,7 +3,7 @@
 **Epic:** Category Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,13 +23,13 @@ Enforce business rules BR-8 and BR-9 by preventing deletion of the last category
 
 ## Acceptance Criteria
 
-- [ ] Cannot delete last income category
-- [ ] Cannot delete last expense category
+- [x] Cannot delete last income category
+- [x] Cannot delete last expense category
 - [ ] Delete button disabled when last of type
 - [ ] Tooltip explains why deletion is disabled
-- [ ] Server-side validation enforces rule
-- [ ] Error message if validation bypassed
-- [ ] Can delete when multiple categories of same type exist
+- [x] Server-side validation enforces rule
+- [x] Error message if validation bypassed
+- [x] Can delete when multiple categories of same type exist
 
 ---
 

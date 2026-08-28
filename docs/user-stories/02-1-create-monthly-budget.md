@@ -3,7 +3,7 @@
 **Epic:** Budget Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 3
-**Status:** 🟡 In Progress
+**Status:** ☑ Done
 
 ---
 
@@ -28,8 +28,8 @@ Implement the ability to create a new monthly budget for a specific month and ye
 - [x] System prevents duplicate monthly budgets for same month/year
 - [x] System auto-creates default "Income" category (type: income)
 - [x] System auto-creates default "Expenses" category (type: expense)
-- [x] Success message shown after creation <!-- No toast/flash message implemented -->
-- [x] User redirected to newly created budget detail page <!-- No redirect; no /budgets/[id] route exists yet -->
+- [ ] Success message shown after creation
+- [x] User redirected to newly created budget detail page
 - [x] Budget visible in budget list
 
 ---

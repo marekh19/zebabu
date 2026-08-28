@@ -3,7 +3,7 @@
 **Epic:** Budget Calculations & Validation
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** 🟡 In Progress
 
 ---
 
@@ -23,11 +23,11 @@ Calculate and display for each category: total amount, percentage of total incom
 
 ## Acceptance Criteria
 
-- [ ] Each category shows total amount
+- [x] Each category shows total amount
 - [ ] Each category shows % of total income
 - [ ] Shows transaction count
 - [ ] Shows paid vs unpaid count
-- [ ] Updates in real-time
+- [x] Updates in real-time
 - [ ] Formatted with currency and percentage
 
 ---

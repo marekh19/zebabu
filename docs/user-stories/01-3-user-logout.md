@@ -3,7 +3,7 @@
 **Epic:** User Authentication & Profile Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -28,7 +28,7 @@ Implement logout functionality that terminates the user's session and redirects 
 - [x] User redirected to `/auth/login` after logout
 - [x] Session cookie cleared/invalidated
 - [x] Attempting to access protected routes after logout redirects to login
-- [ ] Success message shown after logout (optional)
+- [x] Success message shown after logout (optional)
 
 ---
 

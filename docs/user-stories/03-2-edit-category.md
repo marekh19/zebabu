@@ -3,7 +3,7 @@
 **Epic:** Category Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,13 +23,13 @@ Implement category editing functionality allowing users to modify existing categ
 
 ## Acceptance Criteria
 
-- [ ] Edit button available on category header
-- [ ] Edit modal pre-populated with current values
-- [ ] Can change: name, color, icon, target percentage
-- [ ] Cannot change: type (income/expense)
-- [ ] Changes immediately reflected on board
-- [ ] Validation same as create
-- [ ] Success feedback after update
+- [x] Edit button available on category header
+- [x] Edit modal pre-populated with current values
+- [ ] Can change: name, color, icon, target percentage (name and color implemented)
+- [x] Cannot change: type (income/expense)
+- [x] Changes immediately reflected on board
+- [x] Validation same as create
+- [x] Success feedback after update
 - [ ] Optimistic UI updates
 
 ---

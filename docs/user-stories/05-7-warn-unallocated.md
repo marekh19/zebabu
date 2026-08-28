@@ -3,7 +3,7 @@
 **Epic:** Budget Calculations & Validation
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -23,12 +23,12 @@ Display a warning when the allocation percentage is below 100% (money remains un
 
 ## Acceptance Criteria
 
-- [ ] Warning shown when balance > 0
-- [ ] Shows unallocated amount
-- [ ] Warning styled as info/reminder (not error)
-- [ ] Dismissible or auto-hides when fully allocated
-- [ ] Updates in real-time
-- [ ] No warning when perfectly allocated (balance = 0)
+- [x] Warning shown when balance > 0
+- [x] Shows unallocated amount
+- [x] Warning styled as info/reminder (not error)
+- [x] Dismissible or auto-hides when fully allocated
+- [x] Updates in real-time
+- [x] No warning when perfectly allocated (balance = 0)
 
 ---
 
