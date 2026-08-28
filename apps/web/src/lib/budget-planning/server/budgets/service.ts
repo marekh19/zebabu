@@ -1,10 +1,20 @@
 import { BudgetType } from '$lib/budget-planning/budgets/types'
+import type {
+  AvailableCategory,
+  BudgetDetail,
+} from '$lib/budget-planning/model'
 import {
   findCategoriesByUserTx,
+  findCategoriesNotInBudget,
   findCategoryById,
 } from '$lib/budget-planning/server/categories/repository'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
+import {
+  toAvailableCategory,
+  toBudgetDetail,
+  toBudgetListItem,
+} from '../model-mappers'
 import {
   deleteBudgetById,
   findBudgetById,
@@ -80,7 +90,7 @@ export async function createMonthlyBudget(
       year,
     })
     await linkUserCategoriesToBudget(tx, userId, inserted.id)
-    return inserted
+    return { id: inserted.id }
   })
 }
 
@@ -100,7 +110,7 @@ export async function createScenarioBudget(
       year: null,
     })
     await linkUserCategoriesToBudget(tx, userId, inserted.id)
-    return inserted
+    return { id: inserted.id }
   })
 }
 
@@ -134,7 +144,9 @@ export async function deleteBudget(
 }
 
 export function listBudgets(userId: string) {
-  return listBudgetsByUser(userId)
+  return listBudgetsByUser(userId).then((budgets) =>
+    budgets.map(toBudgetListItem),
+  )
 }
 
 type DuplicateBudgetTarget = {
@@ -144,10 +156,8 @@ type DuplicateBudgetTarget = {
   name?: string
 }
 
-type BudgetSelect = Awaited<ReturnType<typeof insertBudget>>[number]
-
 type DuplicateBudgetResult =
-  | { budget: BudgetSelect; error?: never }
+  | { budget: { id: string }; error?: never }
   | { budget?: never; error: 'not_found' | 'access_denied' }
 
 export async function duplicateBudget(
@@ -213,7 +223,7 @@ export async function duplicateBudget(
     return inserted
   })
 
-  return { budget: newBudget }
+  return { budget: { id: newBudget.id } }
 }
 
 export async function addBudgetCategory(
@@ -238,11 +248,17 @@ export async function addBudgetCategory(
   return {}
 }
 
-type BudgetDetail = NonNullable<Awaited<ReturnType<typeof findBudgetById>>>
-
 type GetBudgetDetailResult =
-  | { budget: BudgetDetail; error?: never }
-  | { budget?: never; error: 'not_found' | 'access_denied' }
+  | {
+      budget: BudgetDetail
+      availableCategories: readonly AvailableCategory[]
+      error?: never
+    }
+  | {
+      budget?: never
+      availableCategories?: never
+      error: 'not_found' | 'access_denied'
+    }
 
 export async function getBudgetDetail(
   budgetId: string,
@@ -252,7 +268,12 @@ export async function getBudgetDetail(
   const ownershipError = checkOwnership(found, userId)
   if (ownershipError) return { error: ownershipError }
 
-  return { budget: ensureDefined(found) }
+  const availableCategories = await findCategoriesNotInBudget(userId, budgetId)
+
+  return {
+    budget: toBudgetDetail(ensureDefined(found)),
+    availableCategories: availableCategories.map(toAvailableCategory),
+  }
 }
 
 type CreateTransactionData = {
@@ -277,7 +298,7 @@ export async function createTransaction(
     )
     if (!destination) return { error: 'not_found' as const }
 
-    const [created] = await insertTransactionAtEnd(tx, {
+    await insertTransactionAtEnd(tx, {
       budgetCategoryId,
       name: data.name,
       amount: String(data.amount),
@@ -285,6 +306,6 @@ export async function createTransaction(
       note: data.note || null,
     })
 
-    return { transaction: created }
+    return {}
   })
 }

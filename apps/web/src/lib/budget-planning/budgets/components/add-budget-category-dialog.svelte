@@ -1,21 +1,15 @@
-<script module lang="ts">
-  import * as m from '$lib/paraglide/messages'
-
-  export type AddBudgetCategoryError = keyof typeof errorMessages
-
-  export const errorMessages = {
-    not_found: m.budget_detail_add_category_error_not_found,
-    unexpected: m.budget_detail_add_category_error_unexpected,
-  } as const satisfies Record<string, () => string>
-</script>
-
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Form from '$lib/components/ui/form'
   import * as Select from '$lib/components/ui/select'
   import { buttonVariants } from '$lib/components/ui/button'
   import { addBudgetCategorySchema } from '$lib/budget-planning/budgets/schemas/add-budget-category-schema'
-  import type { AvailableCategory } from '../types'
+  import {
+    addBudgetCategoryErrorMessages,
+    type AddBudgetCategoryError,
+  } from '$lib/budget-planning/errors'
+  import type { AvailableCategory } from '$lib/budget-planning/model'
   import { toast } from 'svelte-sonner'
   import {
     superForm,
@@ -27,7 +21,7 @@
   type Props = {
     open: boolean
     data: SuperValidated<Infer<typeof addBudgetCategorySchema>>
-    categories: AvailableCategory[]
+    categories: readonly AvailableCategory[]
     error: AddBudgetCategoryError | undefined
     onOpenChange: (open: boolean) => void
   }
@@ -77,7 +71,7 @@
     <form method="POST" action="?/addCategory" use:enhance class="space-y-4">
       {#if error}
         <p class="text-destructive text-sm font-medium">
-          {errorMessages[error]()}
+          {addBudgetCategoryErrorMessages[error]()}
         </p>
       {/if}
 

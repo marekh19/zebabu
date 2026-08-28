@@ -4,19 +4,16 @@
   import { getLocale } from '$lib/paraglide/runtime'
   import { resolve } from '$app/paths'
   import * as Card from '$lib/components/ui/card'
-  import { ensureDefined } from 'narrowland'
   import {
     getMonthAbbrev,
     getMonthName,
   } from '$lib/budget-planning/budgets/utils/month-names'
   import { BudgetType } from '$lib/budget-planning/budgets/types'
-  import type { budget } from '$lib/server/db/schema'
+  import type { BudgetListItem } from '$lib/budget-planning/model'
   import BudgetActions from './budget-actions.svelte'
 
-  type Budget = typeof budget.$inferSelect
-
   type Props = {
-    budget: Budget
+    budget: BudgetListItem
   }
 
   let { budget: b }: Props = $props()
@@ -49,7 +46,7 @@
           <span
             class="text-[0.6rem] leading-none font-semibold tracking-wider uppercase"
           >
-            {getMonthAbbrev(ensureDefined(b.month))}
+            {getMonthAbbrev(b.month)}
           </span>
           <span class="text-lg leading-tight font-bold">
             {b.year}
@@ -57,7 +54,7 @@
         </div>
         <div class="min-w-0 flex-1">
           <p class="truncate leading-tight font-semibold">
-            {getMonthName(ensureDefined(b.month))}
+            {getMonthName(b.month)}
             {b.year}
           </p>
           {@render createdAt()}

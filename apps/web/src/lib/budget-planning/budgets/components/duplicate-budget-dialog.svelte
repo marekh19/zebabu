@@ -1,15 +1,5 @@
-<script module lang="ts">
-  import * as m from '$lib/paraglide/messages'
-
-  export type DuplicateBudgetError = keyof typeof duplicateErrorMessages
-
-  export const duplicateErrorMessages = {
-    duplicate_monthly: m.budgets_error_duplicate,
-    duplicate_scenario: m.budgets_error_duplicate_scenario,
-  } as const satisfies Record<string, () => string>
-</script>
-
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages'
   import { superForm, defaults } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
   import { toast } from 'svelte-sonner'
@@ -25,14 +15,16 @@
   } from '$lib/budget-planning/budgets/utils/month-names'
   import { getYearOptions } from '$lib/budget-planning/budgets/utils/year-options'
   import { BudgetType } from '$lib/budget-planning/budgets/types'
-  import type { budget } from '$lib/server/db/schema'
-
-  type Budget = typeof budget.$inferSelect
+  import {
+    duplicateBudgetErrorMessages,
+    type DuplicateBudgetError,
+  } from '$lib/budget-planning/errors'
+  import type { BudgetReference } from '$lib/budget-planning/model'
 
   type Props = {
     open: boolean
     onOpenChange: (open: boolean) => void
-    sourceBudget: Pick<Budget, 'id' | 'type' | 'name' | 'month' | 'year'>
+    sourceBudget: BudgetReference
   }
 
   let { open, onOpenChange, sourceBudget }: Props = $props()
@@ -44,7 +36,7 @@
   function isDuplicateBudgetError(
     value: unknown,
   ): value is DuplicateBudgetError {
-    return typeof value === 'string' && value in duplicateErrorMessages
+    return typeof value === 'string' && value in duplicateBudgetErrorMessages
   }
 
   const form = superForm(defaults(zod4(duplicateBudgetSchema)), {
@@ -125,7 +117,7 @@
     <form method="POST" action="?/duplicate" use:enhance class="space-y-4">
       {#if duplicateError}
         <p class="text-destructive text-sm font-medium">
-          {duplicateErrorMessages[duplicateError]()}
+          {duplicateBudgetErrorMessages[duplicateError]()}
         </p>
       {/if}
 

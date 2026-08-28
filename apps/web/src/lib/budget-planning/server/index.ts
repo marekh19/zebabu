@@ -12,7 +12,6 @@ export {
   listBudgets,
   reorderBudgetCategories,
 } from './budgets/service'
-export { findCategoriesNotInBudget } from './categories/repository'
 export {
   CategoryInUseError,
   CategoryNotFoundError,

@@ -1,20 +1,14 @@
-<script module lang="ts">
-  import * as m from '$lib/paraglide/messages'
-
-  export type CreateTransactionError = keyof typeof errorMessages
-
-  export const errorMessages = {
-    not_found: m.budget_detail_transaction_error_not_found,
-    unexpected: m.budget_detail_transaction_error_unexpected,
-  } as const satisfies Record<string, () => string>
-</script>
-
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Form from '$lib/components/ui/form'
   import { buttonVariants } from '$lib/components/ui/button'
   import { Input } from '$lib/components/ui/input'
   import { createCreateTransactionSchema } from '$lib/budget-planning/budgets/schemas/create-transaction-schema'
+  import {
+    createTransactionErrorMessages,
+    type CreateTransactionError,
+  } from '$lib/budget-planning/errors'
   import { shouldAcceptDialogOpenChange } from './transaction-dialog'
   import { toast } from 'svelte-sonner'
   import {
@@ -107,7 +101,7 @@
 
       {#if error}
         <p class="text-destructive text-sm font-medium">
-          {errorMessages[error]()}
+          {createTransactionErrorMessages[error]()}
         </p>
       {/if}
 

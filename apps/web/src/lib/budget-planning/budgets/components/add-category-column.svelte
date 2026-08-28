@@ -2,13 +2,13 @@
   import * as m from '$lib/paraglide/messages'
   import PlusIcon from '@lucide/svelte/icons/plus'
   import AddBudgetCategoryDialog from './add-budget-category-dialog.svelte'
-  import type { AvailableCategory } from '../types'
+  import type { AvailableCategory } from '$lib/budget-planning/model'
   import type { addBudgetCategorySchema } from '$lib/budget-planning/budgets/schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
-  import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
+  import type { AddBudgetCategoryError } from '$lib/budget-planning/errors'
 
   type Props = {
-    availableCategories: AvailableCategory[]
+    availableCategories: readonly AvailableCategory[]
     addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
     addCategoryError: AddBudgetCategoryError | undefined
   }

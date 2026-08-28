@@ -1,14 +1,12 @@
 <script lang="ts">
   import type { Component } from 'svelte'
-  import type { budget } from '$lib/server/db/schema'
+  import type { BudgetListItem } from '$lib/budget-planning/model'
   import BudgetCard from './budget-card.svelte'
-
-  type Budget = typeof budget.$inferSelect
 
   type Props = {
     icon: Component<{ class?: string }>
     title: string
-    budgets: Budget[]
+    budgets: readonly BudgetListItem[]
   }
 
   let { icon: Icon, title, budgets }: Props = $props()

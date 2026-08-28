@@ -1,16 +1,5 @@
-<script module lang="ts">
-  import * as m from '$lib/paraglide/messages'
-
-  export type EditCategoryError = keyof typeof editErrorMessages
-
-  export const editErrorMessages = {
-    duplicate: m.categories_error_duplicate,
-    not_found: m.categories_error_not_found,
-    unexpected: m.categories_error_unexpected,
-  } as const satisfies Record<string, () => string>
-</script>
-
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages'
   import {
     superForm,
     type Infer,
@@ -29,10 +18,9 @@
     colorClasses,
   } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
-  import type { category } from '$lib/server/db/schema'
+  import type { Category } from '$lib/budget-planning/model'
 
   type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
-  type Category = typeof category.$inferSelect
 
   type Props = {
     open: boolean

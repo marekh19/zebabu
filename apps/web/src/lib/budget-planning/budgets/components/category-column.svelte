@@ -5,7 +5,7 @@
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
   import TransactionRow from './transaction-row.svelte'
   import AddTransactionRow from './add-transaction-row.svelte'
-  import type { BudgetCategory } from '../types'
+  import type { BudgetCategory } from '$lib/budget-planning/model'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
 

@@ -8,7 +8,6 @@ vi.mock('$lib/budget-planning/server', () => ({
   addBudgetCategory: vi.fn(),
   createTransaction: mocks.createTransaction,
   deleteBudget: vi.fn(),
-  findCategoriesNotInBudget: vi.fn(),
   getBudgetDetail: vi.fn(),
   handleDuplicateBudgetAction: vi.fn(),
 }))
@@ -50,7 +49,7 @@ describe('creating a transaction', () => {
   })
 
   it('creates a valid transaction in the selected budget category', async () => {
-    mocks.createTransaction.mockResolvedValue({ transaction: { id: 'tx-1' } })
+    mocks.createTransaction.mockResolvedValue({})
 
     const result = await submit()
 
@@ -68,7 +67,7 @@ describe('creating a transaction', () => {
   })
 
   it('redirects an unenhanced successful submission to the budget', async () => {
-    mocks.createTransaction.mockResolvedValue({ transaction: { id: 'tx-1' } })
+    mocks.createTransaction.mockResolvedValue({})
 
     await expect(submit(undefined, false)).rejects.toMatchObject({
       status: 303,

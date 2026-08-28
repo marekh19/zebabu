@@ -1,16 +1,5 @@
-<script module lang="ts">
-  import * as m from '$lib/paraglide/messages'
-
-  export type CreateBudgetError = keyof typeof errorMessages
-
-  export const errorMessages = {
-    duplicate_monthly: m.budgets_error_duplicate,
-    duplicate_scenario: m.budgets_error_duplicate_scenario,
-    unexpected: m.budgets_error_unexpected,
-  } as const satisfies Record<string, () => string>
-</script>
-
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages'
   import {
     superForm,
     type Infer,
@@ -31,6 +20,10 @@
   } from '$lib/budget-planning/budgets/utils/month-names'
   import { getYearOptions } from '$lib/budget-planning/budgets/utils/year-options'
   import { BudgetType } from '$lib/budget-planning/budgets/types'
+  import {
+    createBudgetErrorMessages,
+    type CreateBudgetError,
+  } from '$lib/budget-planning/errors'
 
   type CreateBudgetSchema = ReturnType<typeof createCreateBudgetSchema>
 
@@ -107,7 +100,7 @@
     <form method="POST" action="?/create" use:enhance class="space-y-4">
       {#if error}
         <p class="text-destructive text-sm font-medium">
-          {errorMessages[error]()}
+          {createBudgetErrorMessages[error]()}
         </p>
       {/if}
 
