@@ -220,8 +220,8 @@ export async function addBudgetCategory(
   categoryId: string,
 ): Promise<{ error?: 'not_found' | 'access_denied' | 'category_not_found' }> {
   const foundBudget = await findBudgetOwner(budgetId)
-  if (!foundBudget) return { error: 'not_found' }
-  if (foundBudget.userId !== userId) return { error: 'access_denied' }
+  const ownershipError = checkOwnership(foundBudget, userId)
+  if (ownershipError) return { error: ownershipError }
 
   const foundCategory = await findCategoryById(categoryId, userId)
   if (!foundCategory) return { error: 'category_not_found' }
