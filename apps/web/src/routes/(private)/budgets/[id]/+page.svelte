@@ -26,7 +26,7 @@
   )
 </script>
 
-<div class="flex flex-col gap-6">
+<div class="flex min-w-0 flex-col gap-6">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-3">
       <h1 class="text-2xl font-bold">{displayName}</h1>

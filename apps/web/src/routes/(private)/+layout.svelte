@@ -15,7 +15,7 @@
 
 <Sidebar.Provider>
   <AppSidebar user={page.data.user} />
-  <Sidebar.Inset>
+  <Sidebar.Inset class="min-w-0">
     <header
       class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
     >
@@ -29,7 +29,7 @@
         <ThemeSwitcher />
       </div>
     </header>
-    <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div class="flex min-w-0 flex-1 flex-col gap-4 p-4 pt-0">
       {@render children()}
     </div>
   </Sidebar.Inset>

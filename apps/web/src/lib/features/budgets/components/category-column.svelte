@@ -35,7 +35,7 @@
   const dragging = $derived(isDragSource.current && !isOverlay)
 </script>
 
-<div class="relative w-70 shrink-0" {@attach ref}>
+<div class="relative w-[calc(100vw-2rem)] shrink-0 sm:w-75" {@attach ref}>
   <!-- Column content — invisible when dragged (keeps dimensions for layout) -->
   <div
     class="bg-background flex flex-col rounded-lg border {dragging

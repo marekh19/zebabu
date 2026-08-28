@@ -73,7 +73,7 @@
   }
 </script>
 
-<div class="overflow-x-auto pb-4">
+<div class="max-w-full overflow-x-auto pb-4">
   <DragDropProvider
     {sensors}
     onDragOver={(event) => {
