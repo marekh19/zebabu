@@ -27,3 +27,17 @@ avoid a concurrent `svelte-kit sync`. Run the full typecheck after stopping the 
 
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
 - At the end of each plan, give me a list of unresolved questions to answer, if any.
+
+## Agent skills
+
+### Issue tracker
+
+User stories are tracked in `docs/user-stories/INDEX.md` and its linked story files. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default triage label vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use the multi-context domain-doc layout. See `docs/agents/domain.md`.
