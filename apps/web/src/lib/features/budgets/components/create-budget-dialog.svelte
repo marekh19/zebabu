@@ -7,7 +7,7 @@
     duplicate_monthly: m.budgets_error_duplicate,
     duplicate_scenario: m.budgets_error_duplicate_scenario,
     unexpected: m.budgets_error_unexpected,
-  } satisfies Record<string, () => string>
+  } as const satisfies Record<string, () => string>
 </script>
 
 <script lang="ts">
@@ -30,6 +30,7 @@
     getMonthOptions,
   } from '$lib/features/budgets/utils/month-names'
   import { getYearOptions } from '$lib/features/budgets/utils/year-options'
+  import { BudgetType } from '$lib/features/budgets/types'
 
   type CreateBudgetSchema = ReturnType<typeof createCreateBudgetSchema>
 
@@ -68,12 +69,17 @@
   const monthOptions = $derived(getMonthOptions())
   const yearOptions = $derived(getYearOptions())
 
-  const isMonthly = $derived($formData.type === 'monthly')
+  const BUDGET_TYPE_LABELS = {
+    [BudgetType.Monthly]: m.budgets_type_monthly,
+    [BudgetType.Scenario]: m.budgets_type_scenario,
+  } as const satisfies Record<BudgetType, () => string>
+
+  const isMonthly = $derived($formData.type === BudgetType.Monthly)
 
   $effect(() => {
     if (open) {
       const now = new Date()
-      $formData.type = 'monthly'
+      $formData.type = BudgetType.Monthly
       $formData.month = now.getMonth() + 1
       $formData.year = now.getFullYear()
       $formData.name = undefined
@@ -87,11 +93,7 @@
     $formData.year ? String($formData.year) : undefined,
   )
   const selectedTypeLabel = $derived(
-    $formData.type === 'monthly'
-      ? m.budgets_type_monthly()
-      : $formData.type === 'scenario'
-        ? m.budgets_type_scenario()
-        : undefined,
+    $formData.type ? BUDGET_TYPE_LABELS[$formData.type]() : undefined,
   )
 </script>
 
@@ -117,7 +119,8 @@
               type="single"
               value={$formData.type}
               onValueChange={(v) => {
-                if (v) $formData.type = v as 'monthly' | 'scenario'
+                if (v === BudgetType.Monthly || v === BudgetType.Scenario)
+                  $formData.type = v
               }}
             >
               <Select.Trigger {...props} class="w-full">

@@ -3,6 +3,7 @@
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
   import { colorClasses } from '$lib/features/categories/colors'
+  import { CategoryType } from '$lib/features/categories/types'
   import CategoryActions from './category-actions.svelte'
   import type { category } from '$lib/server/db/schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
@@ -16,6 +17,16 @@
     budgetUsageCount: number
     editForm: SuperValidated<Infer<UpdateCategorySchema>>
   }
+
+  const CATEGORY_TYPE_BADGE_VARIANT = {
+    [CategoryType.Income]: 'default',
+    [CategoryType.Expense]: 'secondary',
+  } as const satisfies Record<CategoryType, 'default' | 'secondary'>
+
+  const CATEGORY_TYPE_LABELS = {
+    [CategoryType.Income]: m.categories_type_income,
+    [CategoryType.Expense]: m.categories_type_expense,
+  } as const satisfies Record<CategoryType, () => string>
 
   let { category: cat, budgetUsageCount, editForm }: Props = $props()
 
@@ -42,10 +53,8 @@
     <div class="min-w-0 flex-1">
       <p class="truncate leading-tight font-semibold">{cat.name}</p>
       <div class="mt-1 flex items-center gap-2">
-        <Badge variant={cat.type === 'income' ? 'default' : 'secondary'}>
-          {cat.type === 'income'
-            ? m.categories_type_income()
-            : m.categories_type_expense()}
+        <Badge variant={CATEGORY_TYPE_BADGE_VARIANT[cat.type]}>
+          {CATEGORY_TYPE_LABELS[cat.type]()}
         </Badge>
         <span
           class="text-xs {budgetUsageCount === 0

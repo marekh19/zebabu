@@ -4,6 +4,7 @@
   import { page } from '$app/state'
   import { toast } from 'svelte-sonner'
   import CategoryColumn from './category-column.svelte'
+  import AddCategoryColumn from './add-category-column.svelte'
   import {
     DragDropProvider,
     DragOverlay,
@@ -11,13 +12,18 @@
     PointerSensor,
   } from '@dnd-kit-svelte/svelte'
   import { move } from '@dnd-kit/helpers'
-  import type { BudgetCategory } from '../types'
+  import type { AvailableCategory, BudgetCategory } from '../types'
+  import type { addBudgetCategorySchema } from '../schemas/add-budget-category-schema'
+  import type { Infer, SuperValidated } from 'sveltekit-superforms'
 
   type Props = {
     budgetCategories: BudgetCategory[]
+    availableCategories: AvailableCategory[]
+    addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
   }
 
-  let { budgetCategories }: Props = $props()
+  let { budgetCategories, availableCategories, addCategoryForm }: Props =
+    $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
@@ -73,6 +79,9 @@
       {#each items as bc, index (bc.id)}
         <CategoryColumn budgetCategory={bc} {index} />
       {/each}
+      {#if availableCategories.length > 0}
+        <AddCategoryColumn {availableCategories} {addCategoryForm} />
+      {/if}
     </div>
 
     <DragOverlay>

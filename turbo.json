@@ -26,6 +26,9 @@
     "lint:fix": {
       "outputs": []
     },
+    "knip": {
+      "outputs": []
+    },
     "test": {
       "outputs": []
     },

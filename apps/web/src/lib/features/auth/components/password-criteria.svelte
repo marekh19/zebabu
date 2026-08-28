@@ -19,37 +19,21 @@
   const hasNumber = $derived(PASSWORD_HAS_NUMBER.test(password))
 </script>
 
+{#snippet criterion(met: boolean, label: string)}
+  <li
+    class={met ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}
+  >
+    {#if met}<Check class="inline size-3" />{:else}<Circle
+        class="inline size-3"
+      />{/if}
+    {label}
+  </li>
+{/snippet}
+
 {#if password.length > 0}
   <ul class="mt-1.5 space-y-0.5 text-xs">
-    <li
-      class={hasMinLength
-        ? 'text-green-600 dark:text-green-400'
-        : 'text-muted-foreground'}
-    >
-      {#if hasMinLength}<Check class="inline size-3" />{:else}<Circle
-          class="inline size-3"
-        />{/if}
-      {m.auth_validation_password_min()}
-    </li>
-    <li
-      class={hasLetter
-        ? 'text-green-600 dark:text-green-400'
-        : 'text-muted-foreground'}
-    >
-      {#if hasLetter}<Check class="inline size-3" />{:else}<Circle
-          class="inline size-3"
-        />{/if}
-      {m.auth_validation_password_letter()}
-    </li>
-    <li
-      class={hasNumber
-        ? 'text-green-600 dark:text-green-400'
-        : 'text-muted-foreground'}
-    >
-      {#if hasNumber}<Check class="inline size-3" />{:else}<Circle
-          class="inline size-3"
-        />{/if}
-      {m.auth_validation_password_number()}
-    </li>
+    {@render criterion(hasMinLength, m.auth_validation_password_min())}
+    {@render criterion(hasLetter, m.auth_validation_password_letter())}
+    {@render criterion(hasNumber, m.auth_validation_password_number())}
   </ul>
 {/if}

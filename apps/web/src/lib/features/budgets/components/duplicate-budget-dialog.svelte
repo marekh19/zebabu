@@ -24,6 +24,7 @@
     getMonthOptions,
   } from '$lib/features/budgets/utils/month-names'
   import { getYearOptions } from '$lib/features/budgets/utils/year-options'
+  import { BudgetType } from '$lib/features/budgets/types'
   import type { budget } from '$lib/server/db/schema'
 
   type Budget = typeof budget.$inferSelect
@@ -69,14 +70,19 @@
   const monthOptions = $derived(getMonthOptions())
   const yearOptions = $derived(getYearOptions())
 
-  const isMonthly = $derived($formData.type === 'monthly')
+  const BUDGET_TYPE_LABELS = {
+    [BudgetType.Monthly]: m.budgets_type_monthly,
+    [BudgetType.Scenario]: m.budgets_type_scenario,
+  } as const satisfies Record<BudgetType, () => string>
+
+  const isMonthly = $derived($formData.type === BudgetType.Monthly)
 
   $effect(() => {
     if (open) {
       duplicateError = undefined
       $formData.sourceBudgetId = sourceBudget.id
-      if (sourceBudget.type === 'monthly') {
-        $formData.type = 'monthly'
+      if (sourceBudget.type === BudgetType.Monthly) {
+        $formData.type = BudgetType.Monthly
         const sourceMonth = sourceBudget.month ?? 1
         const sourceYear = sourceBudget.year ?? new Date().getFullYear()
         if (sourceMonth === 12) {
@@ -88,7 +94,7 @@
         }
         $formData.name = undefined
       } else {
-        $formData.type = 'scenario'
+        $formData.type = BudgetType.Scenario
         $formData.name = `${sourceBudget.name ?? ''} - Copy`
         $formData.month = undefined
         $formData.year = undefined
@@ -103,11 +109,7 @@
     $formData.year ? String($formData.year) : undefined,
   )
   const selectedTypeLabel = $derived(
-    $formData.type === 'monthly'
-      ? m.budgets_type_monthly()
-      : $formData.type === 'scenario'
-        ? m.budgets_type_scenario()
-        : undefined,
+    $formData.type ? BUDGET_TYPE_LABELS[$formData.type]() : undefined,
   )
 </script>
 
@@ -135,16 +137,20 @@
               type="single"
               value={$formData.type}
               onValueChange={(v) => {
-                if (v === 'monthly' || v === 'scenario') $formData.type = v
+                if (v === BudgetType.Monthly || v === BudgetType.Scenario)
+                  $formData.type = v
               }}
             >
               <Select.Trigger {...props} class="w-full">
                 {selectedTypeLabel ?? m.budgets_create_type_placeholder()}
               </Select.Trigger>
               <Select.Content>
-                <Select.Item value="monthly" label={m.budgets_type_monthly()} />
                 <Select.Item
-                  value="scenario"
+                  value={BudgetType.Monthly}
+                  label={m.budgets_type_monthly()}
+                />
+                <Select.Item
+                  value={BudgetType.Scenario}
                   label={m.budgets_type_scenario()}
                 />
               </Select.Content>

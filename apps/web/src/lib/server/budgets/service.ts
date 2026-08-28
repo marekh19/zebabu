@@ -1,4 +1,8 @@
-import { findCategoriesByUserTx } from '$lib/server/categories/repository'
+import { BudgetType } from '$lib/features/budgets/types'
+import {
+  findCategoriesByUserTx,
+  findCategoryById,
+} from '$lib/server/categories/repository'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
 import {
@@ -30,6 +34,15 @@ export class DuplicateScenarioBudgetError extends Error {
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
+function checkOwnership(
+  found: { userId: string } | null | undefined,
+  userId: string,
+): 'not_found' | 'access_denied' | null {
+  if (!found) return 'not_found'
+  if (found.userId !== userId) return 'access_denied'
+  return null
+}
+
 async function linkUserCategoriesToBudget(
   tx: DbTransaction,
   userId: string,
@@ -60,7 +73,7 @@ export async function createMonthlyBudget(
     const [inserted] = await insertBudget(tx, {
       userId,
       name: null,
-      type: 'monthly',
+      type: BudgetType.Monthly,
       month,
       year,
     })
@@ -80,7 +93,7 @@ export async function createScenarioBudget(
     const [inserted] = await insertBudget(tx, {
       userId,
       name,
-      type: 'scenario',
+      type: BudgetType.Scenario,
       month: null,
       year: null,
     })
@@ -95,14 +108,8 @@ export async function reorderBudgetCategories(
   items: { id: string; sortOrder: number }[],
 ): Promise<{ error?: 'not_found' | 'access_denied' }> {
   const found = await findBudgetOwner(budgetId)
-
-  if (!found) {
-    return { error: 'not_found' }
-  }
-
-  if (found.userId !== userId) {
-    return { error: 'access_denied' }
-  }
+  const ownershipError = checkOwnership(found, userId)
+  if (ownershipError) return { error: ownershipError }
 
   await db.transaction((tx) =>
     updateBudgetCategorySortOrders(tx, budgetId, items),
@@ -116,14 +123,8 @@ export async function deleteBudget(
   userId: string,
 ): Promise<{ error?: 'not_found' | 'access_denied' }> {
   const found = await findBudgetOwner(budgetId)
-
-  if (!found) {
-    return { error: 'not_found' }
-  }
-
-  if (found.userId !== userId) {
-    return { error: 'access_denied' }
-  }
+  const ownershipError = checkOwnership(found, userId)
+  if (ownershipError) return { error: ownershipError }
 
   await deleteBudgetById(budgetId)
 
@@ -135,7 +136,7 @@ export function listBudgets(userId: string) {
 }
 
 type DuplicateBudgetTarget = {
-  type: 'monthly' | 'scenario'
+  type: BudgetType
   month?: number
   year?: number
   name?: string
@@ -153,11 +154,11 @@ export async function duplicateBudget(
   target: DuplicateBudgetTarget,
 ): Promise<DuplicateBudgetResult> {
   const found = await findBudgetById(sourceBudgetId)
+  const ownershipError = checkOwnership(found, userId)
+  if (ownershipError) return { error: ownershipError }
+  const source = ensureDefined(found)
 
-  if (!found) return { error: 'not_found' }
-  if (found.userId !== userId) return { error: 'access_denied' }
-
-  if (target.type === 'monthly') {
+  if (target.type === BudgetType.Monthly) {
     const existing = await findMonthlyBudget(
       userId,
       ensureDefined(target.month),
@@ -176,22 +177,22 @@ export async function duplicateBudget(
     const [inserted] = await insertBudget(tx, {
       userId,
       type: target.type,
-      month: target.type === 'monthly' ? (target.month ?? null) : null,
-      year: target.type === 'monthly' ? (target.year ?? null) : null,
-      name: target.type === 'scenario' ? (target.name ?? null) : null,
+      month: target.type === BudgetType.Monthly ? (target.month ?? null) : null,
+      year: target.type === BudgetType.Monthly ? (target.year ?? null) : null,
+      name: target.type === BudgetType.Scenario ? (target.name ?? null) : null,
     })
 
-    if (found.budgetCategories.length > 0) {
+    if (source.budgetCategories.length > 0) {
       const newCategories = await insertBudgetCategories(
         tx,
-        found.budgetCategories.map((bc) => ({
+        source.budgetCategories.map((bc) => ({
           budgetId: inserted.id,
           categoryId: bc.categoryId,
           sortOrder: bc.sortOrder,
         })),
       )
 
-      const allTransactions = found.budgetCategories.flatMap((bc, i) =>
+      const allTransactions = source.budgetCategories.flatMap((bc, i) =>
         bc.transactions.map((t) => ({
           budgetCategoryId: ensureDefined(newCategories[i]).id,
           name: t.name,
@@ -213,6 +214,28 @@ export async function duplicateBudget(
   return { budget: newBudget }
 }
 
+export async function addBudgetCategory(
+  budgetId: string,
+  userId: string,
+  categoryId: string,
+): Promise<{ error?: 'not_found' | 'access_denied' | 'category_not_found' }> {
+  const foundBudget = await findBudgetOwner(budgetId)
+  if (!foundBudget) return { error: 'not_found' }
+  if (foundBudget.userId !== userId) return { error: 'access_denied' }
+
+  const foundCategory = await findCategoryById(categoryId, userId)
+  if (!foundCategory) return { error: 'category_not_found' }
+
+  const currentBudget = await findBudgetById(budgetId)
+  const sortOrder = currentBudget?.budgetCategories.length ?? 0
+
+  await db.transaction((tx) =>
+    insertBudgetCategories(tx, [{ budgetId, categoryId, sortOrder }]),
+  )
+
+  return {}
+}
+
 type BudgetDetail = NonNullable<Awaited<ReturnType<typeof findBudgetById>>>
 
 type GetBudgetDetailResult =
@@ -224,14 +247,8 @@ export async function getBudgetDetail(
   userId: string,
 ): Promise<GetBudgetDetailResult> {
   const found = await findBudgetById(budgetId)
+  const ownershipError = checkOwnership(found, userId)
+  if (ownershipError) return { error: ownershipError }
 
-  if (!found) {
-    return { error: 'not_found' }
-  }
-
-  if (found.userId !== userId) {
-    return { error: 'access_denied' }
-  }
-
-  return { budget: found }
+  return { budget: ensureDefined(found) }
 }

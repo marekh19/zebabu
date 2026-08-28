@@ -28,5 +28,9 @@
 
   <BudgetSummary budgetCategories={data.budget.budgetCategories} />
 
-  <BudgetBoard budgetCategories={data.budget.budgetCategories} />
+  <BudgetBoard
+    budgetCategories={data.budget.budgetCategories}
+    availableCategories={data.availableCategories}
+    addCategoryForm={data.addCategoryForm}
+  />
 </div>
