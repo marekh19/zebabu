@@ -9,6 +9,7 @@
     "preview": "bunx --bun vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "typecheck:dev": "svelte-check --tsconfig ./tsconfig.json",
     "lint:check": "eslint .",
     "lint:fix": "eslint --fix .",
     "knip": "knip",
