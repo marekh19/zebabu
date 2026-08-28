@@ -1,19 +1,10 @@
 import { env } from '$env/dynamic/private'
-import { redis } from '$lib/server/cache'
 import { seedDefaultCategories } from '$lib/server/categories/service'
 import { db } from '$lib/server/db'
 import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-
-// INCR + EXPIRE in a single round trip. The TTL is applied only when the
-// counter is created, so a rate-limit window is fixed from its first hit and
-// can never be left TTL-less by a failure between the two commands.
-const INCREMENT_WITH_TTL = `
-local value = redis.call('INCR', KEYS[1])
-if value == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
-return value
-`
+import { redisSecondaryStorage } from './secondary-storage'
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL ?? 'http://localhost:3000',
@@ -64,28 +55,7 @@ export const auth = betterAuth({
   },
 
   // ─── Secondary Storage (Redis) ─────────────────────────────
-  // Handles sessions + rate limiting. Replaces DB queries with
-  // fast in-memory lookups. TTL is handled natively by Redis.
-  secondaryStorage: {
-    get: async (key) => await redis.get(key),
-    set: async (key, value, ttl) => {
-      await redis.set(key, value)
-      if (ttl) await redis.expire(key, ttl)
-    },
-    delete: async (key) => {
-      await redis.del(key)
-    },
-    getAndDelete: async (key) => await redis.getdel(key),
-    increment: async (key, ttl) => {
-      const value: unknown = await redis.send('EVAL', [
-        INCREMENT_WITH_TTL,
-        '1',
-        key,
-        String(ttl),
-      ])
-      return Number(value)
-    },
-  },
+  secondaryStorage: redisSecondaryStorage,
 
   // ─── Session ───────────────────────────────────────────────
   session: {
