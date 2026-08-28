@@ -54,5 +54,6 @@
     {addCategoryError}
     createTransactionForm={data.createTransactionForm}
     {createTransactionError}
+    initialTransactionCategoryId={data.createTransactionCategoryId}
   />
 </div>

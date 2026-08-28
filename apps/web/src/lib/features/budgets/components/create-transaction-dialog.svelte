@@ -15,6 +15,7 @@
   import { buttonVariants } from '$lib/components/ui/button'
   import { Input } from '$lib/components/ui/input'
   import { createCreateTransactionSchema } from '$lib/features/budgets/schemas/create-transaction-schema'
+  import { shouldAcceptDialogOpenChange } from './transaction-dialog'
   import { toast } from 'svelte-sonner'
   import {
     superForm,
@@ -65,6 +66,11 @@
 
   const { form: formData, enhance, submitting } = form
 
+  function handleOpenChange(nextOpen: boolean) {
+    if (!shouldAcceptDialogOpenChange(nextOpen, $submitting)) return
+    onOpenChange(nextOpen)
+  }
+
   $effect(() => {
     if (!open || !budgetCategoryId) return
 
@@ -76,7 +82,7 @@
   })
 </script>
 
-<Dialog.Root {open} {onOpenChange}>
+<Dialog.Root {open} onOpenChange={handleOpenChange}>
   <Dialog.Content class="sm:max-w-md">
     <Dialog.Header>
       <Dialog.Title>{m.budget_detail_transaction_create_title()}</Dialog.Title>

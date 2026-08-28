@@ -21,7 +21,7 @@ const ERROR_STATUS = {
   access_denied: 403,
 } as const satisfies Record<'not_found' | 'access_denied', number>
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, url }) => {
   const userId = ensureDefined(locals.user).id
   const result = await getBudgetDetail(params.id, userId)
 
@@ -35,12 +35,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       superValidate(zod4(addBudgetCategorySchema)),
       superValidate(zod4(createCreateTransactionSchema())),
     ])
+  const requestedTransactionCategoryId = url.searchParams.get(
+    'createTransactionCategory',
+  )
 
   return {
     budget: result.budget,
     availableCategories,
     addCategoryForm,
     createTransactionForm,
+    createTransactionCategoryId: result.budget.budgetCategories.find(
+      ({ id }) => id === requestedTransactionCategoryId,
+    )?.id,
     breadcrumbSegments: {
       [params.id]: getBudgetDisplayName(result.budget),
     },
@@ -122,6 +128,9 @@ export const actions: Actions = {
         createTransactionForm: form,
         createTransactionError: 'not_found' as const,
       })
+
+    if (!request.headers.has('x-sveltekit-action'))
+      redirect(303, resolve(`/budgets/${params.id}`))
 
     return { createTransactionForm: form }
   },

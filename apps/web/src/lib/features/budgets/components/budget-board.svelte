@@ -30,6 +30,7 @@
       Infer<ReturnType<typeof createCreateTransactionSchema>>
     >
     createTransactionError: CreateTransactionError | undefined
+    initialTransactionCategoryId: string | undefined
   }
 
   let {
@@ -39,6 +40,7 @@
     addCategoryError,
     createTransactionForm,
     createTransactionError,
+    initialTransactionCategoryId,
   }: Props = $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
@@ -46,8 +48,13 @@
 
   const sensors = [PointerSensor, KeyboardSensor]
 
-  let transactionDialogOpen = $state(false)
-  let selectedBudgetCategory = $state<BudgetCategory>()
+  // svelte-ignore state_referenced_locally
+  // The query parameter only seeds the dialog; later selection is local UI state.
+  let selectedBudgetCategory = $state(
+    budgetCategories.find(({ id }) => id === initialTransactionCategoryId),
+  )
+  // svelte-ignore state_referenced_locally
+  let transactionDialogOpen = $state(selectedBudgetCategory !== undefined)
 
   function openTransactionDialog(budgetCategory: BudgetCategory) {
     selectedBudgetCategory = budgetCategory

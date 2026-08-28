@@ -21,10 +21,13 @@ vi.mock('$lib/server/categories/repository', () => ({
 
 import { actions } from './+page.server'
 
-function request(overrides: Record<string, string> = {}) {
+function request(overrides: Record<string, string> = {}, enhanced = true) {
   return new Request('http://localhost/budgets/budget-1?/createTransaction', {
     method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      ...(enhanced ? { 'x-sveltekit-action': 'true' } : {}),
+    },
     body: new URLSearchParams({
       budgetCategoryId: 'budget-category-1',
       name: 'Rent',
@@ -34,13 +37,13 @@ function request(overrides: Record<string, string> = {}) {
   })
 }
 
-async function submit(overrides?: Record<string, string>) {
+async function submit(overrides?: Record<string, string>, enhanced = true) {
   const action = actions.createTransaction
   if (!action) throw new Error('createTransaction action is not defined')
 
   return Reflect.apply(action, undefined, [
     {
-      request: request(overrides),
+      request: request(overrides, enhanced),
       params: { id: 'budget-1' },
       locals: { user: { id: 'user-1' } },
     },
@@ -68,6 +71,15 @@ describe('creating a transaction', () => {
       }),
     )
     expect(result).toMatchObject({ createTransactionForm: { valid: true } })
+  })
+
+  it('redirects an unenhanced successful submission to the budget', async () => {
+    mocks.createTransaction.mockResolvedValue({ transaction: { id: 'tx-1' } })
+
+    await expect(submit(undefined, false)).rejects.toMatchObject({
+      status: 303,
+      location: '/budgets/budget-1',
+    })
   })
 
   it('rejects invalid input before calling the service', async () => {

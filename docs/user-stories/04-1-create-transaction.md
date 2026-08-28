@@ -6,7 +6,7 @@
 
 **Story Points:** 2
 
-**Status:** ☐ Not Started
+**Status:** ☒ Done
 
 ---
 
@@ -37,25 +37,25 @@ Activating the button opens a dialog containing all currently supported editable
 
 ## Acceptance Criteria
 
-- [ ] Every budget category column shows the add button below its transactions, including an empty category.
-- [ ] The button spans the transaction list width and matches the standard transaction-row height.
-- [ ] The button is visually distinct as an action while fitting the existing category-column design.
-- [ ] The button shows a large `+` and has a localized accessible name such as “Add transaction to Housing”; the plus sign is hidden from assistive technology.
-- [ ] The button has visible hover and keyboard-focus states and meets the existing light and dark theme contrast requirements.
-- [ ] Activating the button opens the create-transaction dialog for that `budgetCategoryId`.
-- [ ] The dialog identifies the destination category and initially focuses the name field.
-- [ ] The dialog contains name, amount, paid, and note fields.
-- [ ] Name is required, trimmed, and at most 200 characters.
-- [ ] Amount is required, greater than zero, accepts at most two decimal places, and fits the database `numeric(12, 2)` range.
-- [ ] Paid defaults to false.
-- [ ] Note is optional, trimmed, and at most 1,000 characters; an empty note is stored as `null`.
-- [ ] Invalid fields show localized inline errors and preserve the entered values.
-- [ ] Cancel, the close control, and Escape close the dialog without creating a transaction.
-- [ ] Submission prevents duplicate clicks and keeps the dialog open while saving.
-- [ ] A successful submission closes and resets the dialog, shows a localized success toast, and displays the transaction at the bottom of the correct category.
-- [ ] Category totals and budget summary values update after creation.
-- [ ] The server verifies that the signed-in user owns the budget containing the supplied `budgetCategoryId`.
-- [ ] Missing or unauthorized budget categories are rejected without revealing another user's data.
+- [x] Every budget category column shows the add button below its transactions, including an empty category.
+- [x] The button spans the transaction list width and matches the standard transaction-row height.
+- [x] The button is visually distinct as an action while fitting the existing category-column design.
+- [x] The button shows a large `+` and has a localized accessible name such as “Add transaction to Housing”; the plus sign is hidden from assistive technology.
+- [x] The button has visible hover and keyboard-focus states and meets the existing light and dark theme contrast requirements.
+- [x] Activating the button opens the create-transaction dialog for that `budgetCategoryId`.
+- [x] The dialog identifies the destination category and initially focuses the name field.
+- [x] The dialog contains name, amount, paid, and note fields.
+- [x] Name is required, trimmed, and at most 200 characters.
+- [x] Amount is required, greater than zero, accepts at most two decimal places, and fits the database `numeric(12, 2)` range.
+- [x] Paid defaults to false.
+- [x] Note is optional, trimmed, and at most 1,000 characters; an empty note is stored as `null`.
+- [x] Invalid fields show localized inline errors and preserve the entered values.
+- [x] Cancel, the close control, and Escape close the dialog without creating a transaction.
+- [x] Submission prevents duplicate clicks and keeps the dialog open while saving.
+- [x] A successful submission closes and resets the dialog, shows a localized success toast, and displays the transaction at the bottom of the correct category.
+- [x] Category totals and budget summary values update after creation.
+- [x] The server verifies that the signed-in user owns the budget containing the supplied `budgetCategoryId`.
+- [x] Missing or unauthorized budget categories are rejected without revealing another user's data.
 
 ## Technical Implementation
 
@@ -97,11 +97,11 @@ Currency validation is outside this story because the current transaction and us
 
 ## Testing Checklist
 
-- [ ] Schema tests cover blank and overlong names, valid decimal amounts, zero, negative, excess decimal places, the database maximum, paid default, and note normalization.
-- [ ] Service or repository test verifies append ordering.
-- [ ] Integration test creates a transaction through the named action.
-- [ ] Integration test rejects an invalid payload.
-- [ ] Integration test rejects a budget category owned by another user.
+- [x] Schema tests cover blank and overlong names, valid decimal amounts, zero, negative, excess decimal places, the database maximum, paid default, and note normalization.
+- [x] Service or repository test verifies append ordering.
+- [x] Integration test creates a transaction through the named action.
+- [x] Integration test rejects an invalid payload.
+- [x] Integration test rejects a budget category owned by another user.
 - [ ] Manual test verifies the add button in empty and populated columns, light and dark themes, and narrow screens.
 - [ ] Manual keyboard test verifies focus visibility, dialog focus, Escape, cancel, submit, and focus return to the trigger.
 - [ ] Manual screen-reader test verifies the trigger announces both the action and destination category while the decorative plus is ignored.

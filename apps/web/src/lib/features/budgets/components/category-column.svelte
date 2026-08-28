@@ -95,6 +95,7 @@
 
       {#if !isOverlay && onAddTransaction}
         <AddTransactionRow
+          budgetCategoryId={budgetCategory.id}
           categoryName={budgetCategory.category.name}
           onclick={() => onAddTransaction(budgetCategory)}
         />

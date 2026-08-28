@@ -1,6 +1,10 @@
 import { db } from '$lib/server/db'
 import { budget, budgetCategory, transaction } from '$lib/server/db/schema'
 import { type SQL, and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
+import {
+  isOwnedBudgetCategory,
+  nextTransactionSortOrder,
+} from './transaction-rules'
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
@@ -129,7 +133,7 @@ export function findOwnedBudgetCategory(
       ),
       with: { budget: true },
     })
-    .then((found) => (found?.budget.userId === userId ? found : undefined))
+    .then((found) => (isOwnedBudgetCategory(found, userId) ? found : undefined))
 }
 
 export async function insertTransactionAtEnd(
@@ -149,6 +153,6 @@ export async function insertTransactionAtEnd(
 
   return tx
     .insert(transaction)
-    .values({ ...values, sortOrder: (lastTransaction?.sortOrder ?? -1) + 1 })
+    .values({ ...values, sortOrder: nextTransactionSortOrder(lastTransaction) })
     .returning()
 }
