@@ -4,7 +4,7 @@
     PASSWORD_HAS_LETTER,
     PASSWORD_HAS_NUMBER,
     PASSWORD_MIN_LENGTH,
-  } from '$lib/features/auth/constants/password-rules'
+  } from '../constants/password-rules'
   import Check from '@lucide/svelte/icons/check'
   import Circle from '@lucide/svelte/icons/circle'
 

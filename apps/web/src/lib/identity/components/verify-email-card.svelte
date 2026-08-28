@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import { authClient } from '$lib/auth/client'
+  import { authClient } from '../client'
   import * as Card from '$lib/components/ui/card'
   import { Button } from '$lib/components/ui/button'
   import { resolve } from '$app/paths'

@@ -1,6 +1,6 @@
 import { building } from '$app/environment'
-import { auth } from '$lib/auth'
 import { paraglideMiddleware } from '$lib/paraglide/server'
+import { auth } from '$lib/server/application'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { svelteKitHandler } from 'better-auth/svelte-kit'

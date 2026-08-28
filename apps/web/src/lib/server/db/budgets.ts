@@ -11,7 +11,7 @@ import {
   unique,
 } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
-import { account, session, user } from '../../auth/schema'
+import { account, session, user } from '../../identity/server/schema'
 
 export const budgetTypeEnum = pgEnum('budget_type', ['monthly', 'scenario'])
 export const categoryTypeEnum = pgEnum('category_type', ['income', 'expense'])
