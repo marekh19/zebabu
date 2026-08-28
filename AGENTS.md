@@ -15,9 +15,9 @@ This project is setup with `bun` so always use bun commands
 
 After each feature implementation validate by linting and typechecking
 
-1. `bun run lint`
-2. `bun run format`
-3. `bun run check`
+1. `bun run lint:check`
+2. `bun run format:fix` (run from workspace root)
+3. `bun run typecheck`
 
 ## Plan mode
 

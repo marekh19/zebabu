@@ -1,7 +1,7 @@
 import type { CategoryColor } from '$lib/features/categories/colors'
 import { db } from '$lib/server/db'
 import { budgetCategory, category } from '$lib/server/db/schema'
-import { and, asc, count, eq, ne } from 'drizzle-orm'
+import { and, asc, count, eq, isNull, ne } from 'drizzle-orm'
 
 export async function findCategoriesWithBudgetUsageByUser(userId: string) {
   return db
@@ -112,6 +112,35 @@ export function findBudgetCategoryByCategoryIdTx(
     where: eq(budgetCategory.categoryId, categoryId),
     columns: { id: true },
   })
+}
+
+export function findCategoryById(categoryId: string, userId: string) {
+  return db.query.category.findFirst({
+    where: and(eq(category.id, categoryId), eq(category.userId, userId)),
+  })
+}
+
+export function findCategoriesNotInBudget(userId: string, budgetId: string) {
+  return db
+    .select({
+      id: category.id,
+      userId: category.userId,
+      name: category.name,
+      type: category.type,
+      color: category.color,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+    })
+    .from(category)
+    .leftJoin(
+      budgetCategory,
+      and(
+        eq(category.id, budgetCategory.categoryId),
+        eq(budgetCategory.budgetId, budgetId),
+      ),
+    )
+    .where(and(eq(category.userId, userId), isNull(budgetCategory.id)))
+    .orderBy(asc(category.name))
 }
 
 export function deleteCategoryTx(tx: DbTransaction, categoryId: string) {

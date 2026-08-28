@@ -201,5 +201,16 @@
   "categories_error_in_use": "Tato kategorie se používá v jednom nebo více rozpočtech a nelze ji smazat",
   "categories_usage_unused": "Nepoužívána",
   "categories_usage_one_budget": "Použita v 1 rozpočtu",
-  "categories_usage_budgets": "Použita v {count} rozpočtech"
+  "categories_usage_budgets": "Použita v {count} rozpočtech",
+  "budget_detail_add_category": "Přidat kategorii",
+  "budget_detail_add_category_title": "Přidat kategorii do rozpočtu",
+  "budget_detail_add_category_description": "Vyberte kategorii, kterou chcete přidat do tohoto rozpočtu.",
+  "budget_detail_add_category_label": "Kategorie",
+  "budget_detail_add_category_placeholder": "Vyberte kategorii",
+  "budget_detail_add_category_submit": "Přidat",
+  "budget_detail_add_category_submitting": "Přidávání...",
+  "budget_detail_add_category_cancel": "Zrušit",
+  "budget_detail_add_category_success": "Kategorie přidána",
+  "budget_detail_add_category_error_not_found": "Tato kategorie již není dostupná.",
+  "budget_detail_add_category_error_unexpected": "Něco se pokazilo. Zkuste to znovu."
 }

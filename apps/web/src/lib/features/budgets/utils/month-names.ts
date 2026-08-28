@@ -1,3 +1,4 @@
+import { BudgetType } from '$lib/features/budgets/types'
 import * as m from '$lib/paraglide/messages'
 import { getLocale } from '$lib/paraglide/runtime'
 
@@ -33,7 +34,7 @@ export function getBudgetDisplayName(budget: {
   month: number | null
   year: number | null
 }): string {
-  if (budget.type === 'monthly' && budget.month && budget.year) {
+  if (budget.type === BudgetType.Monthly && budget.month && budget.year) {
     return `${getMonthName(budget.month)} ${budget.year}`
   }
   return budget.name ?? ''

@@ -6,7 +6,7 @@
   export const errorMessages = {
     duplicate: m.categories_error_duplicate,
     unexpected: m.categories_error_unexpected,
-  } satisfies Record<string, () => string>
+  } as const satisfies Record<string, () => string>
 </script>
 
 <script lang="ts">
@@ -24,6 +24,7 @@
   import { buttonVariants } from '$lib/components/ui/button'
   import { createCreateCategorySchema } from '$lib/features/categories/schemas/create-category-schema'
   import { categoryColors, colorClasses } from '$lib/features/categories/colors'
+  import { CategoryType } from '$lib/features/categories/types'
 
   type CreateCategorySchema = ReturnType<typeof createCreateCategorySchema>
 
@@ -53,20 +54,21 @@
 
   const { form: formData, enhance, submitting } = form
 
+  const CATEGORY_TYPE_LABELS = {
+    [CategoryType.Income]: m.categories_type_income,
+    [CategoryType.Expense]: m.categories_type_expense,
+  } as const satisfies Record<CategoryType, () => string>
+
   $effect(() => {
     if (open) {
       $formData.name = ''
-      $formData.type = 'expense'
+      $formData.type = CategoryType.Expense
       $formData.color = 'slate'
     }
   })
 
   const selectedTypeLabel = $derived(
-    $formData.type === 'income'
-      ? m.categories_type_income()
-      : $formData.type === 'expense'
-        ? m.categories_type_expense()
-        : undefined,
+    $formData.type ? CATEGORY_TYPE_LABELS[$formData.type]() : undefined,
   )
 </script>
 
@@ -109,7 +111,8 @@
               type="single"
               value={$formData.type}
               onValueChange={(v) => {
-                if (v === 'income' || v === 'expense') $formData.type = v
+                if (v === CategoryType.Income || v === CategoryType.Expense)
+                  $formData.type = v
               }}
             >
               <Select.Trigger {...props} class="w-full">

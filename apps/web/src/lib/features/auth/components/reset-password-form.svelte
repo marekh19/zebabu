@@ -12,9 +12,11 @@
   import { resolve } from '$app/paths'
   import { page } from '$app/state'
 
+  const INVALID_TOKEN_ERROR_CODE = 'INVALID_TOKEN'
+
   const token = $derived(page.url.searchParams.get('token'))
   const tokenError = $derived(
-    page.url.searchParams.get('error') === 'INVALID_TOKEN',
+    page.url.searchParams.get('error') === INVALID_TOKEN_ERROR_CODE,
   )
 
   let serverError = $state('')

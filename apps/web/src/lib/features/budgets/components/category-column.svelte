@@ -6,6 +6,12 @@
   import TransactionRow from './transaction-row.svelte'
   import type { BudgetCategory } from '../types'
   import { colorClasses } from '$lib/features/categories/colors'
+  import { CategoryType } from '$lib/features/categories/types'
+
+  const CATEGORY_TYPE_LABELS = {
+    [CategoryType.Income]: m.budget_detail_type_income,
+    [CategoryType.Expense]: m.budget_detail_type_expense,
+  } as const satisfies Record<CategoryType, () => string>
 
   type Props = {
     budgetCategory: BudgetCategory
@@ -55,9 +61,7 @@
         class="shrink-0 text-xs {colorClasses[budgetCategory.category.color]
           .badge}"
       >
-        {budgetCategory.category.type === 'income'
-          ? m.budget_detail_type_income()
-          : m.budget_detail_type_expense()}
+        {CATEGORY_TYPE_LABELS[budgetCategory.category.type]()}
       </span>
     </div>
 

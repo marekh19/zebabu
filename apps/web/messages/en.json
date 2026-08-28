@@ -201,5 +201,16 @@
   "categories_error_in_use": "This category is used in one or more budgets and cannot be deleted",
   "categories_usage_unused": "Unused",
   "categories_usage_one_budget": "Used in 1 budget",
-  "categories_usage_budgets": "Used in {count} budgets"
+  "categories_usage_budgets": "Used in {count} budgets",
+  "budget_detail_add_category": "Add category",
+  "budget_detail_add_category_title": "Add category to budget",
+  "budget_detail_add_category_description": "Select a category to add to this budget.",
+  "budget_detail_add_category_label": "Category",
+  "budget_detail_add_category_placeholder": "Select a category",
+  "budget_detail_add_category_submit": "Add",
+  "budget_detail_add_category_submitting": "Adding...",
+  "budget_detail_add_category_cancel": "Cancel",
+  "budget_detail_add_category_success": "Category added",
+  "budget_detail_add_category_error_not_found": "That category is no longer available.",
+  "budget_detail_add_category_error_unexpected": "Something went wrong. Please try again."
 }

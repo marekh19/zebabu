@@ -7,7 +7,7 @@
     duplicate: m.categories_error_duplicate,
     not_found: m.categories_error_not_found,
     unexpected: m.categories_error_unexpected,
-  } satisfies Record<string, () => string>
+  } as const satisfies Record<string, () => string>
 </script>
 
 <script lang="ts">
@@ -25,6 +25,7 @@
   import { buttonVariants } from '$lib/components/ui/button'
   import { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
   import { categoryColors, colorClasses } from '$lib/features/categories/colors'
+  import { CategoryType } from '$lib/features/categories/types'
   import type { category } from '$lib/server/db/schema'
 
   type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
@@ -69,11 +70,17 @@
     }
   })
 
-  const typeLabel = $derived(
-    cat.type === 'income'
-      ? m.categories_type_income()
-      : m.categories_type_expense(),
-  )
+  const CATEGORY_TYPE_LABELS = {
+    [CategoryType.Income]: m.categories_type_income,
+    [CategoryType.Expense]: m.categories_type_expense,
+  } as const satisfies Record<CategoryType, () => string>
+
+  const CATEGORY_TYPE_BADGE_VARIANT = {
+    [CategoryType.Income]: 'default',
+    [CategoryType.Expense]: 'secondary',
+  } as const satisfies Record<CategoryType, 'default' | 'secondary'>
+
+  const typeLabel = $derived(CATEGORY_TYPE_LABELS[cat.type]())
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
@@ -112,7 +119,7 @@
           {m.categories_edit_type_label()}
         </p>
         <div class="flex items-center gap-2">
-          <Badge variant={cat.type === 'income' ? 'default' : 'secondary'}>
+          <Badge variant={CATEGORY_TYPE_BADGE_VARIANT[cat.type]}>
             {typeLabel}
           </Badge>
           <p class="text-muted-foreground text-xs">

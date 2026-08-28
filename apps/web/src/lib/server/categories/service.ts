@@ -1,4 +1,5 @@
 import type { CategoryColor } from '$lib/features/categories/colors'
+import { CategoryType } from '$lib/features/categories/types'
 import * as m from '$lib/paraglide/messages'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
@@ -48,13 +49,13 @@ export function seedDefaultCategories(userId: string) {
     {
       userId,
       name: m.category_default_income(),
-      type: 'income',
+      type: CategoryType.Income,
       color: 'emerald',
     },
     {
       userId,
       name: m.category_default_expense(),
-      type: 'expense',
+      type: CategoryType.Expense,
       color: 'rose',
     },
   ])

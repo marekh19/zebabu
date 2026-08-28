@@ -26,14 +26,6 @@
   let duplicateOpen = $state(false)
   let deleting = $state(false)
   let formEl: HTMLFormElement
-
-  function handleDelete() {
-    confirmOpen = true
-  }
-
-  function handleDuplicate() {
-    duplicateOpen = true
-  }
 </script>
 
 <DropdownMenu.Root>
@@ -54,12 +46,15 @@
     {/snippet}
   </DropdownMenu.Trigger>
   <DropdownMenu.Content align="end">
-    <DropdownMenu.Item onclick={handleDuplicate}>
+    <DropdownMenu.Item onclick={() => (duplicateOpen = true)}>
       <CopyIcon />
       <span>{m.budgets_actions_duplicate()}</span>
     </DropdownMenu.Item>
     <DropdownMenu.Separator />
-    <DropdownMenu.Item variant="destructive" onclick={handleDelete}>
+    <DropdownMenu.Item
+      variant="destructive"
+      onclick={() => (confirmOpen = true)}
+    >
       <Trash2Icon />
       <span>{m.budgets_actions_delete()}</span>
     </DropdownMenu.Item>

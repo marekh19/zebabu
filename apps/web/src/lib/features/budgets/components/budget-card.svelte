@@ -9,6 +9,7 @@
     getMonthAbbrev,
     getMonthName,
   } from '$lib/features/budgets/utils/month-names'
+  import { BudgetType } from '$lib/features/budgets/types'
   import type { budget } from '$lib/server/db/schema'
   import BudgetActions from './budget-actions.svelte'
 
@@ -27,6 +28,12 @@
   }
 </script>
 
+{#snippet createdAt()}
+  <p class="text-muted-foreground mt-1 text-xs">
+    {m.budgets_card_created({ date: formatDate(b.createdAt) })}
+  </p>
+{/snippet}
+
 <a
   href={resolve(`/budgets/${b.id}`)}
   class="focus-visible:ring-ring/50 block cursor-pointer rounded-xl outline-none focus-visible:ring-[3px]"
@@ -35,7 +42,7 @@
     class="gap-0 py-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
   >
     <div class="flex items-center gap-4 p-4">
-      {#if b.type === 'monthly'}
+      {#if b.type === BudgetType.Monthly}
         <div
           class="bg-primary/10 flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg"
         >
@@ -53,9 +60,7 @@
             {getMonthName(ensureDefined(b.month))}
             {b.year}
           </p>
-          <p class="text-muted-foreground mt-1 text-xs">
-            {m.budgets_card_created({ date: formatDate(b.createdAt) })}
-          </p>
+          {@render createdAt()}
         </div>
       {:else}
         <div
@@ -67,9 +72,7 @@
           <p class="truncate leading-tight font-semibold">
             {b.name}
           </p>
-          <p class="text-muted-foreground mt-1 text-xs">
-            {m.budgets_card_created({ date: formatDate(b.createdAt) })}
-          </p>
+          {@render createdAt()}
         </div>
       {/if}
       <BudgetActions budget={b} />

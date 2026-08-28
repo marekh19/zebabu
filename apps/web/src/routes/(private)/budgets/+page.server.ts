@@ -54,7 +54,7 @@ export const actions: Actions = {
       return fail(500, { form, error: 'unexpected' as const })
     }
 
-    redirect(303, `/budgets/${budgetId}`)
+    redirect(303, resolve(`/budgets/${budgetId}`))
   },
 
   duplicate: (event) =>

@@ -14,6 +14,28 @@
     budgetCategories: BudgetCategory[]
   }
 
+  const BalanceState = {
+    Zero: 'zero',
+    Positive: 'positive',
+    Negative: 'negative',
+  } as const
+
+  type BalanceState = (typeof BalanceState)[keyof typeof BalanceState]
+
+  const BALANCE_EPSILON = 0.01
+
+  const BALANCE_STYLES = {
+    [BalanceState.Zero]: 'bg-emerald-500/10 border-emerald-500/30',
+    [BalanceState.Positive]: 'bg-amber-500/10 border-amber-500/30',
+    [BalanceState.Negative]: 'bg-destructive/10 border-destructive/30',
+  } as const satisfies Record<BalanceState, string>
+
+  const BALANCE_TEXT_COLORS = {
+    [BalanceState.Zero]: 'text-emerald-600 dark:text-emerald-400',
+    [BalanceState.Positive]: 'text-amber-600 dark:text-amber-400',
+    [BalanceState.Negative]: 'text-destructive',
+  } as const satisfies Record<BalanceState, string>
+
   let { budgetCategories }: Props = $props()
 
   const isMobile = new IsMobile()
@@ -36,36 +58,35 @@
 
   const balance = $derived(totalIncome - totalExpenses)
 
-  const balanceState = $derived.by(() => {
-    if (Math.abs(balance) < 0.01) return 'zero' as const
-    if (balance > 0) return 'positive' as const
-    return 'negative' as const
-  })
+  const balanceState = $derived(
+    Math.abs(balance) < BALANCE_EPSILON
+      ? BalanceState.Zero
+      : balance > 0
+        ? BalanceState.Positive
+        : BalanceState.Negative,
+  )
 
   const balanceLabel = $derived(
-    balanceState === 'zero'
-      ? m.budget_summary_balance_zero()
-      : balanceState === 'positive'
-        ? m.budget_summary_balance_unallocated()
-        : m.budget_summary_balance_over(),
+    {
+      [BalanceState.Zero]: m.budget_summary_balance_zero(),
+      [BalanceState.Positive]: m.budget_summary_balance_unallocated(),
+      [BalanceState.Negative]: m.budget_summary_balance_over(),
+    }[balanceState],
   )
 
-  const balanceStyles = $derived(
-    balanceState === 'zero'
-      ? 'bg-emerald-500/10 border-emerald-500/30'
-      : balanceState === 'positive'
-        ? 'bg-amber-500/10 border-amber-500/30'
-        : 'bg-destructive/10 border-destructive/30',
-  )
-
-  const balanceTextColor = $derived(
-    balanceState === 'zero'
-      ? 'text-emerald-600 dark:text-emerald-400'
-      : balanceState === 'positive'
-        ? 'text-amber-600 dark:text-amber-400'
-        : 'text-destructive',
-  )
+  const balanceStyles = $derived(BALANCE_STYLES[balanceState])
+  const balanceTextColor = $derived(BALANCE_TEXT_COLORS[balanceState])
 </script>
+
+{#snippet balanceIcon(size: string)}
+  {#if balanceState === BalanceState.Zero}
+    <CircleCheckIcon class="{size} {balanceTextColor}" />
+  {:else if balanceState === BalanceState.Positive}
+    <TriangleAlertIcon class="{size} {balanceTextColor}" />
+  {:else}
+    <CircleAlertIcon class="{size} {balanceTextColor}" />
+  {/if}
+{/snippet}
 
 <div>
   <button
@@ -77,13 +98,7 @@
       {m.budget_summary_title()}
     </span>
     <span class="text-muted-foreground mx-0.5">·</span>
-    {#if balanceState === 'zero'}
-      <CircleCheckIcon class="size-3.5 {balanceTextColor}" />
-    {:else if balanceState === 'positive'}
-      <TriangleAlertIcon class="size-3.5 {balanceTextColor}" />
-    {:else}
-      <CircleAlertIcon class="size-3.5 {balanceTextColor}" />
-    {/if}
+    {@render balanceIcon('size-3.5')}
     <span class="text-sm font-semibold tabular-nums {balanceTextColor}">
       {balanceLabel}
       {formatDecimal(balance)}
@@ -132,17 +147,7 @@
         class="flex items-center gap-3 rounded-lg border p-4 {balanceStyles}"
       >
         <div class="bg-background/50 rounded-md p-2">
-          {#if balanceState === 'zero'}
-            <CircleCheckIcon
-              class="size-4 text-emerald-600 dark:text-emerald-400"
-            />
-          {:else if balanceState === 'positive'}
-            <TriangleAlertIcon
-              class="size-4 text-amber-600 dark:text-amber-400"
-            />
-          {:else}
-            <CircleAlertIcon class="text-destructive size-4" />
-          {/if}
+          {@render balanceIcon('size-4')}
         </div>
         <div>
           <p class="text-muted-foreground text-xs font-medium">
