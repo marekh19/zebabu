@@ -19,7 +19,7 @@
   let open = $state(false)
 </script>
 
-<div class="w-[calc(100vw-2rem)] shrink-0 sm:w-75">
+<div class="w-[calc(100vw-2rem)] shrink-0 snap-start snap-always sm:w-75">
   <button
     type="button"
     class="border-primary/40 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 flex h-full min-h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors"
