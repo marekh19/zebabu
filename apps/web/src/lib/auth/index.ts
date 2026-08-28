@@ -6,6 +6,15 @@ import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
+// INCR + EXPIRE in a single round trip. The TTL is applied only when the
+// counter is created, so a rate-limit window is fixed from its first hit and
+// can never be left TTL-less by a failure between the two commands.
+const INCREMENT_WITH_TTL = `
+local value = redis.call('INCR', KEYS[1])
+if value == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+return value
+`
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL ?? 'http://localhost:3000',
 
@@ -65,6 +74,16 @@ export const auth = betterAuth({
     },
     delete: async (key) => {
       await redis.del(key)
+    },
+    getAndDelete: async (key) => await redis.getdel(key),
+    increment: async (key, ttl) => {
+      const value: unknown = await redis.send('EVAL', [
+        INCREMENT_WITH_TTL,
+        '1',
+        key,
+        String(ttl),
+      ])
+      return Number(value)
     },
   },
 
