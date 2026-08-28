@@ -114,3 +114,41 @@ export function insertTransactions(
 ) {
   return tx.insert(transaction).values(values)
 }
+
+export function findOwnedBudgetCategory(
+  tx: DbTransaction,
+  budgetCategoryId: string,
+  budgetId: string,
+  userId: string,
+) {
+  return tx.query.budgetCategory
+    .findFirst({
+      where: and(
+        eq(budgetCategory.id, budgetCategoryId),
+        eq(budgetCategory.budgetId, budgetId),
+      ),
+      with: { budget: true },
+    })
+    .then((found) => (found?.budget.userId === userId ? found : undefined))
+}
+
+export async function insertTransactionAtEnd(
+  tx: DbTransaction,
+  values: Omit<typeof transaction.$inferInsert, 'sortOrder'>,
+) {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${values.budgetCategoryId}))`,
+  )
+
+  const [lastTransaction] = await tx
+    .select({ sortOrder: transaction.sortOrder })
+    .from(transaction)
+    .where(eq(transaction.budgetCategoryId, values.budgetCategoryId))
+    .orderBy(desc(transaction.sortOrder))
+    .limit(1)
+
+  return tx
+    .insert(transaction)
+    .values({ ...values, sortOrder: (lastTransaction?.sortOrder ?? -1) + 1 })
+    .returning()
+}

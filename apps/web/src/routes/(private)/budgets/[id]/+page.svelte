@@ -6,6 +6,7 @@
   import BudgetSummary from '$lib/features/budgets/components/budget-summary.svelte'
   import { getBudgetDisplayName } from '$lib/features/budgets/utils/month-names'
   import { errorMessages } from '$lib/features/budgets/components/add-budget-category-dialog.svelte'
+  import { errorMessages as createTransactionErrorMessages } from '$lib/features/budgets/components/create-transaction-dialog.svelte'
   import { isKeyOf, isString } from 'narrowland'
 
   let { data, form: actionData } = $props()
@@ -18,6 +19,15 @@
   })
 
   const displayName = $derived(getBudgetDisplayName(data.budget))
+
+  const createTransactionError = $derived.by(() => {
+    if (actionData == null || !('createTransactionError' in actionData))
+      return undefined
+    const value = actionData.createTransactionError
+    if (isString(value) && isKeyOf(value, createTransactionErrorMessages))
+      return value
+    return undefined
+  })
 
   const typeBadge = $derived(
     data.budget.type === 'monthly'
@@ -42,5 +52,7 @@
     availableCategories={data.availableCategories}
     addCategoryForm={data.addCategoryForm}
     {addCategoryError}
+    createTransactionForm={data.createTransactionForm}
+    {createTransactionError}
   />
 </div>

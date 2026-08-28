@@ -1,9 +1,11 @@
 import { resolve } from '$app/paths'
 import { addBudgetCategorySchema } from '$lib/features/budgets/schemas/add-budget-category-schema'
+import { createCreateTransactionSchema } from '$lib/features/budgets/schemas/create-transaction-schema'
 import { getBudgetDisplayName } from '$lib/features/budgets/utils/month-names'
 import { handleDuplicateBudgetAction } from '$lib/server/budgets/action-helpers'
 import {
   addBudgetCategory,
+  createTransaction,
   deleteBudget,
   getBudgetDetail,
 } from '$lib/server/budgets/service'
@@ -27,15 +29,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     error(ERROR_STATUS[result.error])
   }
 
-  const [availableCategories, addCategoryForm] = await Promise.all([
-    findCategoriesNotInBudget(userId, params.id),
-    superValidate(zod4(addBudgetCategorySchema)),
-  ])
+  const [availableCategories, addCategoryForm, createTransactionForm] =
+    await Promise.all([
+      findCategoriesNotInBudget(userId, params.id),
+      superValidate(zod4(addBudgetCategorySchema)),
+      superValidate(zod4(createCreateTransactionSchema())),
+    ])
 
   return {
     budget: result.budget,
     availableCategories,
     addCategoryForm,
+    createTransactionForm,
     breadcrumbSegments: {
       [params.id]: getBudgetDisplayName(result.budget),
     },
@@ -85,5 +90,39 @@ export const actions: Actions = {
       })
 
     return { addCategoryForm: form }
+  },
+
+  createTransaction: async ({ request, params, locals }) => {
+    const userId = ensureDefined(locals.user).id
+    const form = await superValidate(
+      request,
+      zod4(createCreateTransactionSchema()),
+    )
+
+    if (!form.valid) return fail(400, { createTransactionForm: form })
+
+    const result = await createTransaction(
+      params.id,
+      userId,
+      form.data.budgetCategoryId,
+      form.data,
+    ).catch((error: unknown) => {
+      console.error('Creating transaction failed:', error)
+      return null
+    })
+
+    if (!result)
+      return fail(500, {
+        createTransactionForm: form,
+        createTransactionError: 'unexpected' as const,
+      })
+
+    if (result.error === 'not_found')
+      return fail(404, {
+        createTransactionForm: form,
+        createTransactionError: 'not_found' as const,
+      })
+
+    return { createTransactionForm: form }
   },
 }

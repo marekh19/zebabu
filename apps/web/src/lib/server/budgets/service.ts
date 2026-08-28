@@ -10,9 +10,11 @@ import {
   findBudgetById,
   findBudgetOwner,
   findMonthlyBudget,
+  findOwnedBudgetCategory,
   findScenarioBudget,
   insertBudget,
   insertBudgetCategories,
+  insertTransactionAtEnd,
   insertTransactions,
   listBudgetsByUser,
   updateBudgetCategorySortOrders,
@@ -251,4 +253,38 @@ export async function getBudgetDetail(
   if (ownershipError) return { error: ownershipError }
 
   return { budget: ensureDefined(found) }
+}
+
+type CreateTransactionData = {
+  name: string
+  amount: number
+  isPaid: boolean
+  note?: string
+}
+
+export async function createTransaction(
+  budgetId: string,
+  userId: string,
+  budgetCategoryId: string,
+  data: CreateTransactionData,
+) {
+  return db.transaction(async (tx) => {
+    const destination = await findOwnedBudgetCategory(
+      tx,
+      budgetCategoryId,
+      budgetId,
+      userId,
+    )
+    if (!destination) return { error: 'not_found' as const }
+
+    const [created] = await insertTransactionAtEnd(tx, {
+      budgetCategoryId,
+      name: data.name,
+      amount: String(data.amount),
+      isPaid: data.isPaid,
+      note: data.note || null,
+    })
+
+    return { transaction: created }
+  })
 }

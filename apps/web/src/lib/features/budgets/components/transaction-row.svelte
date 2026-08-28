@@ -14,7 +14,7 @@
   const formattedAmount = $derived(formatDecimal(t.amount))
 </script>
 
-<div class="flex items-start gap-2 rounded-md px-2 py-1.5">
+<div class="flex min-h-11 items-start gap-2 rounded-md px-2 py-1.5">
   <div class="min-w-0 flex-1">
     <p class="truncate text-sm">{t.name}</p>
     {#if t.note}

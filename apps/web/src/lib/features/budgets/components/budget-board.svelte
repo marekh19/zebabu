@@ -16,12 +16,20 @@
   import type { addBudgetCategorySchema } from '../schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
   import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
+  import CreateTransactionDialog, {
+    type CreateTransactionError,
+  } from './create-transaction-dialog.svelte'
+  import type { createCreateTransactionSchema } from '../schemas/create-transaction-schema'
 
   type Props = {
     budgetCategories: BudgetCategory[]
     availableCategories: AvailableCategory[]
     addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
     addCategoryError: AddBudgetCategoryError | undefined
+    createTransactionForm: SuperValidated<
+      Infer<ReturnType<typeof createCreateTransactionSchema>>
+    >
+    createTransactionError: CreateTransactionError | undefined
   }
 
   let {
@@ -29,12 +37,22 @@
     availableCategories,
     addCategoryForm,
     addCategoryError,
+    createTransactionForm,
+    createTransactionError,
   }: Props = $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
 
   const sensors = [PointerSensor, KeyboardSensor]
+
+  let transactionDialogOpen = $state(false)
+  let selectedBudgetCategory = $state<BudgetCategory>()
+
+  function openTransactionDialog(budgetCategory: BudgetCategory) {
+    selectedBudgetCategory = budgetCategory
+    transactionDialogOpen = true
+  }
 
   async function handleDragEnd(event: { canceled: boolean }) {
     if (event.canceled) return
@@ -83,7 +101,11 @@
   >
     <div class="flex gap-4">
       {#each items as bc, index (bc.id)}
-        <CategoryColumn budgetCategory={bc} {index} />
+        <CategoryColumn
+          budgetCategory={bc}
+          {index}
+          onAddTransaction={openTransactionDialog}
+        />
       {/each}
       {#if availableCategories.length > 0}
         <AddCategoryColumn
@@ -104,3 +126,12 @@
     </DragOverlay>
   </DragDropProvider>
 </div>
+
+<CreateTransactionDialog
+  bind:open={transactionDialogOpen}
+  budgetCategoryId={selectedBudgetCategory?.id}
+  categoryName={selectedBudgetCategory?.category.name}
+  data={createTransactionForm}
+  error={createTransactionError}
+  onOpenChange={(open) => (transactionDialogOpen = open)}
+/>
