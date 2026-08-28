@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "bunx --bun vite dev --port 3000",
+    "dev": "bunx --bun vite dev --port 3000 --host",
     "build": "bunx --bun vite build",
     "preview": "bunx --bun vite preview",
     "prepare": "svelte-kit sync || echo ''",
@@ -15,7 +15,7 @@
     "clean": "rm -rf .svelte-kit build node_modules",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "bun src/migrate.mjs",
     "db:studio": "drizzle-kit studio",
     "redis:studio": "redis-commander --redis-host localhost --redis-port 6379"
   },
