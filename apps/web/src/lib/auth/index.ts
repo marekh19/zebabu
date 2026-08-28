@@ -7,7 +7,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { redisSecondaryStorage } from './secondary-storage'
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_BASE_URL ?? 'http://localhost:3000',
+  baseURL: env.BETTER_AUTH_BASE_URL ?? 'http://localhost:3000',
 
   emailAndPassword: {
     enabled: true,
@@ -91,5 +91,5 @@ export const auth = betterAuth({
   },
 
   // Trusted origins for CSRF protection
-  trustedOrigins: [process.env.APP_URL ?? 'http://localhost:3000'],
+  trustedOrigins: [env.APP_URL ?? 'http://localhost:3000'],
 })
