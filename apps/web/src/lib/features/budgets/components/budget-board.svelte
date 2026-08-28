@@ -16,12 +16,21 @@
   import type { addBudgetCategorySchema } from '../schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
   import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
+  import CreateTransactionDialog, {
+    type CreateTransactionError,
+  } from './create-transaction-dialog.svelte'
+  import type { createCreateTransactionSchema } from '../schemas/create-transaction-schema'
 
   type Props = {
     budgetCategories: BudgetCategory[]
     availableCategories: AvailableCategory[]
     addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
     addCategoryError: AddBudgetCategoryError | undefined
+    createTransactionForm: SuperValidated<
+      Infer<ReturnType<typeof createCreateTransactionSchema>>
+    >
+    createTransactionError: CreateTransactionError | undefined
+    initialTransactionCategoryId: string | undefined
   }
 
   let {
@@ -29,12 +38,28 @@
     availableCategories,
     addCategoryForm,
     addCategoryError,
+    createTransactionForm,
+    createTransactionError,
+    initialTransactionCategoryId,
   }: Props = $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
 
   const sensors = [PointerSensor, KeyboardSensor]
+
+  // svelte-ignore state_referenced_locally
+  // The query parameter only seeds the dialog; later selection is local UI state.
+  let selectedBudgetCategory = $state(
+    budgetCategories.find(({ id }) => id === initialTransactionCategoryId),
+  )
+  // svelte-ignore state_referenced_locally
+  let transactionDialogOpen = $state(selectedBudgetCategory !== undefined)
+
+  function openTransactionDialog(budgetCategory: BudgetCategory) {
+    selectedBudgetCategory = budgetCategory
+    transactionDialogOpen = true
+  }
 
   async function handleDragEnd(event: { canceled: boolean }) {
     if (event.canceled) return
@@ -83,7 +108,11 @@
   >
     <div class="flex gap-4">
       {#each items as bc, index (bc.id)}
-        <CategoryColumn budgetCategory={bc} {index} />
+        <CategoryColumn
+          budgetCategory={bc}
+          {index}
+          onAddTransaction={openTransactionDialog}
+        />
       {/each}
       {#if availableCategories.length > 0}
         <AddCategoryColumn
@@ -104,3 +133,12 @@
     </DragOverlay>
   </DragDropProvider>
 </div>
+
+<CreateTransactionDialog
+  bind:open={transactionDialogOpen}
+  budgetCategoryId={selectedBudgetCategory?.id}
+  categoryName={selectedBudgetCategory?.category.name}
+  data={createTransactionForm}
+  error={createTransactionError}
+  onOpenChange={(open) => (transactionDialogOpen = open)}
+/>

@@ -4,6 +4,7 @@
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical'
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
   import TransactionRow from './transaction-row.svelte'
+  import AddTransactionRow from './add-transaction-row.svelte'
   import type { BudgetCategory } from '../types'
   import { colorClasses } from '$lib/features/categories/colors'
   import { CategoryType } from '$lib/features/categories/types'
@@ -17,9 +18,15 @@
     budgetCategory: BudgetCategory
     index: number
     isOverlay?: boolean
+    onAddTransaction?: (budgetCategory: BudgetCategory) => void
   }
 
-  let { budgetCategory, index, isOverlay = false }: Props = $props()
+  let {
+    budgetCategory,
+    index,
+    isOverlay = false,
+    onAddTransaction,
+  }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
     id: () => budgetCategory.id,
@@ -84,6 +91,14 @@
         {#each budgetCategory.transactions as t (t.id)}
           <TransactionRow transaction={t} />
         {/each}
+      {/if}
+
+      {#if !isOverlay && onAddTransaction}
+        <AddTransactionRow
+          budgetCategoryId={budgetCategory.id}
+          categoryName={budgetCategory.category.name}
+          onclick={() => onAddTransaction(budgetCategory)}
+        />
       {/if}
     </div>
   </div>
