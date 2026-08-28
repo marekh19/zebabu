@@ -61,16 +61,24 @@ export const actions: Actions = {
 
     if (!form.valid) return fail(400, { addCategoryForm: form })
 
-    const result = await addBudgetCategory(
-      params.id,
-      userId,
-      form.data.categoryId,
-    )
+    let result: Awaited<ReturnType<typeof addBudgetCategory>>
+    try {
+      result = await addBudgetCategory(params.id, userId, form.data.categoryId)
+    } catch (error) {
+      console.error('Adding category to budget failed:', error)
+      return fail(500, { addCategoryForm: form, error: 'unexpected' as const })
+    }
 
     if (result.error === 'not_found' || result.error === 'access_denied')
-      return fail(ERROR_STATUS[result.error], { addCategoryForm: form })
+      return fail(ERROR_STATUS[result.error], {
+        addCategoryForm: form,
+        error: 'unexpected' as const,
+      })
     if (result.error === 'category_not_found')
-      return fail(404, { addCategoryForm: form })
+      return fail(404, {
+        addCategoryForm: form,
+        error: 'not_found' as const,
+      })
 
     return { addCategoryForm: form }
   },

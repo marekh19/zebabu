@@ -210,5 +210,7 @@
   "budget_detail_add_category_submit": "Přidat",
   "budget_detail_add_category_submitting": "Přidávání...",
   "budget_detail_add_category_cancel": "Zrušit",
-  "budget_detail_add_category_success": "Kategorie přidána"
+  "budget_detail_add_category_success": "Kategorie přidána",
+  "budget_detail_add_category_error_not_found": "Tato kategorie již není dostupná.",
+  "budget_detail_add_category_error_unexpected": "Něco se pokazilo. Zkuste to znovu."
 }

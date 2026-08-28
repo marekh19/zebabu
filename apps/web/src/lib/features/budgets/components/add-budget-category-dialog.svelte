@@ -1,5 +1,15 @@
-<script lang="ts">
+<script module lang="ts">
   import * as m from '$lib/paraglide/messages'
+
+  export type AddBudgetCategoryError = keyof typeof errorMessages
+
+  export const errorMessages = {
+    not_found: m.budget_detail_add_category_error_not_found,
+    unexpected: m.budget_detail_add_category_error_unexpected,
+  } as const satisfies Record<string, () => string>
+</script>
+
+<script lang="ts">
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Form from '$lib/components/ui/form'
   import * as Select from '$lib/components/ui/select'
@@ -18,10 +28,17 @@
     open: boolean
     data: SuperValidated<Infer<typeof addBudgetCategorySchema>>
     categories: AvailableCategory[]
+    error: AddBudgetCategoryError | undefined
     onOpenChange: (open: boolean) => void
   }
 
-  let { open = $bindable(), data, categories, onOpenChange }: Props = $props()
+  let {
+    open = $bindable(),
+    data,
+    categories,
+    error,
+    onOpenChange,
+  }: Props = $props()
 
   // svelte-ignore state_referenced_locally
   const form = superForm(data, {
@@ -58,6 +75,12 @@
     </Dialog.Header>
 
     <form method="POST" action="?/addCategory" use:enhance class="space-y-4">
+      {#if error}
+        <p class="text-destructive text-sm font-medium">
+          {errorMessages[error]()}
+        </p>
+      {/if}
+
       <Form.Field {form} name="categoryId">
         <Form.Control>
           {#snippet children({ props })}

@@ -15,15 +15,21 @@
   import type { AvailableCategory, BudgetCategory } from '../types'
   import type { addBudgetCategorySchema } from '../schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
+  import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
 
   type Props = {
     budgetCategories: BudgetCategory[]
     availableCategories: AvailableCategory[]
     addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
+    addCategoryError: AddBudgetCategoryError | undefined
   }
 
-  let { budgetCategories, availableCategories, addCategoryForm }: Props =
-    $props()
+  let {
+    budgetCategories,
+    availableCategories,
+    addCategoryForm,
+    addCategoryError,
+  }: Props = $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
@@ -80,7 +86,11 @@
         <CategoryColumn budgetCategory={bc} {index} />
       {/each}
       {#if availableCategories.length > 0}
-        <AddCategoryColumn {availableCategories} {addCategoryForm} />
+        <AddCategoryColumn
+          {availableCategories}
+          {addCategoryForm}
+          {addCategoryError}
+        />
       {/if}
     </div>
 

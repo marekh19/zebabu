@@ -5,13 +5,16 @@
   import type { AvailableCategory } from '../types'
   import type { addBudgetCategorySchema } from '$lib/features/budgets/schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
+  import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
 
   type Props = {
     availableCategories: AvailableCategory[]
     addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
+    addCategoryError: AddBudgetCategoryError | undefined
   }
 
-  let { availableCategories, addCategoryForm }: Props = $props()
+  let { availableCategories, addCategoryForm, addCategoryError }: Props =
+    $props()
 
   let open = $state(false)
 </script>
@@ -34,5 +37,6 @@
   {open}
   data={addCategoryForm}
   categories={availableCategories}
+  error={addCategoryError}
   onOpenChange={(v) => (open = v)}
 />

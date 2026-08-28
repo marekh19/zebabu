@@ -210,5 +210,7 @@
   "budget_detail_add_category_submit": "Add",
   "budget_detail_add_category_submitting": "Adding...",
   "budget_detail_add_category_cancel": "Cancel",
-  "budget_detail_add_category_success": "Category added"
+  "budget_detail_add_category_success": "Category added",
+  "budget_detail_add_category_error_not_found": "That category is no longer available.",
+  "budget_detail_add_category_error_unexpected": "Something went wrong. Please try again."
 }

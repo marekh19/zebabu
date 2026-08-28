@@ -5,8 +5,17 @@
   import BudgetBoard from '$lib/features/budgets/components/budget-board.svelte'
   import BudgetSummary from '$lib/features/budgets/components/budget-summary.svelte'
   import { getBudgetDisplayName } from '$lib/features/budgets/utils/month-names'
+  import { errorMessages } from '$lib/features/budgets/components/add-budget-category-dialog.svelte'
+  import { isKeyOf, isString } from 'narrowland'
 
-  let { data } = $props()
+  let { data, form: actionData } = $props()
+
+  const addCategoryError = $derived.by(() => {
+    if (actionData == null || !('error' in actionData)) return undefined
+    const value = actionData.error
+    if (isString(value) && isKeyOf(value, errorMessages)) return value
+    return undefined
+  })
 
   const displayName = $derived(getBudgetDisplayName(data.budget))
 
@@ -32,5 +41,6 @@
     budgetCategories={data.budget.budgetCategories}
     availableCategories={data.availableCategories}
     addCategoryForm={data.addCategoryForm}
+    {addCategoryError}
   />
 </div>
