@@ -1,13 +1,6 @@
-export const categoryColors = [
-  'slate',
-  'rose',
-  'emerald',
-  'amber',
-  'sky',
-  'violet',
-  'orange',
-  'teal',
-] as const
+import type { CategoryColor } from './types'
+
+export { categoryColors } from './types'
 
 export const colorClasses = {
   slate: {
@@ -54,5 +47,3 @@ export const colorClasses = {
   CategoryColor,
   { circle: string; header: string; badge: string }
 >
-
-export type CategoryColor = (typeof categoryColors)[number]

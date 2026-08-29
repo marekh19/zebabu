@@ -7,7 +7,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('$lib/budget-planning/server', () => ({
   addBudgetCategory: mocks.addBudgetCategory,
   deleteBudget: vi.fn(),
-  findCategoriesNotInBudget: vi.fn(),
   getBudgetDetail: vi.fn(),
   handleDuplicateBudgetAction: vi.fn(),
 }))

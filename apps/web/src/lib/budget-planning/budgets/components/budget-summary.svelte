@@ -8,10 +8,10 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert'
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert'
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down'
-  import type { BudgetCategory } from '../types'
+  import type { BudgetCategory } from '$lib/budget-planning/model'
 
   type Props = {
-    budgetCategories: BudgetCategory[]
+    budgetCategories: readonly BudgetCategory[]
   }
 
   const BalanceState = {

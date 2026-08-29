@@ -8,7 +8,6 @@ import {
   addBudgetCategory,
   createTransaction,
   deleteBudget,
-  findCategoriesNotInBudget,
   getBudgetDetail,
   handleDuplicateBudgetAction,
 } from '$lib/budget-planning/server'
@@ -31,19 +30,17 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     error(ERROR_STATUS[result.error])
   }
 
-  const [availableCategories, addCategoryForm, createTransactionForm] =
-    await Promise.all([
-      findCategoriesNotInBudget(userId, params.id),
-      superValidate(zod4(addBudgetCategorySchema)),
-      superValidate(zod4(createCreateTransactionSchema())),
-    ])
+  const [addCategoryForm, createTransactionForm] = await Promise.all([
+    superValidate(zod4(addBudgetCategorySchema)),
+    superValidate(zod4(createCreateTransactionSchema())),
+  ])
   const requestedTransactionCategoryId = url.searchParams.get(
     'createTransactionCategory',
   )
 
   return {
     budget: result.budget,
-    availableCategories,
+    availableCategories: result.availableCategories,
     addCategoryForm,
     createTransactionForm,
     createTransactionCategoryId: result.budget.budgetCategories.find(

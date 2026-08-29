@@ -2,13 +2,11 @@
   import CalendarIcon from '@lucide/svelte/icons/calendar'
   import LightbulbIcon from '@lucide/svelte/icons/lightbulb'
   import * as m from '$lib/paraglide/messages'
-  import type { budget } from '$lib/server/db/schema'
+  import type { BudgetListItem } from '$lib/budget-planning/model'
   import BudgetSection from './budget-section.svelte'
 
-  type Budget = typeof budget.$inferSelect
-
   type Props = {
-    budgets: Budget[]
+    budgets: readonly BudgetListItem[]
   }
 
   let { budgets }: Props = $props()

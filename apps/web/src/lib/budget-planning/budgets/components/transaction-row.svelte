@@ -1,12 +1,10 @@
 <script lang="ts">
   import CheckIcon from '@lucide/svelte/icons/check'
   import { formatDecimal } from '$lib/utils'
-  import type { transaction } from '$lib/server/db/schema'
-
-  type Transaction = typeof transaction.$inferSelect
+  import type { PlannedTransaction } from '$lib/budget-planning/model'
 
   type Props = {
-    transaction: Transaction
+    transaction: PlannedTransaction
   }
 
   let { transaction: t }: Props = $props()

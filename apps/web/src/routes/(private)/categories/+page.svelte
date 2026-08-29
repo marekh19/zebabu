@@ -29,11 +29,7 @@
   {:else}
     <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {#each data.categories as cat (cat.id)}
-        <CategoryCard
-          category={cat}
-          budgetUsageCount={cat.budgetUsageCount}
-          editForm={data.editForm}
-        />
+        <CategoryCard category={cat} editForm={data.editForm} />
       {/each}
     </div>
   {/if}

@@ -12,18 +12,22 @@
     PointerSensor,
   } from '@dnd-kit-svelte/svelte'
   import { move } from '@dnd-kit/helpers'
-  import type { AvailableCategory, BudgetCategory } from '../types'
+  import type {
+    AvailableCategory,
+    BudgetCategory,
+  } from '$lib/budget-planning/model'
   import type { addBudgetCategorySchema } from '../schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
-  import type { AddBudgetCategoryError } from './add-budget-category-dialog.svelte'
-  import CreateTransactionDialog, {
-    type CreateTransactionError,
-  } from './create-transaction-dialog.svelte'
+  import type {
+    AddBudgetCategoryError,
+    CreateTransactionError,
+  } from '$lib/budget-planning/errors'
+  import CreateTransactionDialog from './create-transaction-dialog.svelte'
   import type { createCreateTransactionSchema } from '../schemas/create-transaction-schema'
 
   type Props = {
-    budgetCategories: BudgetCategory[]
-    availableCategories: AvailableCategory[]
+    budgetCategories: readonly BudgetCategory[]
+    availableCategories: readonly AvailableCategory[]
     addCategoryForm: SuperValidated<Infer<typeof addBudgetCategorySchema>>
     addCategoryError: AddBudgetCategoryError | undefined
     createTransactionForm: SuperValidated<

@@ -1,15 +1,5 @@
-<script module lang="ts">
-  import * as m from '$lib/paraglide/messages'
-
-  export type CreateCategoryError = keyof typeof errorMessages
-
-  export const errorMessages = {
-    duplicate: m.categories_error_duplicate,
-    unexpected: m.categories_error_unexpected,
-  } as const satisfies Record<string, () => string>
-</script>
-
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages'
   import {
     superForm,
     type Infer,
@@ -28,6 +18,10 @@
     colorClasses,
   } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
+  import {
+    createCategoryErrorMessages,
+    type CreateCategoryError,
+  } from '$lib/budget-planning/errors'
 
   type CreateCategorySchema = ReturnType<typeof createCreateCategorySchema>
 
@@ -87,7 +81,7 @@
     <form method="POST" action="?/create" use:enhance class="space-y-4">
       {#if error}
         <p class="text-destructive text-sm font-medium">
-          {errorMessages[error]()}
+          {createCategoryErrorMessages[error]()}
         </p>
       {/if}
 

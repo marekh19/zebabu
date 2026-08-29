@@ -11,12 +11,10 @@
   import Trash2Icon from '@lucide/svelte/icons/trash-2'
   import { toast } from 'svelte-sonner'
   import { cn } from '$lib/utils'
-  import type { budget } from '$lib/server/db/schema'
-
-  type Budget = typeof budget.$inferSelect
+  import type { BudgetReference } from '$lib/budget-planning/model'
 
   type Props = {
-    budget: Budget
+    budget: BudgetReference
     triggerSize?: 'md' | 'lg'
   }
 

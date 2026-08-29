@@ -1,8 +1,11 @@
-import type { CategoryColor } from '$lib/budget-planning/categories/colors'
-import { CategoryType } from '$lib/budget-planning/categories/types'
+import {
+  type CategoryColor,
+  CategoryType,
+} from '$lib/budget-planning/categories/types'
 import * as m from '$lib/paraglide/messages'
 import { db } from '$lib/server/db'
 import { ensureDefined } from 'narrowland'
+import { toCategoryListItem } from '../model-mappers'
 import {
   countCategoriesByTypeTx,
   deleteCategoryTx,
@@ -44,8 +47,8 @@ export class DuplicateCategoryError extends Error {
   }
 }
 
-export function seedDefaultCategories(userId: string) {
-  return insertCategories([
+export async function seedDefaultCategories(userId: string): Promise<void> {
+  await insertCategories([
     {
       userId,
       name: m.category_default_income(),
@@ -70,12 +73,14 @@ export async function createCategory(
     if (existing) throw new DuplicateCategoryError()
 
     const [inserted] = await insertCategoryTx(tx, { userId, ...data })
-    return ensureDefined(inserted)
+    ensureDefined(inserted)
   })
 }
 
 export function listCategories(userId: string) {
-  return findCategoriesWithBudgetUsageByUser(userId)
+  return findCategoriesWithBudgetUsageByUser(userId).then((categories) =>
+    categories.map(toCategoryListItem),
+  )
 }
 
 export async function deleteCategory(categoryId: string, userId: string) {
@@ -109,6 +114,6 @@ export async function updateCategory(
 
     const [updated] = await updateCategoryTx(tx, categoryId, data)
     if (!updated) throw new CategoryNotFoundError()
-    return ensureDefined(updated)
+    ensureDefined(updated)
   })
 }

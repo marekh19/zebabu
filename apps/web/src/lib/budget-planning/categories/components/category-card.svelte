@@ -5,16 +5,14 @@
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
   import CategoryActions from './category-actions.svelte'
-  import type { category } from '$lib/server/db/schema'
+  import type { CategoryListItem } from '$lib/budget-planning/model'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
   import type { createUpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
 
-  type Category = typeof category.$inferSelect
   type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
 
   type Props = {
-    category: Category
-    budgetUsageCount: number
+    category: CategoryListItem
     editForm: SuperValidated<Infer<UpdateCategorySchema>>
   }
 
@@ -28,14 +26,14 @@
     [CategoryType.Expense]: m.categories_type_expense,
   } as const satisfies Record<CategoryType, () => string>
 
-  let { category: cat, budgetUsageCount, editForm }: Props = $props()
+  let { category: cat, editForm }: Props = $props()
 
   const usageLabel = $derived(
-    budgetUsageCount === 0
+    cat.budgetUsageCount === 0
       ? m.categories_usage_unused()
-      : budgetUsageCount === 1
+      : cat.budgetUsageCount === 1
         ? m.categories_usage_one_budget()
-        : m.categories_usage_budgets({ count: budgetUsageCount }),
+        : m.categories_usage_budgets({ count: cat.budgetUsageCount }),
   )
 </script>
 
@@ -57,7 +55,7 @@
           {CATEGORY_TYPE_LABELS[cat.type]()}
         </Badge>
         <span
-          class="text-xs {budgetUsageCount === 0
+          class="text-xs {cat.budgetUsageCount === 0
             ? 'text-muted-foreground/60'
             : 'text-muted-foreground'}"
         >
