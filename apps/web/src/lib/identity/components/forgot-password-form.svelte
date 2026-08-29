@@ -4,9 +4,9 @@
   import * as m from '$lib/paraglide/messages'
   import { authClient } from '../client'
   import { createForgotPasswordSchema } from '../schemas/forgot-password-schema'
-  import * as Card from '$lib/components/ui/card'
-  import * as Form from '$lib/components/ui/form'
-  import { Input } from '$lib/components/ui/input'
+  import * as Card from '@zebabu/ui/card'
+  import * as Form from '@zebabu/ui/form'
+  import { Input } from '@zebabu/ui/input'
   import { resolve } from '$app/paths'
 
   let submitted = $state(false)

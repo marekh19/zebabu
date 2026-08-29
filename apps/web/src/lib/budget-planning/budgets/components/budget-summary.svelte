@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
   import { formatDecimal } from '$lib/utils'
-  import { IsMobile } from '$lib/hooks/is-mobile.svelte'
+  import { IsMobile } from '@zebabu/ui/is-mobile'
   import TrendingUpIcon from '@lucide/svelte/icons/trending-up'
   import TrendingDownIcon from '@lucide/svelte/icons/trending-down'
   import CircleCheckIcon from '@lucide/svelte/icons/circle-check'

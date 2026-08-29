@@ -7,11 +7,11 @@
   } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
   import { toast } from 'svelte-sonner'
-  import * as Dialog from '$lib/components/ui/dialog'
-  import * as Form from '$lib/components/ui/form'
-  import * as Select from '$lib/components/ui/select'
-  import { Input } from '$lib/components/ui/input'
-  import { buttonVariants } from '$lib/components/ui/button'
+  import * as Dialog from '@zebabu/ui/dialog'
+  import * as Form from '@zebabu/ui/form'
+  import * as Select from '@zebabu/ui/select'
+  import { Input } from '@zebabu/ui/input'
+  import { buttonVariants } from '@zebabu/ui/button'
   import { createCreateBudgetSchema } from '$lib/budget-planning/budgets/schemas/create-budget-schema'
   import {
     getBudgetDisplayName,

@@ -2,7 +2,7 @@
   import { resolve } from '$app/paths'
   import { page } from '$app/state'
   import NavUser from '$lib/components/nav-user.svelte'
-  import * as Sidebar from '$lib/components/ui/sidebar'
+  import * as Sidebar from '@zebabu/ui/sidebar'
   import { sidebarRoutes } from '$lib/config/navigation'
   import * as m from '$lib/paraglide/messages'
   import type { ComponentProps } from 'svelte'

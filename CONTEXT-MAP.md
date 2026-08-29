@@ -8,3 +8,7 @@
 ## Relationships
 
 - **Identity → Budget Planning**: application composition provisions default Categories after Identity creates a User.
+
+## Supporting packages
+
+- [`@zebabu/ui`](./packages/ui/README.md): reusable visual primitives and design tokens. Applications and domain modules may import it; it cannot import application or domain code.

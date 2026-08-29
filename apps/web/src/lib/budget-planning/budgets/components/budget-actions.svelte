@@ -1,16 +1,16 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
   import { invalidateAll } from '$app/navigation'
-  import { Button } from '$lib/components/ui/button'
+  import { Button } from '@zebabu/ui/button'
   import ConfirmDialog from '$lib/components/confirm-dialog.svelte'
   import DuplicateBudgetDialog from './duplicate-budget-dialog.svelte'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+  import * as DropdownMenu from '@zebabu/ui/dropdown-menu'
   import * as m from '$lib/paraglide/messages'
   import CopyIcon from '@lucide/svelte/icons/copy'
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical'
   import Trash2Icon from '@lucide/svelte/icons/trash-2'
   import { toast } from 'svelte-sonner'
-  import { cn } from '$lib/utils'
+  import { cn } from '@zebabu/ui/utils'
   import type { BudgetReference } from '$lib/budget-planning/model'
 
   type Props = {

@@ -4,8 +4,8 @@
   import AppSidebar from '$lib/components/app-sidebar.svelte'
   import LanguageSwitcher from '$lib/components/language-switcher.svelte'
   import ThemeSwitcher from '$lib/components/theme-switcher.svelte'
-  import { Separator } from '$lib/components/ui/separator'
-  import * as Sidebar from '$lib/components/ui/sidebar'
+  import { Separator } from '@zebabu/ui/separator'
+  import * as Sidebar from '@zebabu/ui/sidebar'
   import type { Snippet } from 'svelte'
 
   type Props = { children: Snippet }

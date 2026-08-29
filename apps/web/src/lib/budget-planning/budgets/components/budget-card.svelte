@@ -3,7 +3,7 @@
   import * as m from '$lib/paraglide/messages'
   import { getLocale } from '$lib/paraglide/runtime'
   import { resolve } from '$app/paths'
-  import * as Card from '$lib/components/ui/card'
+  import * as Card from '@zebabu/ui/card'
   import {
     getMonthAbbrev,
     getMonthName,

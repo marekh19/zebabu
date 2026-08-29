@@ -1,6 +1,6 @@
 <script lang="ts">
   import PlusIcon from '@lucide/svelte/icons/plus'
-  import { Button } from '$lib/components/ui/button'
+  import { Button } from '@zebabu/ui/button'
 
   type Props = {
     onclick: () => void

@@ -1,8 +1,8 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
   import { setMode, userPrefersMode } from 'mode-watcher'
-  import { Button } from '$lib/components/ui/button'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+  import { Button } from '@zebabu/ui/button'
+  import * as DropdownMenu from '@zebabu/ui/dropdown-menu'
   import SunIcon from '@lucide/svelte/icons/sun'
   import MoonIcon from '@lucide/svelte/icons/moon'
   import MonitorIcon from '@lucide/svelte/icons/monitor'

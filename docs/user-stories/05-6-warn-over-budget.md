@@ -40,7 +40,7 @@ Implement a real-time warning system that alerts users when their total planned 
 - `src/lib/components/budget/BudgetSummary.svelte` - Display warnings
 - `src/lib/stores/budgetCalculations.ts` - Reactive calculations store
 - `src/lib/utils/calculations.ts` - Calculation utility functions
-- `src/lib/components/ui/WarningBanner.svelte` - Reusable warning component
+- `packages/ui/src/components/warning-banner/warning-banner.svelte` - Reusable warning component
 
 ### Implementation Steps
 
@@ -153,7 +153,7 @@ export function calculateBudgetSummary(
 <!-- src/lib/components/budget/BudgetSummary.svelte -->
 <script lang="ts">
   import { calculateBudgetSummary } from '$lib/utils/calculations'
-  import WarningBanner from '$lib/components/ui/WarningBanner.svelte'
+  import { WarningBanner } from '@zebabu/ui/warning-banner'
   import type { Budget, ExchangeRate } from '$lib/types'
 
   let { budget, exchangeRates, primaryCurrency } = $props<{
@@ -268,7 +268,7 @@ export function calculateBudgetSummary(
 ```
 
 ```svelte
-<!-- src/lib/components/ui/WarningBanner.svelte -->
+<!-- packages/ui/src/components/warning-banner/warning-banner.svelte -->
 <script lang="ts">
   let { type = 'warning' } = $props<{
     type?: 'warning' | 'error' | 'info'
