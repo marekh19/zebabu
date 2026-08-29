@@ -4,21 +4,17 @@
     CategoryCard,
     CreateCategoryDialog,
     createCategoryErrorMessages,
+    getActionError,
   } from '$lib/budget-planning'
-  import { isString, isKeyOf } from 'narrowland'
   import FloatingActionButton from '$lib/components/floating-action-button.svelte'
 
   let { data, form: actionData } = $props()
 
   let dialogOpen = $state(false)
 
-  const error = $derived.by(() => {
-    if (actionData == null || !('error' in actionData)) return undefined
-    const value = actionData.error
-    if (isString(value) && isKeyOf(value, createCategoryErrorMessages))
-      return value
-    return undefined
-  })
+  const error = $derived(
+    getActionError(actionData, 'error', createCategoryErrorMessages),
+  )
 </script>
 
 <div class="flex flex-col items-start gap-6">

@@ -1,70 +1,31 @@
-import { includeIgnoreFile } from '@eslint/compat'
-import js from '@eslint/js'
-import prettier from 'eslint-config-prettier'
-import svelte from 'eslint-plugin-svelte'
-import { defineConfig } from 'eslint/config'
-import globals from 'globals'
-import path from 'node:path'
-import ts from 'typescript-eslint'
+import { createSvelteEslintConfig } from '@zebabu/tooling/eslint'
 import svelteConfig from './svelte.config.js'
 
-const gitignorePath = path.resolve(
-  import.meta.dirname,
-  '..',
-  '..',
-  '.gitignore',
-)
-
-export default defineConfig(
-  includeIgnoreFile(gitignorePath),
-  js.configs.recommended,
-  ...ts.configs.recommended,
-  ...svelte.configs.recommended,
-  prettier,
-  ...svelte.configs.prettier,
-  {
-    languageOptions: { globals: { ...globals.browser, ...globals.node } },
-    rules: {
-      'no-undef': 'off',
-      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        {
-          prefer: 'type-imports',
-          fixStyle: 'separate-type-imports',
-        },
-      ],
-      '@typescript-eslint/no-import-type-side-effects': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'error',
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['$app/*', '$lib/*', '@zebabu/web/*'],
-              message: 'UI cannot import application code.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        extraFileExtensions: ['.svelte'],
-        parser: ts.parser,
-        svelteConfig,
+export default createSvelteEslintConfig({
+  workspaceDirectory: import.meta.dirname,
+  svelteConfig,
+  additionalConfigs: [
+    {
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['$app/*', '$lib/*', '@zebabu/web/*'],
+                message: 'UI cannot import application code.',
+              },
+            ],
+          },
+        ],
       },
     },
-  },
-  {
-    files: ['src/**/*.svelte'],
-    rules: {
-      'svelte/no-navigation-without-resolve': 'off',
-      'no-useless-assignment': 'off',
+    {
+      files: ['src/**/*.svelte'],
+      rules: {
+        'svelte/no-navigation-without-resolve': 'off',
+        'no-useless-assignment': 'off',
+      },
     },
-  },
-)
+  ],
+})

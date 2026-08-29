@@ -9,6 +9,7 @@ import {
   handleDuplicateBudgetAction,
   listBudgets,
 } from '$lib/budget-planning/server'
+import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
@@ -16,7 +17,7 @@ import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ locals }) => {
-  const budgets = await listBudgets(ensureDefined(locals.user).id)
+  const budgets = await listBudgets(getAuthenticatedUserId(locals))
   const form = await superValidate(zod4(createCreateBudgetSchema()))
 
   return { budgets, form }
@@ -30,7 +31,7 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
     const { type, month, year, name } = form.data
 
     let budgetId: string
@@ -68,7 +69,7 @@ export const actions: Actions = {
       return fail(400)
     }
 
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
     const result = await deleteBudget(budgetId, userId)
 
     if (result.error === 'not_found') return fail(404)

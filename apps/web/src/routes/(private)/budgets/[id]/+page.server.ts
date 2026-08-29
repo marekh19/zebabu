@@ -11,8 +11,8 @@ import {
   getBudgetDetail,
   handleDuplicateBudgetAction,
 } from '$lib/budget-planning/server'
+import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { error, fail, redirect } from '@sveltejs/kit'
-import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
@@ -23,7 +23,7 @@ const ERROR_STATUS = {
 } as const satisfies Record<'not_found' | 'access_denied', number>
 
 export const load: PageServerLoad = async ({ params, locals, url }) => {
-  const userId = ensureDefined(locals.user).id
+  const userId = getAuthenticatedUserId(locals)
   const result = await getBudgetDetail(params.id, userId)
 
   if (result.error) {
@@ -57,7 +57,7 @@ export const actions: Actions = {
     handleDuplicateBudgetAction(event, (id) => resolve(`/budgets/${id}`)),
 
   delete: async ({ params, locals }) => {
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
     const result = await deleteBudget(params.id, userId)
 
     if (result.error) return fail(ERROR_STATUS[result.error])
@@ -66,7 +66,7 @@ export const actions: Actions = {
   },
 
   addCategory: async ({ request, params, locals }) => {
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
     const form = await superValidate(request, zod4(addBudgetCategorySchema))
 
     if (!form.valid) return fail(400, { addCategoryForm: form })
@@ -98,7 +98,7 @@ export const actions: Actions = {
   },
 
   createTransaction: async ({ request, params, locals }) => {
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
     const form = await superValidate(
       request,
       zod4(createCreateTransactionSchema()),

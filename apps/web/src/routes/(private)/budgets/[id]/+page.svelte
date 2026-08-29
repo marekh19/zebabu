@@ -7,30 +7,25 @@
     BudgetBoard,
     BudgetSummary,
     createTransactionErrorMessages,
+    getActionError,
     getBudgetDisplayName,
   } from '$lib/budget-planning'
-  import { isKeyOf, isString } from 'narrowland'
 
   let { data, form: actionData } = $props()
 
-  const addCategoryError = $derived.by(() => {
-    if (actionData == null || !('error' in actionData)) return undefined
-    const value = actionData.error
-    if (isString(value) && isKeyOf(value, addBudgetCategoryErrorMessages))
-      return value
-    return undefined
-  })
+  const addCategoryError = $derived(
+    getActionError(actionData, 'error', addBudgetCategoryErrorMessages),
+  )
 
   const displayName = $derived(getBudgetDisplayName(data.budget))
 
-  const createTransactionError = $derived.by(() => {
-    if (actionData == null || !('createTransactionError' in actionData))
-      return undefined
-    const value = actionData.createTransactionError
-    if (isString(value) && isKeyOf(value, createTransactionErrorMessages))
-      return value
-    return undefined
-  })
+  const createTransactionError = $derived(
+    getActionError(
+      actionData,
+      'createTransactionError',
+      createTransactionErrorMessages,
+    ),
+  )
 
   const typeBadge = $derived(
     data.budget.type === 'monthly'

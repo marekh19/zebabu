@@ -6,21 +6,23 @@
     type SuperValidated,
   } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
-  import { toast } from 'svelte-sonner'
   import * as Dialog from '@zebabu/ui/dialog'
   import * as Form from '@zebabu/ui/form'
   import { Badge } from '@zebabu/ui/badge'
   import { Input } from '@zebabu/ui/input'
   import { buttonVariants } from '@zebabu/ui/button'
-  import { createUpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
+  import {
+    createUpdateCategorySchema,
+    type UpdateCategorySchema,
+  } from '$lib/budget-planning/categories/schemas/update-category-schema'
   import {
     categoryColors,
     colorClasses,
   } from '$lib/budget-planning/categories/colors'
+  import { categoryTypeLabels } from '$lib/budget-planning/categories/labels'
   import { CategoryType } from '$lib/budget-planning/categories/types'
+  import { createDialogSuccessHandler } from '$lib/components/dialog-form'
   import type { Category } from '$lib/budget-planning/model'
-
-  type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
 
   type Props = {
     open: boolean
@@ -38,17 +40,16 @@
 
   const updateCategorySchema = createUpdateCategorySchema()
 
+  function getSuccessMessage(): string {
+    return m.categories_edit_success({ name: $formData.name })
+  }
+
   // svelte-ignore state_referenced_locally
   // superForm captures initial data intentionally; reactivity is handled internally via use:enhance (https://github.com/sveltejs/svelte/issues/11883)
   const form = superForm(data, {
     dataType: 'json',
     validators: zod4(updateCategorySchema),
-    onResult({ result }) {
-      if (result.type === 'success') {
-        onOpenChange(false)
-        toast.success(m.categories_edit_success({ name: $formData.name }))
-      }
-    },
+    onResult: createDialogSuccessHandler(onOpenChange, getSuccessMessage),
   })
 
   const { form: formData, enhance, submitting, errors } = form
@@ -61,17 +62,12 @@
     }
   })
 
-  const CATEGORY_TYPE_LABELS = {
-    [CategoryType.Income]: m.categories_type_income,
-    [CategoryType.Expense]: m.categories_type_expense,
-  } as const satisfies Record<CategoryType, () => string>
-
   const CATEGORY_TYPE_BADGE_VARIANT = {
     [CategoryType.Income]: 'default',
     [CategoryType.Expense]: 'secondary',
   } as const satisfies Record<CategoryType, 'default' | 'secondary'>
 
-  const typeLabel = $derived(CATEGORY_TYPE_LABELS[cat.type]())
+  const typeLabel = $derived(categoryTypeLabels[cat.type]())
 </script>
 
 <Dialog.Root {open} {onOpenChange}>

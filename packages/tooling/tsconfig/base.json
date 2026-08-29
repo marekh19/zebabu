@@ -2,14 +2,11 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "strict": true,
-    "strictNullChecks": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true
   }

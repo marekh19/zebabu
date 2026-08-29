@@ -4,6 +4,7 @@ import {
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
 } from '$lib/budget-planning/server/budgets/service'
+import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
@@ -22,7 +23,7 @@ export async function handleDuplicateBudgetAction(
 
   if (!form.valid) return fail(400, { form })
 
-  const userId = ensureDefined(locals.user).id
+  const userId = getAuthenticatedUserId(locals)
 
   try {
     const result = await duplicateBudget(

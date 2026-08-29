@@ -1,4 +1,22 @@
 import * as m from '$lib/paraglide/messages'
+import { isKeyOf, isObject, isPropertyOf, isString } from 'narrowland'
+
+export function getActionError<
+  const ErrorMessages extends Record<string, () => string>,
+>(
+  actionData: unknown,
+  field: string,
+  errorMessages: ErrorMessages,
+): keyof ErrorMessages | undefined {
+  if (!isObject(actionData)) return undefined
+
+  const hasStringField = isPropertyOf(field, isString)
+  if (!hasStringField(actionData)) return undefined
+  const value = actionData[field]
+  if (!isKeyOf(value, errorMessages)) return undefined
+
+  return value
+}
 
 export const addBudgetCategoryErrorMessages = {
   not_found: m.budget_detail_add_category_error_not_found,

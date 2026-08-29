@@ -1,6 +1,6 @@
 import { reorderBudgetCategories } from '$lib/budget-planning/server'
+import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { json } from '@sveltejs/kit'
-import { ensureDefined } from 'narrowland'
 import { z } from 'zod'
 import type { RequestHandler } from './$types'
 
@@ -12,7 +12,7 @@ const reorderSchema = z.array(
 )
 
 export const PATCH: RequestHandler = async ({ params, locals, request }) => {
-  const userId = ensureDefined(locals.user).id
+  const userId = getAuthenticatedUserId(locals)
 
   const body: unknown = await request.json()
   const parsed = reorderSchema.safeParse(body)

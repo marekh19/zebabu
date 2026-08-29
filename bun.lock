@@ -32,8 +32,6 @@
         "narrowland": "^1.9.0",
       },
       "devDependencies": {
-        "@eslint/compat": "^2.1.0",
-        "@eslint/js": "^10.0.1",
         "@inlang/paraglide-js": "^2.24.1",
         "@internationalized/date": "^3.12.3",
         "@lucide/svelte": "^1.33.0",
@@ -42,11 +40,9 @@
         "@tailwindcss/vite": "^4.3.3",
         "@types/bun": "latest",
         "@types/node": "^26.2.0",
+        "@zebabu/tooling": "workspace:*",
         "drizzle-kit": "^0.31.9",
         "eslint": "^10.8.1",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-svelte": "^3.23.0",
-        "globals": "^17.11.0",
         "redis-commander": "^0.9.0",
         "svelte": "^5.56.9",
         "svelte-adapter-bun": "latest",
@@ -55,7 +51,6 @@
         "sveltekit-superforms": "^2.30.2",
         "tailwindcss": "^4.2.1",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.67.0",
         "vite": "^8.2.1",
         "vite-plugin-devtools-json": "^1.1.0",
         "vitest": "^4.1.11",
@@ -78,14 +73,25 @@
         "@types/node": "^26.2.0",
         "@types/react": "^19",
         "@types/react-dom": "^19",
-        "@zebabu/tsconfig": "workspace:*",
+        "@zebabu/tooling": "workspace:*",
         "react-email": "^6.9.2",
         "typescript": "^6.0.3",
       },
     },
-    "packages/tsconfig": {
-      "name": "@zebabu/tsconfig",
+    "packages/tooling": {
+      "name": "@zebabu/tooling",
       "version": "0.0.0",
+      "devDependencies": {
+        "@eslint/compat": "^2.1.0",
+        "@eslint/js": "^10.0.1",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-svelte": "^3.23.0",
+        "globals": "^17.11.0",
+        "typescript-eslint": "^8.67.0",
+      },
+      "peerDependencies": {
+        "eslint": "^10.8.1",
+      },
     },
     "packages/ui": {
       "name": "@zebabu/ui",
@@ -104,17 +110,11 @@
         "tw-animate-css": "^1.0.0",
       },
       "devDependencies": {
-        "@eslint/compat": "^2.1.0",
-        "@eslint/js": "^10.0.1",
-        "@zebabu/tsconfig": "workspace:*",
+        "@zebabu/tooling": "workspace:*",
         "eslint": "^10.8.1",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-svelte": "^3.23.0",
-        "globals": "^17.11.0",
         "svelte": "^5.56.9",
         "svelte-check": "^4.7.6",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.67.0",
       },
       "peerDependencies": {
         "svelte": "^5.56.9",
@@ -749,7 +749,7 @@
 
     "@zebabu/emails": ["@zebabu/emails@workspace:packages/emails"],
 
-    "@zebabu/tsconfig": ["@zebabu/tsconfig@workspace:packages/tsconfig"],
+    "@zebabu/tooling": ["@zebabu/tooling@workspace:packages/tooling"],
 
     "@zebabu/ui": ["@zebabu/ui@workspace:packages/ui"],
 

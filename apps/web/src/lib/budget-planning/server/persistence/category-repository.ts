@@ -1,5 +1,8 @@
 import type { CategoryColor } from '$lib/budget-planning/categories/types'
-import { database as db } from '$lib/server/persistence/database'
+import {
+  database as db,
+  type DbTransaction,
+} from '$lib/server/persistence/database'
 import { budgetPlanningSchema } from '$lib/server/persistence/schema'
 import { and, asc, count, eq, isNull, ne } from 'drizzle-orm'
 
@@ -31,8 +34,6 @@ export async function findCategoriesWithBudgetUsageByUser(userId: string) {
     )
     .orderBy(asc(category.name))
 }
-
-type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 export function insertCategories(values: (typeof category.$inferInsert)[]) {
   return db.insert(category).values(values)

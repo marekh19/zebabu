@@ -3,13 +3,12 @@
   import * as Card from '@zebabu/ui/card'
   import { Badge } from '@zebabu/ui/badge'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
+  import { categoryTypeLabels } from '$lib/budget-planning/categories/labels'
   import { CategoryType } from '$lib/budget-planning/categories/types'
   import CategoryActions from './category-actions.svelte'
   import type { CategoryListItem } from '$lib/budget-planning/model'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
-  import type { createUpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
-
-  type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
+  import type { UpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
 
   type Props = {
     category: CategoryListItem
@@ -20,11 +19,6 @@
     [CategoryType.Income]: 'default',
     [CategoryType.Expense]: 'secondary',
   } as const satisfies Record<CategoryType, 'default' | 'secondary'>
-
-  const CATEGORY_TYPE_LABELS = {
-    [CategoryType.Income]: m.categories_type_income,
-    [CategoryType.Expense]: m.categories_type_expense,
-  } as const satisfies Record<CategoryType, () => string>
 
   let { category: cat, editForm }: Props = $props()
 
@@ -52,7 +46,7 @@
       <p class="truncate leading-tight font-semibold">{cat.name}</p>
       <div class="mt-1 flex items-center gap-2">
         <Badge variant={CATEGORY_TYPE_BADGE_VARIANT[cat.type]}>
-          {CATEGORY_TYPE_LABELS[cat.type]()}
+          {categoryTypeLabels[cat.type]()}
         </Badge>
         <span
           class="text-xs {cat.budgetUsageCount === 0

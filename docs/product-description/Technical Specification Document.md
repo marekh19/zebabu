@@ -782,7 +782,7 @@ CREATE INDEX idx_exchange_rates_date ON exchange_rates(date DESC);
 
 - **@packages/ui**: Shared UI components
 - **@packages/tailwind-config**: Shared Tailwind configuration
-- **@packages/tsconfig**: Shared TypeScript configuration
+- **@zebabu/tooling**: Shared ESLint, lint-staged, Svelte, and TypeScript configuration
 
 **External Services:**
 
