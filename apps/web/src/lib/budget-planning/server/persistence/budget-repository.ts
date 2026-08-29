@@ -1,10 +1,12 @@
-import { db } from '$lib/server/db'
-import { budget, budgetCategory, transaction } from '$lib/server/db/schema'
+import { database as db } from '$lib/server/persistence/database'
+import { budgetPlanningSchema } from '$lib/server/persistence/schema'
 import { type SQL, and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import {
   isOwnedBudgetCategory,
   nextTransactionSortOrder,
-} from './transaction-rules'
+} from '../budgets/transaction-rules'
+
+const { budget, budgetCategory, transaction } = budgetPlanningSchema
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 

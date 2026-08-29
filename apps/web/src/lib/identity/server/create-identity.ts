@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private'
-import { db } from '$lib/server/db'
+import { database } from '$lib/server/persistence/database'
 import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -44,7 +44,7 @@ export function createIdentity({ onUserCreated }: IdentityDependencies) {
     },
 
     // ─── Database ──────────────────────────────────────────────
-    database: drizzleAdapter(db, {
+    database: drizzleAdapter(database, {
       provider: 'pg',
     }),
 

@@ -7,8 +7,8 @@ import {
   findCategoriesByUserTx,
   findCategoriesNotInBudget,
   findCategoryById,
-} from '$lib/budget-planning/server/categories/repository'
-import { db } from '$lib/server/db'
+} from '$lib/budget-planning/server/persistence/category-repository'
+import { database as db } from '$lib/server/persistence/database'
 import { ensureDefined } from 'narrowland'
 import {
   toAvailableCategory,
@@ -28,7 +28,7 @@ import {
   insertTransactions,
   listBudgetsByUser,
   updateBudgetCategorySortOrders,
-} from './repository'
+} from '../persistence/budget-repository'
 
 export class DuplicateMonthlyBudgetError extends Error {
   constructor() {

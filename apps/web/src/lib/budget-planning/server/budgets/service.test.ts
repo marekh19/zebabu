@@ -9,17 +9,17 @@ const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
 }))
 
-vi.mock('$lib/server/db', () => ({
-  db: { transaction: mocks.transaction },
+vi.mock('$lib/server/persistence/database', () => ({
+  database: { transaction: mocks.transaction },
 }))
 
-vi.mock('$lib/budget-planning/server/categories/repository', () => ({
+vi.mock('$lib/budget-planning/server/persistence/category-repository', () => ({
   findCategoriesNotInBudget: mocks.findCategoriesNotInBudget,
   findCategoriesByUserTx: vi.fn(),
   findCategoryById: vi.fn(),
 }))
 
-vi.mock('./repository', () => ({
+vi.mock('../persistence/budget-repository', () => ({
   deleteBudgetById: vi.fn(),
   findBudgetById: mocks.findBudgetById,
   findBudgetOwner: vi.fn(),

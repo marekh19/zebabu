@@ -1,7 +1,9 @@
 import type { CategoryColor } from '$lib/budget-planning/categories/types'
-import { db } from '$lib/server/db'
-import { budgetCategory, category } from '$lib/server/db/schema'
+import { database as db } from '$lib/server/persistence/database'
+import { budgetPlanningSchema } from '$lib/server/persistence/schema'
 import { and, asc, count, eq, isNull, ne } from 'drizzle-orm'
+
+const { budgetCategory, category } = budgetPlanningSchema
 
 export async function findCategoriesWithBudgetUsageByUser(userId: string) {
   return db
