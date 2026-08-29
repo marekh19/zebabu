@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import { Badge } from '$lib/components/ui/badge'
+  import { Badge } from '@zebabu/ui/badge'
   import {
     addBudgetCategoryErrorMessages,
     BudgetActions,

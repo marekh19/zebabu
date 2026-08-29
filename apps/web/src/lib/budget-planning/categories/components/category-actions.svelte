@@ -1,9 +1,9 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
   import { invalidateAll } from '$app/navigation'
-  import { Button } from '$lib/components/ui/button'
+  import { Button } from '@zebabu/ui/button'
   import ConfirmDialog from '$lib/components/confirm-dialog.svelte'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+  import * as DropdownMenu from '@zebabu/ui/dropdown-menu'
   import * as m from '$lib/paraglide/messages'
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical'
   import PencilIcon from '@lucide/svelte/icons/pencil'

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state'
-  import * as Breadcrumb from '$lib/components/ui/breadcrumb'
+  import * as Breadcrumb from '@zebabu/ui/breadcrumb'
   import { buildBreadcrumbs } from '$lib/config/breadcrumbs'
 
   const breadcrumbs = $derived(

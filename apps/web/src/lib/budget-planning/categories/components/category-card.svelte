@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import * as Card from '$lib/components/ui/card'
-  import { Badge } from '$lib/components/ui/badge'
+  import * as Card from '@zebabu/ui/card'
+  import { Badge } from '@zebabu/ui/badge'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
   import CategoryActions from './category-actions.svelte'

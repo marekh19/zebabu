@@ -1,9 +1,9 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import * as Dialog from '$lib/components/ui/dialog'
-  import * as Form from '$lib/components/ui/form'
-  import { buttonVariants } from '$lib/components/ui/button'
-  import { Input } from '$lib/components/ui/input'
+  import * as Dialog from '@zebabu/ui/dialog'
+  import * as Form from '@zebabu/ui/form'
+  import { buttonVariants } from '@zebabu/ui/button'
+  import { Input } from '@zebabu/ui/input'
   import { createCreateTransactionSchema } from '$lib/budget-planning/budgets/schemas/create-transaction-schema'
   import {
     createTransactionErrorMessages,

@@ -1,9 +1,9 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import * as Dialog from '$lib/components/ui/dialog'
-  import * as Form from '$lib/components/ui/form'
-  import * as Select from '$lib/components/ui/select'
-  import { buttonVariants } from '$lib/components/ui/button'
+  import * as Dialog from '@zebabu/ui/dialog'
+  import * as Form from '@zebabu/ui/form'
+  import * as Select from '@zebabu/ui/select'
+  import { buttonVariants } from '@zebabu/ui/button'
   import { addBudgetCategorySchema } from '$lib/budget-planning/budgets/schemas/add-budget-category-schema'
   import {
     addBudgetCategoryErrorMessages,

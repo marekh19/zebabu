@@ -6,9 +6,9 @@
   import { getAuthError } from '../utils/auth-errors'
   import { createResetPasswordSchema } from '../schemas/reset-password-schema'
   import PasswordCriteria from './password-criteria.svelte'
-  import * as Card from '$lib/components/ui/card'
-  import * as Form from '$lib/components/ui/form'
-  import { Input } from '$lib/components/ui/input'
+  import * as Card from '@zebabu/ui/card'
+  import * as Form from '@zebabu/ui/form'
+  import { Input } from '@zebabu/ui/input'
   import { resolve } from '$app/paths'
   import { page } from '$app/state'
 

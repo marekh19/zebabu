@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getLocale, setLocale, locales } from '$lib/paraglide/runtime'
   import * as m from '$lib/paraglide/messages'
-  import { Button } from '$lib/components/ui/button'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+  import { Button } from '@zebabu/ui/button'
+  import * as DropdownMenu from '@zebabu/ui/dropdown-menu'
   import GlobeIcon from '@lucide/svelte/icons/globe'
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down'
 
