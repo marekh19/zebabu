@@ -75,7 +75,12 @@ export default defineConfig(
         {
           patterns: [
             {
-              group: ['$lib/identity/**', '**/identity/**'],
+              group: [
+                '$lib/identity',
+                '$lib/identity/**',
+                '**/identity',
+                '**/identity/**',
+              ],
               message: 'Budget Planning cannot import Identity.',
             },
           ],
@@ -91,7 +96,12 @@ export default defineConfig(
         {
           patterns: [
             {
-              group: ['$lib/budget-planning/**', '**/budget-planning/**'],
+              group: [
+                '$lib/budget-planning',
+                '$lib/budget-planning/**',
+                '**/budget-planning',
+                '**/budget-planning/**',
+              ],
               message: 'Identity cannot import Budget Planning.',
             },
           ],
