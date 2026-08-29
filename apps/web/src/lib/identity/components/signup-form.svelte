@@ -2,14 +2,14 @@
   import { defaults, superForm } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
   import * as m from '$lib/paraglide/messages'
-  import { authClient } from '$lib/auth/client'
-  import { getAuthError } from '$lib/features/auth/utils/auth-errors'
-  import { createSignupSchema } from '$lib/features/auth/schemas/signup-schema'
+  import { authClient } from '../client'
+  import { getAuthError } from '../utils/auth-errors'
+  import { createSignupSchema } from '../schemas/signup-schema'
   import * as Card from '$lib/components/ui/card'
   import * as Form from '$lib/components/ui/form'
   import { Input } from '$lib/components/ui/input'
   import { resolve } from '$app/paths'
-  import PasswordCriteria from '$lib/features/auth/components/password-criteria.svelte'
+  import PasswordCriteria from './password-criteria.svelte'
 
   type Props = {
     onSuccess: (email: string) => void

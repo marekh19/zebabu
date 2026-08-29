@@ -1,2 +1,2 @@
-export * from '../../auth/schema'
+export * from '../../identity/server/schema'
 export * from './budgets'

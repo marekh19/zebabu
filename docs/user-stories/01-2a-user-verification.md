@@ -13,13 +13,13 @@ Signup exists but email verification is stubbed (console.log). Need real email d
 
 ## Key files
 
-| File                                                           | Role                                               |
-| -------------------------------------------------------------- | -------------------------------------------------- |
-| `packages/emails/src/send.ts`                                  | Generic email sender (Resend + react-email render) |
-| `packages/emails/src/templates/verification-email.tsx`         | Email template                                     |
-| `apps/web/src/lib/auth/index.ts`                               | Better Auth config (wire sendVerificationEmail)    |
-| `apps/web/src/lib/features/auth/components/signup-form.svelte` | Signup: add callbackURL + verification message     |
-| `apps/web/src/lib/features/auth/components/login-form.svelte`  | Login: email prefill from params                   |
+| File                                                      | Role                                               |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| `packages/emails/src/send.ts`                             | Generic email sender (Resend + react-email render) |
+| `packages/emails/src/templates/verification-email.tsx`    | Email template                                     |
+| `apps/web/src/lib/identity/server/create-identity.ts`     | Better Auth config (wire sendVerificationEmail)    |
+| `apps/web/src/lib/identity/components/signup-form.svelte` | Signup: add callbackURL + verification message     |
+| `apps/web/src/lib/identity/components/login-form.svelte`  | Login: email prefill from params                   |
 
 ## Verification
 

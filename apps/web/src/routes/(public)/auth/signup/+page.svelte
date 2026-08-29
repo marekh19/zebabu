@@ -1,7 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths'
-  import SignupForm from '$lib/features/auth/components/signup-form.svelte'
-  import VerifyEmailCard from '$lib/features/auth/components/verify-email-card.svelte'
+  import { SignupForm, VerifyEmailCard } from '$lib/identity'
 
   let signupEmail = $state('')
 
