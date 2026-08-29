@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }))
-vi.mock('$lib/server/db', () => ({ db: {} }))
+vi.mock('$lib/server/persistence/database', () => ({ database: {} }))
 vi.mock('@zebabu/emails', () => ({
   sendPasswordResetEmail: vi.fn(),
   sendVerificationEmail: vi.fn(),

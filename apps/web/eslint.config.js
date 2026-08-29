@@ -67,4 +67,36 @@ export default defineConfig(
       '@typescript-eslint/consistent-type-definitions': 'off',
     },
   },
+  {
+    files: ['src/lib/budget-planning/**/*.{ts,svelte}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['$lib/identity/**', '**/identity/**'],
+              message: 'Budget Planning cannot import Identity.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/lib/identity/**/*.{ts,svelte}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['$lib/budget-planning/**', '**/budget-planning/**'],
+              message: 'Identity cannot import Budget Planning.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 )

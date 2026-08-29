@@ -3,7 +3,7 @@ import {
   CategoryType,
 } from '$lib/budget-planning/categories/types'
 import * as m from '$lib/paraglide/messages'
-import { db } from '$lib/server/db'
+import { database as db } from '$lib/server/persistence/database'
 import { ensureDefined } from 'narrowland'
 import { toCategoryListItem } from '../model-mappers'
 import {
@@ -17,7 +17,7 @@ import {
   insertCategories,
   insertCategoryTx,
   updateCategoryTx,
-} from './repository'
+} from '../persistence/category-repository'
 
 export class CategoryNotFoundError extends Error {
   constructor() {
