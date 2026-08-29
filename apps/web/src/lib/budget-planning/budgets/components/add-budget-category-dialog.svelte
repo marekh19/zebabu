@@ -10,7 +10,7 @@
     type AddBudgetCategoryError,
   } from '$lib/budget-planning/errors'
   import type { AvailableCategory } from '$lib/budget-planning/model'
-  import { toast } from 'svelte-sonner'
+  import { createDialogSuccessHandler } from '$lib/components/dialog-form'
   import {
     superForm,
     type Infer,
@@ -38,12 +38,10 @@
   const form = superForm(data, {
     dataType: 'json',
     validators: zod4(addBudgetCategorySchema),
-    onResult({ result }) {
-      if (result.type === 'success') {
-        onOpenChange(false)
-        toast.success(m.budget_detail_add_category_success())
-      }
-    },
+    onResult: createDialogSuccessHandler(
+      onOpenChange,
+      m.budget_detail_add_category_success,
+    ),
   })
 
   const { form: formData, enhance, submitting } = form

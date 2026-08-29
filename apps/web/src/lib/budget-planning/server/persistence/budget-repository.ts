@@ -1,14 +1,15 @@
-import { database as db } from '$lib/server/persistence/database'
+import {
+  database as db,
+  type DbTransaction,
+} from '$lib/server/persistence/database'
 import { budgetPlanningSchema } from '$lib/server/persistence/schema'
-import { type SQL, and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, sql, type SQL } from 'drizzle-orm'
 import {
   isOwnedBudgetCategory,
   nextTransactionSortOrder,
 } from '../budgets/transaction-rules'
 
 const { budget, budgetCategory, transaction } = budgetPlanningSchema
-
-type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 export function findMonthlyBudget(
   userId: string,

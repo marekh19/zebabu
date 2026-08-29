@@ -12,14 +12,14 @@ import {
   listCategories,
   updateCategory,
 } from '$lib/budget-planning/server'
+import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { fail } from '@sveltejs/kit'
-import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ locals }) => {
-  const categories = await listCategories(ensureDefined(locals.user).id)
+  const categories = await listCategories(getAuthenticatedUserId(locals))
   const form = await superValidate(zod4(createCreateCategorySchema()))
   const editForm = await superValidate(zod4(createUpdateCategorySchema()))
 
@@ -37,7 +37,7 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
 
     try {
       await createCategory(userId, form.data)
@@ -62,7 +62,7 @@ export const actions: Actions = {
       return fail(400, { editForm })
     }
 
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
     const { categoryId, name, color } = editForm.data
 
     try {
@@ -89,7 +89,7 @@ export const actions: Actions = {
       return fail(400, { error: 'invalid' as const })
     }
 
-    const userId = ensureDefined(locals.user).id
+    const userId = getAuthenticatedUserId(locals)
 
     try {
       await deleteCategory(categoryId, userId)

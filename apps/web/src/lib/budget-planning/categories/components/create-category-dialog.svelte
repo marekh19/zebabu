@@ -6,7 +6,6 @@
     type SuperValidated,
   } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
-  import { toast } from 'svelte-sonner'
   import * as Dialog from '@zebabu/ui/dialog'
   import * as Form from '@zebabu/ui/form'
   import * as Select from '@zebabu/ui/select'
@@ -17,11 +16,13 @@
     categoryColors,
     colorClasses,
   } from '$lib/budget-planning/categories/colors'
+  import { categoryTypeLabels } from '$lib/budget-planning/categories/labels'
   import { CategoryType } from '$lib/budget-planning/categories/types'
   import {
     createCategoryErrorMessages,
     type CreateCategoryError,
   } from '$lib/budget-planning/errors'
+  import { createDialogSuccessHandler } from '$lib/components/dialog-form'
 
   type CreateCategorySchema = ReturnType<typeof createCreateCategorySchema>
 
@@ -36,25 +37,19 @@
 
   const createCategorySchema = createCreateCategorySchema()
 
+  function getSuccessMessage(): string {
+    return m.categories_create_success({ name: $formData.name })
+  }
+
   // svelte-ignore state_referenced_locally
   // superForm captures initial data intentionally; reactivity is handled internally via use:enhance (https://github.com/sveltejs/svelte/issues/11883)
   const form = superForm(data, {
     dataType: 'json',
     validators: zod4(createCategorySchema),
-    onResult({ result }) {
-      if (result.type === 'success') {
-        onOpenChange(false)
-        toast.success(m.categories_create_success({ name: $formData.name }))
-      }
-    },
+    onResult: createDialogSuccessHandler(onOpenChange, getSuccessMessage),
   })
 
   const { form: formData, enhance, submitting } = form
-
-  const CATEGORY_TYPE_LABELS = {
-    [CategoryType.Income]: m.categories_type_income,
-    [CategoryType.Expense]: m.categories_type_expense,
-  } as const satisfies Record<CategoryType, () => string>
 
   $effect(() => {
     if (open) {
@@ -65,7 +60,7 @@
   })
 
   const selectedTypeLabel = $derived(
-    $formData.type ? CATEGORY_TYPE_LABELS[$formData.type]() : undefined,
+    $formData.type ? categoryTypeLabels[$formData.type]() : undefined,
   )
 </script>
 

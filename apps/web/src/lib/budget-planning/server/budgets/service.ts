@@ -8,7 +8,10 @@ import {
   findCategoriesNotInBudget,
   findCategoryById,
 } from '$lib/budget-planning/server/persistence/category-repository'
-import { database as db } from '$lib/server/persistence/database'
+import {
+  database as db,
+  type DbTransaction,
+} from '$lib/server/persistence/database'
 import { ensureDefined } from 'narrowland'
 import {
   toAvailableCategory,
@@ -43,8 +46,6 @@ export class DuplicateScenarioBudgetError extends Error {
     this.name = 'DuplicateScenarioBudgetError'
   }
 }
-
-type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 function checkOwnership(
   found: { userId: string } | null | undefined,

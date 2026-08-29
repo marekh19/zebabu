@@ -14,3 +14,5 @@ export function createUpdateCategorySchema() {
     }),
   })
 }
+
+export type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>

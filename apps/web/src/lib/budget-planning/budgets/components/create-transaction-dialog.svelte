@@ -9,8 +9,8 @@
     createTransactionErrorMessages,
     type CreateTransactionError,
   } from '$lib/budget-planning/errors'
+  import { createDialogSuccessHandler } from '$lib/components/dialog-form'
   import { shouldAcceptDialogOpenChange } from './transaction-dialog'
-  import { toast } from 'svelte-sonner'
   import {
     superForm,
     type Infer,
@@ -42,20 +42,18 @@
 
   const createTransactionSchema = createCreateTransactionSchema()
 
+  function getSuccessMessage(): string {
+    return m.budget_detail_transaction_create_success({
+      name: $formData.name,
+    })
+  }
+
   // svelte-ignore state_referenced_locally
   // superForm captures initial data intentionally; reactivity is handled internally via use:enhance (https://github.com/sveltejs/svelte/issues/11883)
   const form = superForm(data, {
     dataType: 'json',
     validators: zod4(createTransactionSchema),
-    onResult({ result }) {
-      if (result.type !== 'success') return
-
-      const transactionName = $formData.name
-      onOpenChange(false)
-      toast.success(
-        m.budget_detail_transaction_create_success({ name: transactionName }),
-      )
-    },
+    onResult: createDialogSuccessHandler(onOpenChange, getSuccessMessage),
   })
 
   const { form: formData, enhance, submitting } = form

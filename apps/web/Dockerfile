@@ -5,8 +5,8 @@ WORKDIR /app
 FROM base AS builder
 
 COPY package.json bun.lock ./
-COPY packages/tsconfig/package.json ./packages/tsconfig/
-COPY packages/tsconfig/*.json       ./packages/tsconfig/
+COPY packages/tooling/package.json packages/tooling/*.js ./packages/tooling/
+COPY packages/tooling/tsconfig/     ./packages/tooling/tsconfig/
 COPY packages/emails/package.json   ./packages/emails/
 COPY packages/ui/package.json       ./packages/ui/
 COPY apps/web/package.json          ./apps/web/
@@ -38,10 +38,10 @@ RUN addgroup --system --gid 1001 nodejs \
 # Workspace manifests + lockfile for production install
 COPY --from=builder /app/package.json              ./
 COPY --from=builder /app/bun.lock                  ./
-COPY --from=builder /app/packages/tsconfig/package.json ./packages/tsconfig/
-COPY --from=builder /app/packages/emails/package.json   ./packages/emails/
-COPY --from=builder /app/packages/ui/package.json       ./packages/ui/
-COPY --from=builder /app/packages/ui/src                ./packages/ui/src
+COPY --from=builder /app/packages/tooling/package.json ./packages/tooling/
+COPY --from=builder /app/packages/emails/package.json  ./packages/emails/
+COPY --from=builder /app/packages/ui/package.json      ./packages/ui/
+COPY --from=builder /app/packages/ui/src               ./packages/ui/src
 # @zebabu/emails compiled output — needed at runtime for email rendering
 COPY --from=builder /app/packages/emails/dist           ./packages/emails/dist
 COPY --from=builder /app/apps/web/package.json          ./apps/web/

@@ -12,9 +12,7 @@
   import EditCategoryDialog from './edit-category-dialog.svelte'
   import type { Category } from '$lib/budget-planning/model'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
-  import type { createUpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
-
-  type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>
+  import type { UpdateCategorySchema } from '$lib/budget-planning/categories/schemas/update-category-schema'
 
   type Props = {
     category: Category

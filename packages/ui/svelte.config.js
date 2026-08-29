@@ -1,9 +1,7 @@
+import { asyncCompilerOptions } from '@zebabu/tooling/svelte'
+
 const config = {
-  compilerOptions: {
-    experimental: {
-      async: true,
-    },
-  },
+  compilerOptions: asyncCompilerOptions,
 }
 
 export default config
