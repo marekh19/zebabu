@@ -1,4 +1,4 @@
-import { reorderBudgetCategories } from '$lib/server/budgets/service'
+import { reorderBudgetCategories } from '$lib/budget-planning/server'
 import { json } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { z } from 'zod'

@@ -1,5 +1,7 @@
-import { createCreateCategorySchema } from '$lib/features/categories/schemas/create-category-schema'
-import { createUpdateCategorySchema } from '$lib/features/categories/schemas/update-category-schema'
+import {
+  createCreateCategorySchema,
+  createUpdateCategorySchema,
+} from '$lib/budget-planning'
 import {
   CategoryInUseError,
   CategoryNotFoundError,
@@ -9,7 +11,7 @@ import {
   LastCategoryOfTypeError,
   listCategories,
   updateCategory,
-} from '$lib/server/categories/service'
+} from '$lib/budget-planning/server'
 import { fail } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'

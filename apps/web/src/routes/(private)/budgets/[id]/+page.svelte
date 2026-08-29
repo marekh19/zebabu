@@ -1,12 +1,14 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
   import { Badge } from '$lib/components/ui/badge'
-  import BudgetActions from '$lib/features/budgets/components/budget-actions.svelte'
-  import BudgetBoard from '$lib/features/budgets/components/budget-board.svelte'
-  import BudgetSummary from '$lib/features/budgets/components/budget-summary.svelte'
-  import { getBudgetDisplayName } from '$lib/features/budgets/utils/month-names'
-  import { errorMessages } from '$lib/features/budgets/components/add-budget-category-dialog.svelte'
-  import { errorMessages as createTransactionErrorMessages } from '$lib/features/budgets/components/create-transaction-dialog.svelte'
+  import {
+    addBudgetCategoryErrorMessages,
+    BudgetActions,
+    BudgetBoard,
+    BudgetSummary,
+    createTransactionErrorMessages,
+    getBudgetDisplayName,
+  } from '$lib/budget-planning'
   import { isKeyOf, isString } from 'narrowland'
 
   let { data, form: actionData } = $props()
@@ -14,7 +16,8 @@
   const addCategoryError = $derived.by(() => {
     if (actionData == null || !('error' in actionData)) return undefined
     const value = actionData.error
-    if (isString(value) && isKeyOf(value, errorMessages)) return value
+    if (isString(value) && isKeyOf(value, addBudgetCategoryErrorMessages))
+      return value
     return undefined
   })
 

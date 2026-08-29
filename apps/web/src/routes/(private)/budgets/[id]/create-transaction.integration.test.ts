@@ -4,19 +4,13 @@ const mocks = vi.hoisted(() => ({
   createTransaction: vi.fn(),
 }))
 
-vi.mock('$lib/server/budgets/service', () => ({
+vi.mock('$lib/budget-planning/server', () => ({
   addBudgetCategory: vi.fn(),
   createTransaction: mocks.createTransaction,
   deleteBudget: vi.fn(),
-  getBudgetDetail: vi.fn(),
-}))
-
-vi.mock('$lib/server/budgets/action-helpers', () => ({
-  handleDuplicateBudgetAction: vi.fn(),
-}))
-
-vi.mock('$lib/server/categories/repository', () => ({
   findCategoriesNotInBudget: vi.fn(),
+  getBudgetDetail: vi.fn(),
+  handleDuplicateBudgetAction: vi.fn(),
 }))
 
 import { actions } from './+page.server'

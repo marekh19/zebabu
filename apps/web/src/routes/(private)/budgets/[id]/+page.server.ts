@@ -1,15 +1,17 @@
 import { resolve } from '$app/paths'
-import { addBudgetCategorySchema } from '$lib/features/budgets/schemas/add-budget-category-schema'
-import { createCreateTransactionSchema } from '$lib/features/budgets/schemas/create-transaction-schema'
-import { getBudgetDisplayName } from '$lib/features/budgets/utils/month-names'
-import { handleDuplicateBudgetAction } from '$lib/server/budgets/action-helpers'
+import {
+  addBudgetCategorySchema,
+  createCreateTransactionSchema,
+  getBudgetDisplayName,
+} from '$lib/budget-planning'
 import {
   addBudgetCategory,
   createTransaction,
   deleteBudget,
+  findCategoriesNotInBudget,
   getBudgetDetail,
-} from '$lib/server/budgets/service'
-import { findCategoriesNotInBudget } from '$lib/server/categories/repository'
+  handleDuplicateBudgetAction,
+} from '$lib/budget-planning/server'
 import { error, fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'

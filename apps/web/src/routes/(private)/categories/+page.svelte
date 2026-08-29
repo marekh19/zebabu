@@ -1,9 +1,10 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import CreateCategoryDialog, {
-    errorMessages,
-  } from '$lib/features/categories/components/create-category-dialog.svelte'
-  import CategoryCard from '$lib/features/categories/components/category-card.svelte'
+  import {
+    CategoryCard,
+    CreateCategoryDialog,
+    createCategoryErrorMessages,
+  } from '$lib/budget-planning'
   import { isString, isKeyOf } from 'narrowland'
   import FloatingActionButton from '$lib/components/floating-action-button.svelte'
 
@@ -14,7 +15,8 @@
   const error = $derived.by(() => {
     if (actionData == null || !('error' in actionData)) return undefined
     const value = actionData.error
-    if (isString(value) && isKeyOf(value, errorMessages)) return value
+    if (isString(value) && isKeyOf(value, createCategoryErrorMessages))
+      return value
     return undefined
   })
 </script>
