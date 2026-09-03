@@ -1,6 +1,7 @@
 import * as m from '$lib/paraglide/messages'
 import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard'
 import TagIcon from '@lucide/svelte/icons/tag'
+import UserIcon from '@lucide/svelte/icons/user'
 import WalletIcon from '@lucide/svelte/icons/wallet'
 import type { Component } from 'svelte'
 
@@ -29,5 +30,11 @@ export const sidebarRoutes = [
     path: '/categories',
     label: m.sidebar_nav_categories,
     icon: TagIcon,
+  },
+  {
+    segment: 'profile',
+    path: '/profile',
+    label: m.sidebar_nav_profile,
+    icon: UserIcon,
   },
 ] as const satisfies SidebarRoute[]

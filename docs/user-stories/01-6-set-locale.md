@@ -1,292 +1,86 @@
-# [US-1.6] Set Locale for Number Formatting
+# [US-1.6] Persist Language and Locale Formatting
 
 **Epic:** User Authentication & Profile Management
 **Priority:** P0 (MVP Critical)
-**Story Points:** 1
-**Status:** ☐ Not Started
-
----
+**Story Points:** 2
+**Status:** ☑ Complete
+**Triage:** ready-for-agent
 
 ## User Story
 
-**As a** user,
-**I want to** set my locale for number and date formatting,
-**So that** amounts and dates are displayed in my preferred format.
+**As a** signed-in user,
+**I want to** save my language preference,
+**So that** the application uses my language and its conventional number and date formats on every device.
 
----
+## Current-State Alignment
 
-## Description
+- Paraglide already provides English (`en`) and Czech (`cs`) messages and an immediate language switcher.
+- `formatDecimal`, budget month names, and budget creation dates already read the active Paraglide locale. Numeric form inputs and stored values are locale-neutral.
+- US-1.5 adds `/profile`, a shared profile form, `primaryCurrency` on the Better Auth user, and the `update-user` persistence pattern. Implement this story after that work is on the target branch.
+- Transactions do not have currencies yet. This story changes decimal separators but must not label budget amounts with the user's primary currency. Currency-aware formatting remains in US-6.2.
 
-Allow users to select their preferred locale (language/region) which determines how numbers, currencies, and dates are formatted throughout the application. For example, Czech locale uses "1 234,56" while US uses "1,234.56".
+## Decisions
 
----
+- Store the Paraglide language code (`en` or `cs`) as the account preference.
+- Derive formatting locales as `en-US` and `cs-CZ`; do not expose region as a separate preference.
+- Default new and existing users to English.
+- The account preference overrides browser-local state on authenticated pages. Signed-out language selection remains browser-local.
+- Keep the header switcher. On authenticated pages it persists immediately; the profile selector remains a draft until the shared form is saved.
+- Save primary currency and language atomically from one profile form.
 
 ## Acceptance Criteria
 
-- [ ] Locale dropdown available in profile settings
-- [ ] Current locale pre-selected in dropdown
-- [ ] Changing locale updates user profile
-- [ ] All numbers formatted according to selected locale
-- [ ] All dates formatted according to selected locale
-- [ ] Currency symbols and formatting respect locale
-- [ ] Success message shown after saving
-- [ ] Locale defaults to cs-CZ for new users
-
----
+- [x] The profile form contains a Language select with the primary-currency setting and uses the same Save button.
+- [x] The select offers `English` and `Čeština`, written in their own language, with `1,234.56` and `1 234,56` formatting examples. It does not use flags.
+- [x] The current account language is selected when the profile loads.
+- [x] Saving validates both profile fields and updates primary currency and language atomically.
+- [x] After a successful save, the current page switches language immediately and shows a success toast in the new language.
+- [x] A failed save changes neither preference nor the active language and shows a localized error.
+- [x] The private header switcher remains available and persists a language change to the account before applying it locally.
+- [x] If a private-header update fails, the active selection is restored and a localized error toast is shown.
+- [x] Public-page language switching remains browser-local and requires no account.
+- [x] Authenticated server rendering selects the stored account language before rendering, including the first page after sign-in, without a wrong-language flash.
+- [x] New users and migrated existing users default to `en`.
+- [x] Displayed decimal amounts use `en-US` or `cs-CZ` separators and retain two fraction digits.
+- [x] Budget month names and creation dates follow the derived formatting locale while retaining their current precision.
+- [x] Numeric inputs, submitted values, and database values remain locale-neutral.
+- [x] Budget amounts remain currency-neutral; this story adds no currency symbols or conversion.
+- [x] Unsupported language values are rejected at the authentication boundary.
 
 ## Technical Implementation
 
-### Files to Modify/Create
+### Expected Areas
 
-- `src/routes/(app)/profile/+page.svelte` - Add locale setting to profile page
-- `src/routes/(app)/profile/+page.server.ts` - Update locale action
-- `src/lib/server/modules/auth/service.ts` - Update user locale logic
-- `src/lib/constants/locales.ts` - List of supported locales
-- `src/lib/utils/formatting.ts` - Number and date formatting utilities
-- `src/lib/stores/locale.ts` - Client-side locale store
+- `apps/web/src/lib/identity/` — supported language schema, formatting-locale mapping, profile schema, and preference update client
+- `apps/web/src/lib/identity/server/create-identity.ts` — Better Auth user field and validation
+- `apps/web/src/lib/identity/server/persistence/schema.ts` — persisted language default
+- `apps/web/src/routes/(private)/profile/` — initialize and save the combined profile form
+- `apps/web/src/lib/components/language-switcher.svelte` — account-aware private switching and failure rollback
+- `apps/web/src/hooks.server.ts` or the nearest shared request boundary — select the account language before private rendering
+- `apps/web/src/lib/utils.ts` and existing date/month helpers — explicit language-to-formatting-locale mapping
+- `apps/web/messages/en.json` and `apps/web/messages/cs.json` — labels, examples, success, and error messages
+- `apps/web/drizzle/` — migration adding the non-null language field with an `en` default
 
-### Implementation Steps
+### Constraints
 
-1. **Define Supported Locales**
-   - Create list of supported locale codes
-   - Include locale names and descriptions
-   - Start with common European locales
-
-2. **Create Formatting Utilities**
-   - Create formatNumber() function using Intl.NumberFormat
-   - Create formatCurrency() function using Intl.NumberFormat
-   - Create formatDate() function using Intl.DateTimeFormat
-   - Create formatPercentage() function
-
-3. **Add Locale Setting to Profile**
-   - Add locale dropdown to profile page
-   - Save locale preference to user table
-   - Update action handler
-
-4. **Apply Locale Throughout App**
-   - Use formatting utilities in all components
-   - Pass user locale to formatting functions
-   - Test with different locales
-
-### Service Layer
-
-```typescript
-// src/lib/server/modules/auth/service.ts
-export async function updateLocale(
-  userId: string,
-  locale: string,
-): Promise<User> {
-  // Validate locale code
-  if (!SUPPORTED_LOCALES.includes(locale)) {
-    throw new Error('Invalid locale code')
-  }
-
-  const user = await userRepository.update(userId, {
-    locale,
-    updatedAt: new Date(),
-  })
-
-  return user
-}
-```
-
-```typescript
-// src/lib/constants/locales.ts
-export const SUPPORTED_LOCALES = [
-  { code: 'cs-CZ', name: 'Czech (Česko)', example: '1 234,56 Kč' },
-  { code: 'en-US', name: 'English (US)', example: '$1,234.56' },
-  { code: 'en-GB', name: 'English (UK)', example: '£1,234.56' },
-  { code: 'de-DE', name: 'German (Deutschland)', example: '1.234,56 €' },
-  { code: 'pl-PL', name: 'Polish (Polska)', example: '1 234,56 zł' },
-  { code: 'sk-SK', name: 'Slovak (Slovensko)', example: '1 234,56 €' },
-  { code: 'fr-FR', name: 'French (France)', example: '1 234,56 €' },
-] as const
-
-export type LocaleCode = (typeof SUPPORTED_LOCALES)[number]['code']
-```
-
-```typescript
-// src/lib/utils/formatting.ts
-export function formatNumber(
-  value: number,
-  locale: string,
-  options?: Intl.NumberFormatOptions,
-): string {
-  return new Intl.NumberFormat(locale, options).format(value)
-}
-
-export function formatCurrency(
-  amount: number,
-  currency: string,
-  locale: string,
-): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-  }).format(amount)
-}
-
-export function formatPercentage(
-  value: number,
-  locale: string,
-  decimals: number = 1,
-): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'percent',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value / 100)
-}
-
-export function formatDate(
-  date: Date,
-  locale: string,
-  options?: Intl.DateTimeFormatOptions,
-): string {
-  return new Intl.DateTimeFormat(locale, options).format(date)
-}
-```
-
-### UI Components
-
-```svelte
-<!-- src/routes/(app)/profile/+page.svelte -->
-<script lang="ts">
-  import { superForm } from 'sveltekit-superforms/client'
-  import { SUPPORTED_CURRENCIES } from '$lib/constants/currencies'
-  import { SUPPORTED_LOCALES } from '$lib/constants/locales'
-  import type { PageData } from './$types'
-
-  let { data }: { data: PageData } = $props()
-
-  const { form, errors, enhance, message } = superForm(data.form)
-</script>
-
-<div class="profile-page">
-  <h1>Profile Settings</h1>
-
-  {#if $message}
-    <div class="success-message">{$message}</div>
-  {/if}
-
-  <form method="POST" use:enhance>
-    <div class="form-group">
-      <label>
-        Primary Currency
-        <select name="currency" bind:value={$form.currency}>
-          {#each SUPPORTED_CURRENCIES as currency}
-            <option value={currency.code}>
-              {currency.code} - {currency.name} ({currency.symbol})
-            </option>
-          {/each}
-        </select>
-      </label>
-      {#if $errors.currency}
-        <span class="error">{$errors.currency}</span>
-      {/if}
-    </div>
-
-    <div class="form-group">
-      <label>
-        Number Format (Locale)
-        <select name="locale" bind:value={$form.locale}>
-          {#each SUPPORTED_LOCALES as locale}
-            <option value={locale.code}>
-              {locale.name} - Example: {locale.example}
-            </option>
-          {/each}
-        </select>
-      </label>
-      {#if $errors.locale}
-        <span class="error">{$errors.locale}</span>
-      {/if}
-    </div>
-
-    <button type="submit">Save Changes</button>
-  </form>
-
-  <div class="info-box">
-    <h3>About Number Formatting</h3>
-    <p>
-      Your locale setting affects how numbers, dates, and currency amounts are
-      displayed throughout the application. Choose the format you're most
-      comfortable with.
-    </p>
-  </div>
-</div>
-```
-
-```typescript
-// Example usage in a budget component
-<script lang="ts">
-  import { formatCurrency, formatPercentage } from '$lib/utils/formatting';
-  import type { PageData } from './$types';
-
-  let { data }: { data: PageData } = $props();
-
-  const totalIncome = $derived(
-    formatCurrency(
-      data.budget.totalIncome,
-      data.user.primaryCurrency,
-      data.user.locale
-    )
-  );
-
-  const allocationPercent = $derived(
-    formatPercentage(
-      data.budget.allocatedPercentage,
-      data.user.locale
-    )
-  );
-</script>
-
-<div class="budget-summary">
-  <div>Total Income: {totalIncome}</div>
-  <div>Allocated: {allocationPercent}</div>
-</div>
-```
-
----
-
-## Validation & Business Rules
-
-- **Locale Code Validation**: Must be valid locale code from supported list
-- **Default Value**: New users default to cs-CZ
-- **Immediate Effect**: Locale change affects all number/date displays immediately
-- **Formatting Consistency**: All numbers throughout app use same formatting
-
----
+1. Extend the US-1.5 profile schema and update operation; do not create competing profile forms or endpoints.
+2. Validate the stored value against the two Paraglide locale codes at the Better Auth boundary.
+3. Persist successfully before calling `setLocale`. Refresh session/page data after updates so the server and client agree.
+4. Keep the account-preference lookup at a shared authenticated request boundary rather than repeating it in pages.
+5. Preserve each date display's existing options. Locale changes representation, not the information shown.
 
 ## Testing Checklist
 
-- [ ] Unit tests for locale update service
-- [ ] Unit tests for formatting utilities
-- [ ] Unit tests for different locale formats
-- [ ] Integration test for profile update flow
-- [ ] Manual testing checklist:
-  - [ ] Profile page shows current locale
-  - [ ] Dropdown includes all supported locales with examples
-  - [ ] Selecting new locale saves successfully
-  - [ ] Success message displayed after save
-  - [ ] Numbers formatted correctly for cs-CZ (1 234,56)
-  - [ ] Numbers formatted correctly for en-US (1,234.56)
-  - [ ] Dates formatted according to locale
-  - [ ] Currency symbols display correctly
-  - [ ] Invalid locale code rejected by validation
-
----
+- [x] Schema tests accept `en` and `cs` and reject unsupported values.
+- [x] Identity tests cover the `en` default and the persisted language field.
+- [ ] Profile server/component tests cover initial selection, atomic save, success, and failure without a local language change.
+- [ ] Language-switcher tests cover persisted private switching, rollback on failure, and browser-local public switching.
+- [ ] Request-boundary or integration coverage verifies that a stored Czech preference renders an authenticated page in Czech on first response.
+- [x] Formatting tests cover decimal and date output for `en-US` and `cs-CZ`.
+- [ ] Manual keyboard test covers both selectors and the shared Save button.
+- [ ] Manual test verifies there is no wrong-language flash after sign-in or navigation.
 
 ## Dependencies
 
 - Depends on: US-1.1 (User Registration), US-1.5 (Set Primary Currency)
-- Blocks: All features displaying numbers/dates
-
----
-
-## Notes
-
-- Intl API is well-supported in all modern browsers
-- Consider adding preview of formatting in profile settings
-- Future: Add full i18n/l10n for UI text translation
-- Locale affects number formatting only, not UI language (for MVP)
-- Test thoroughly with edge cases (very large numbers, very small numbers, negative numbers)
+- Blocks: features that add new formatted numbers or dates

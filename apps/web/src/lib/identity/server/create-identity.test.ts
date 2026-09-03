@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }))
 vi.mock('$lib/server/persistence/database', () => ({ database: {} }))
@@ -16,6 +16,20 @@ vi.mock('./secondary-storage', () => ({ redisSecondaryStorage: {} }))
 import { createIdentity } from './create-identity'
 
 describe('createIdentity', () => {
+  beforeEach(() => vi.mocked(betterAuth).mockClear())
+
+  it('configures validated user preference defaults', () => {
+    createIdentity({ onUserCreated: vi.fn() })
+
+    const fields =
+      vi.mocked(betterAuth).mock.calls[0]?.[0].user?.additionalFields
+
+    expect(fields?.primaryCurrency?.defaultValue).toBe('CZK')
+    expect(fields?.language?.defaultValue).toBe('en')
+    expect(fields?.language?.validator?.input).toBeDefined()
+    expect(fields?.language?.validator?.output).toBeDefined()
+  })
+
   it('publishes the created user ID through the application callback', async () => {
     const onUserCreated = vi.fn()
     createIdentity({ onUserCreated })

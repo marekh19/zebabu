@@ -25,7 +25,7 @@
         <AppBreadcrumbs />
       </div>
       <div class="ml-auto flex items-center gap-2 px-4">
-        <LanguageSwitcher />
+        <LanguageSwitcher preferences={page.data.preferences} />
         <ThemeSwitcher />
       </div>
     </header>

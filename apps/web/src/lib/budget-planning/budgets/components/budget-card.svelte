@@ -1,7 +1,7 @@
 <script lang="ts">
   import LightbulbIcon from '@lucide/svelte/icons/lightbulb'
   import * as m from '$lib/paraglide/messages'
-  import { getLocale } from '$lib/paraglide/runtime'
+  import { formatDate } from '$lib/utils'
   import { resolve } from '$app/paths'
   import * as Card from '@zebabu/ui/card'
   import {
@@ -17,17 +17,13 @@
   }
 
   let { budget: b }: Props = $props()
-
-  function formatDate(date: Date): string {
-    return new Intl.DateTimeFormat(getLocale(), {
-      dateStyle: 'medium',
-    }).format(date)
-  }
 </script>
 
 {#snippet createdAt()}
   <p class="text-muted-foreground mt-1 text-xs">
-    {m.budgets_card_created({ date: formatDate(b.createdAt) })}
+    {m.budgets_card_created({
+      date: formatDate(b.createdAt, { dateStyle: 'medium' }),
+    })}
   </p>
 {/snippet}
 

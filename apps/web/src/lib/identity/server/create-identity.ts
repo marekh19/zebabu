@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/private'
+import { currencySchema, languageSchema } from '$lib/identity/preferences'
 import { database } from '$lib/server/persistence/database'
 import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
@@ -26,6 +27,23 @@ export function createIdentity({ onUserCreated }: IdentityDependencies) {
           from: env.EMAIL_FROM,
           apiKey: env.RESEND_API_KEY,
         })
+      },
+    },
+
+    user: {
+      additionalFields: {
+        primaryCurrency: {
+          type: 'string',
+          required: true,
+          defaultValue: 'CZK',
+          validator: { input: currencySchema, output: currencySchema },
+        },
+        language: {
+          type: 'string',
+          required: true,
+          defaultValue: 'en',
+          validator: { input: languageSchema, output: languageSchema },
+        },
       },
     },
 
