@@ -3,7 +3,7 @@
 **Epic:** Multi-Currency Support
 **Priority:** P1 (Important)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ☒ Done
 
 ---
 
@@ -23,20 +23,20 @@ This is a duplicate of US-1.5. The primary currency setting is part of the user 
 
 ## Acceptance Criteria
 
-- [ ] Same as US-1.5 (Set Primary Currency)
+- [x] Same as US-1.5 (Set Primary Currency)
 
 ---
 
 ## Technical Implementation
 
-- Already covered in US-1.5
+- Completed by US-1.5
 - This story exists for completeness in the Multi-Currency epic
 
 ---
 
 ## Dependencies
 
-- Depends on: US-1.5 (Set Primary Currency)
+- Completed by: US-1.5 (Set Primary Currency)
 - Blocks: US-6.2, US-6.3
 
 ---

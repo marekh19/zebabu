@@ -79,7 +79,7 @@ export async function getExchangeRate(
 
 ## Dependencies
 
-- Depends on: US-6.2 (Multi-Currency Transactions), US-6.5 (Fetch Exchange Rates)
+- Depends on: US-1.5 (Set Primary Currency), US-6.2 (Multi-Currency Transactions), US-6.5 (Fetch Exchange Rates)
 - Blocks: US-6.4 (Show Original Currency)
 
 ---

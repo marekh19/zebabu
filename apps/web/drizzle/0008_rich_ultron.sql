@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "primary_currency" text DEFAULT 'USD' NOT NULL;
