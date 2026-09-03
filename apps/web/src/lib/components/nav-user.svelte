@@ -9,6 +9,7 @@
   import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down'
   import { toast } from 'svelte-sonner'
   import LogOutIcon from '@lucide/svelte/icons/log-out'
+  import UserIcon from '@lucide/svelte/icons/user'
 
   type Props = {
     user: { name: string; email: string; image: string | null }
@@ -89,6 +90,14 @@
         </DropdownMenu.Label>
         <DropdownMenu.Separator />
         <DropdownMenu.Group>
+          <DropdownMenu.Item>
+            {#snippet child({ props })}
+              <a href={resolve('/profile')} {...props}>
+                <UserIcon />
+                <span>{m.profile_navigation()}</span>
+              </a>
+            {/snippet}
+          </DropdownMenu.Item>
           <DropdownMenu.Item onclick={logout} disabled={loggingOut}>
             <LogOutIcon />
             <span>{loggingOut ? m.logout_submitting() : m.logout_button()}</span

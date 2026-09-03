@@ -32,28 +32,15 @@ Allow users to select any supported currency when creating transactions. The tra
 
 ---
 
-## Technical Implementation
+## Current-State Alignment
 
-Already implemented in US-4.1 (Create Transaction). Currency field is part of transaction schema.
-
-```svelte
-<label>
-  Currency
-  <select name="currency" bind:value={$form.currency}>
-    {#each SUPPORTED_CURRENCIES as currency}
-      <option value={currency.code}>
-        {currency.code} - {currency.name} ({currency.symbol})
-      </option>
-    {/each}
-  </select>
-</label>
-```
+US-4.1 intentionally shipped without transaction currency because neither the user nor transaction model supported it. This story must add the currency field to the transaction model and the existing create and edit flows. Existing transactions should be migrated to the owner's primary currency.
 
 ---
 
 ## Dependencies
 
-- Depends on: US-4.1 (Create Transaction), US-6.1 (Set Primary Currency)
+- Depends on: US-4.1 (Create Transaction), US-1.5 (Set Primary Currency)
 - Blocks: US-6.3 (Currency Conversion)
 
 ---

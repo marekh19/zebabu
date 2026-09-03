@@ -3,6 +3,7 @@ import { database } from '$lib/server/persistence/database'
 import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { primaryCurrencySchema } from '../currencies'
 import { redisSecondaryStorage } from './secondary-storage'
 
 type IdentityDependencies = {
@@ -47,6 +48,21 @@ export function createIdentity({ onUserCreated }: IdentityDependencies) {
     database: drizzleAdapter(database, {
       provider: 'pg',
     }),
+
+    user: {
+      additionalFields: {
+        primaryCurrency: {
+          type: 'string',
+          required: true,
+          defaultValue: 'USD',
+          input: true,
+          validator: {
+            input: primaryCurrencySchema,
+            output: primaryCurrencySchema,
+          },
+        },
+      },
+    },
 
     databaseHooks: {
       user: {

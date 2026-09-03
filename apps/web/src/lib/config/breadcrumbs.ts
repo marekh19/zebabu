@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages'
 import { sidebarRoutes } from './navigation'
 
 export type Breadcrumb = {
@@ -6,9 +7,10 @@ export type Breadcrumb = {
   isLast: boolean
 }
 
-const staticLabels = Object.fromEntries(
-  sidebarRoutes.map((route) => [route.segment, route.label]),
-)
+const staticLabels = Object.fromEntries([
+  ...sidebarRoutes.map((route) => [route.segment, route.label]),
+  ['profile', m.profile_navigation],
+])
 
 export function buildBreadcrumbs(
   pathname: string,

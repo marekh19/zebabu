@@ -57,6 +57,13 @@
       "when": 1787927790786,
       "tag": "0007_true_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788354322567,
+      "tag": "0008_rich_ultron",
+      "breakpoints": true
     }
   ]
 }
