@@ -6,7 +6,7 @@
 - [x] [US-1.3 User Logout](01-3-user-logout.md)
 - [x] [US-1.4 Password Reset](01-4-password-reset.md)
 - [x] [US-1.5 Set Primary Currency](01-5-set-primary-currency.md)
-- [ ] [US-1.6 Use Paraglide Language for Locale Formatting](01-6-set-locale.md)
+- [x] [US-1.6 Use Paraglide Language for Locale Formatting](01-6-set-locale.md)
 - [x] [US-2.1 Create Monthly Budget](02-1-create-monthly-budget.md)
 - [x] [US-2.2 Create Scenario Budget](02-2-create-scenario-budget.md)
 - [x] [US-2.3 List Budgets](02-3-list-budgets.md)

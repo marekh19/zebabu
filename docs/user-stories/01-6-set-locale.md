@@ -3,7 +3,7 @@
 **Epic:** User Authentication & Profile Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** 🟡 In Progress
+**Status:** ✅ Complete
 **Triage:** ready-for-agent
 
 ## User Story
@@ -59,8 +59,8 @@
 
 - [x] Formatting tests cover decimals for `en-US` and `cs-CZ`, including two fraction digits.
 - [x] Formatting tests cover budget month names and creation dates for both languages.
-- [ ] Manual test verifies the existing switcher updates formatting on public and private pages.
-- [ ] Manual test verifies the selected language survives a reload.
+- [x] Manual test verifies the existing switcher updates formatting on public and private pages.
+- [x] Manual test verifies the selected language survives a reload.
 
 ## Dependencies
 
