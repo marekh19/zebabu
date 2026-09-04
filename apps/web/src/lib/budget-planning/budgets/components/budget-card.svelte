@@ -1,15 +1,12 @@
 <script lang="ts">
   import LightbulbIcon from '@lucide/svelte/icons/lightbulb'
   import * as m from '$lib/paraglide/messages'
-  import { getLocale } from '$lib/paraglide/runtime'
   import { resolve } from '$app/paths'
   import * as Card from '@zebabu/ui/card'
-  import {
-    getMonthAbbrev,
-    getMonthName,
-  } from '$lib/budget-planning/budgets/utils/month-names'
+  import { getMonthName } from '$lib/budget-planning/budgets/utils/month-names'
   import { BudgetType } from '$lib/budget-planning/budgets/types'
   import type { BudgetListItem } from '$lib/budget-planning/model'
+  import { formatDate, formatMonthAbbrev } from '$lib/utils'
   import BudgetActions from './budget-actions.svelte'
 
   type Props = {
@@ -17,12 +14,6 @@
   }
 
   let { budget: b }: Props = $props()
-
-  function formatDate(date: Date): string {
-    return new Intl.DateTimeFormat(getLocale(), {
-      dateStyle: 'medium',
-    }).format(date)
-  }
 </script>
 
 {#snippet createdAt()}
@@ -46,7 +37,7 @@
           <span
             class="text-[0.6rem] leading-none font-semibold tracking-wider uppercase"
           >
-            {getMonthAbbrev(b.month)}
+            {formatMonthAbbrev(b.month)}
           </span>
           <span class="text-lg leading-tight font-bold">
             {b.year}

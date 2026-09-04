@@ -1,6 +1,5 @@
 import { BudgetType } from '$lib/budget-planning/budgets/types'
 import * as m from '$lib/paraglide/messages'
-import { getLocale } from '$lib/paraglide/runtime'
 
 const monthTranslations = [
   m.month_january,
@@ -19,13 +18,6 @@ const monthTranslations = [
 
 export function getMonthName(month: number): string {
   return monthTranslations[month - 1]()
-}
-
-/** Short locale-aware month abbreviation (e.g. "Mar", "bře") via Intl.DateTimeFormat. */
-export function getMonthAbbrev(month: number): string {
-  return new Intl.DateTimeFormat(getLocale(), { month: 'short' }).format(
-    new Date(2000, month - 1),
-  )
 }
 
 export function getBudgetDisplayName(budget: {
