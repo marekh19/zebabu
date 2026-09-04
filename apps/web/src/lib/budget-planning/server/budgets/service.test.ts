@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
+  deleteTransactionById: vi.fn(),
   findBudgetById: vi.fn(),
   findCategoriesNotInBudget: vi.fn(),
   findOwnedBudgetCategory: vi.fn(),
@@ -22,6 +23,7 @@ vi.mock('$lib/budget-planning/server/persistence/category-repository', () => ({
 }))
 
 vi.mock('../persistence/budget-repository', () => ({
+  deleteTransactionById: mocks.deleteTransactionById,
   deleteBudgetById: vi.fn(),
   findBudgetById: mocks.findBudgetById,
   findBudgetOwner: vi.fn(),
@@ -40,10 +42,41 @@ vi.mock('../persistence/budget-repository', () => ({
 
 import {
   createTransaction,
+  deleteTransaction,
   getBudgetDetail,
   listBudgets,
   updateTransaction,
 } from './service'
+
+describe('deleteTransaction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.transaction.mockImplementation(
+      (callback: (transaction: object) => unknown) => callback({}),
+    )
+  })
+
+  it('deletes a transaction in the owned route budget', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue({ id: 'transaction-1' })
+
+    await expect(
+      deleteTransaction('budget-1', 'user-1', 'transaction-1'),
+    ).resolves.toEqual({})
+    expect(mocks.deleteTransactionById).toHaveBeenCalledWith(
+      {},
+      'transaction-1',
+    )
+  })
+
+  it('leaves a transaction outside the owned route budget untouched', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue(undefined)
+
+    await expect(
+      deleteTransaction('budget-1', 'user-1', 'transaction-1'),
+    ).resolves.toEqual({ error: 'not_found' })
+    expect(mocks.deleteTransactionById).not.toHaveBeenCalled()
+  })
+})
 
 describe('createTransaction', () => {
   beforeEach(() => {
