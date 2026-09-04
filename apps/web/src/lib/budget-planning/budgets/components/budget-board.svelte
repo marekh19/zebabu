@@ -15,15 +15,19 @@
   import type {
     AvailableCategory,
     BudgetCategory,
+    PlannedTransaction,
   } from '$lib/budget-planning/model'
   import type { addBudgetCategorySchema } from '../schemas/add-budget-category-schema'
   import type { Infer, SuperValidated } from 'sveltekit-superforms'
   import type {
     AddBudgetCategoryError,
     CreateTransactionError,
+    UpdateTransactionError,
   } from '$lib/budget-planning/errors'
   import CreateTransactionDialog from './create-transaction-dialog.svelte'
   import type { createCreateTransactionSchema } from '../schemas/create-transaction-schema'
+  import type { createUpdateTransactionSchema } from '../schemas/update-transaction-schema'
+  import EditTransactionDialog from './edit-transaction-dialog.svelte'
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -35,6 +39,11 @@
     >
     createTransactionError: CreateTransactionError | undefined
     initialTransactionCategoryId: string | undefined
+    updateTransactionForm: SuperValidated<
+      Infer<ReturnType<typeof createUpdateTransactionSchema>>
+    >
+    updateTransactionError: UpdateTransactionError | undefined
+    initialEditTransactionId: string | undefined
   }
 
   let {
@@ -45,6 +54,9 @@
     createTransactionForm,
     createTransactionError,
     initialTransactionCategoryId,
+    updateTransactionForm,
+    updateTransactionError,
+    initialEditTransactionId,
   }: Props = $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
@@ -60,9 +72,37 @@
   // svelte-ignore state_referenced_locally
   let transactionDialogOpen = $state(selectedBudgetCategory !== undefined)
 
+  // svelte-ignore state_referenced_locally
+  // The submitted transaction id only seeds a non-enhanced validation failure.
+  let selectedTransaction = $state(
+    budgetCategories
+      .flatMap(({ transactions }) => transactions)
+      .find(({ id }) => id === initialEditTransactionId),
+  )
+  // svelte-ignore state_referenced_locally
+  let editDialogOpen = $state(selectedTransaction !== undefined)
+  let editTrigger: HTMLElement | undefined
+
   function openTransactionDialog(budgetCategory: BudgetCategory) {
     selectedBudgetCategory = budgetCategory
     transactionDialogOpen = true
+  }
+
+  function openEditDialog(transaction: PlannedTransaction) {
+    if (document.activeElement instanceof HTMLElement) {
+      editTrigger = document.activeElement
+    }
+    selectedTransaction = transaction
+    editDialogOpen = true
+  }
+
+  function handleEditOpenChange(open: boolean) {
+    editDialogOpen = open
+    if (open) return
+
+    editTrigger?.focus()
+    editTrigger = undefined
+    selectedTransaction = undefined
   }
 
   async function handleDragEnd(event: { canceled: boolean }) {
@@ -116,6 +156,7 @@
           budgetCategory={bc}
           {index}
           onAddTransaction={openTransactionDialog}
+          onEditTransaction={openEditDialog}
         />
       {/each}
       {#if availableCategories.length > 0}
@@ -145,4 +186,12 @@
   data={createTransactionForm}
   error={createTransactionError}
   onOpenChange={(open) => (transactionDialogOpen = open)}
+/>
+
+<EditTransactionDialog
+  bind:open={editDialogOpen}
+  transaction={selectedTransaction}
+  data={updateTransactionForm}
+  error={updateTransactionError}
+  onOpenChange={handleEditOpenChange}
 />

@@ -20,7 +20,7 @@
 - [x] [US-3.4 Reorder Categories](03-4-reorder-categories.md)
 - [x] [US-3.5 Prevent Deleting Last Category](03-5-prevent-delete-last-category.md)
 - [x] [US-4.1 Create Transaction](04-1-create-transaction.md)
-- [ ] [US-4.2 Edit Transaction](04-2-edit-transaction.md)
+- [x] [US-4.2 Edit Transaction](04-2-edit-transaction.md)
 - [ ] [US-4.3 Delete Transaction](04-3-delete-transaction.md)
 - [ ] [US-4.4 Mark Transaction Paid](04-4-mark-transaction-paid.md)
 - [ ] [US-4.5 Move Transaction](04-5-move-transaction.md)
@@ -45,6 +45,6 @@
 - [x] [US-8.2 Drag Categories](08-2-drag-categories.md)
 - [ ] [US-8.3 Drag Transactions Within Category](08-3-drag-transactions-same-category.md)
 - [ ] [US-8.4 Drag Transactions Between Categories](08-4-drag-transactions-between-categories.md)
-- [ ] [US-8.5 Transaction Edit Modal](08-5-transaction-edit-modal.md)
+- [x] [US-8.5 Transaction Edit Modal](08-5-transaction-edit-modal.md) — closed as duplicate of US-4.2
 - [ ] [US-8.6 Add Transaction Inline](08-6-add-transaction-inline.md)
 - [ ] [US-8.7 Add Category Button](08-7-add-category-button.md)

@@ -49,7 +49,7 @@ See the compact [user story index](INDEX.md) for one story per line.
 **Story Points:** 10 | **Status:** ☐ Not Started
 
 - [ ] `04-1-create-transaction.md` - Create Transaction
-- [ ] `04-2-edit-transaction.md` - Edit Transaction
+- [x] `04-2-edit-transaction.md` - Edit Transaction
 - [ ] `04-3-delete-transaction.md` - Delete Transaction
 - [ ] `04-4-mark-transaction-paid.md` - Mark Transaction as Paid/Unpaid
 - [ ] `04-5-move-transaction.md` - Move Transaction Between Categories
@@ -94,7 +94,7 @@ See the compact [user story index](INDEX.md) for one story per line.
 - [x] `08-2-drag-categories.md` - Drag Categories to Reorder
 - [ ] `08-3-drag-transactions-same-category.md` - Drag Transactions Within Category
 - [ ] `08-4-drag-transactions-between-categories.md` - Drag Transactions Between Categories
-- [ ] `08-5-transaction-edit-modal.md` - Edit Transaction in Modal
+- [x] `08-5-transaction-edit-modal.md` - Edit Transaction in Modal (duplicate of US-4.2)
 - [ ] `08-6-add-transaction-inline.md` - Add Transaction via Inline Form
 - [ ] `08-7-add-category-button.md` - Add Category via Button
 

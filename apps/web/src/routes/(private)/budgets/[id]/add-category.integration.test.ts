@@ -9,6 +9,7 @@ vi.mock('$lib/budget-planning/server', () => ({
   deleteBudget: vi.fn(),
   getBudgetDetail: vi.fn(),
   handleDuplicateBudgetAction: vi.fn(),
+  updateTransaction: vi.fn(),
 }))
 
 import { actions } from './+page.server'

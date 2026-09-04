@@ -40,6 +40,13 @@ export const createTransactionErrorMessages = {
 
 export type CreateTransactionError = keyof typeof createTransactionErrorMessages
 
+export const updateTransactionErrorMessages = {
+  not_found: m.budget_detail_transaction_edit_error_not_found,
+  unexpected: m.budget_detail_transaction_error_unexpected,
+} as const satisfies Record<string, () => string>
+
+export type UpdateTransactionError = keyof typeof updateTransactionErrorMessages
+
 export const createCategoryErrorMessages = {
   duplicate: m.categories_error_duplicate,
   unexpected: m.categories_error_unexpected,

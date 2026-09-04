@@ -3,9 +3,8 @@ import { z } from 'zod'
 
 const MAX_AMOUNT = 9_999_999_999.99
 
-export function createCreateTransactionSchema() {
-  return z.object({
-    budgetCategoryId: z.string().min(1),
+export function createTransactionFields() {
+  return {
     name: z
       .string()
       .trim()
@@ -32,5 +31,12 @@ export function createCreateTransactionSchema() {
       .trim()
       .max(1000, { message: m.budget_detail_transaction_validation_note_max() })
       .optional(),
+  }
+}
+
+export function createCreateTransactionSchema() {
+  return z.object({
+    budgetCategoryId: z.string().min(1),
+    ...createTransactionFields(),
   })
 }
