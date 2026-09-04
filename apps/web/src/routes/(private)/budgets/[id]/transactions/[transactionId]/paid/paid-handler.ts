@@ -17,12 +17,7 @@ export async function patchTransactionPaid({
   userId,
   request,
 }: PatchTransactionPaidInput) {
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return json({ error: 'Invalid request body' }, { status: 400 })
-  }
+  const body: unknown = await request.json().catch(() => undefined)
 
   const parsed = paidSchema.safeParse(body)
   if (!parsed.success) {

@@ -32,6 +32,26 @@ describe('paid toggle queue', () => {
     expect(persist).toHaveBeenLastCalledWith('transaction-1', false)
   })
 
+  it('uses the current state after an edit changes a completed toggle', async () => {
+    const persist = vi.fn().mockResolvedValue(undefined)
+    const onChange = vi.fn()
+    const queue = createPaidToggleQueue({
+      persist,
+      onChange,
+      onBusyChange: vi.fn(),
+      onError: vi.fn(),
+    })
+
+    queue.toggle('transaction-1', false)
+    await vi.waitFor(() => expect(persist).toHaveBeenCalledTimes(1))
+
+    queue.toggle('transaction-1', false)
+
+    expect(onChange).toHaveBeenLastCalledWith('transaction-1', true)
+    await vi.waitFor(() => expect(persist).toHaveBeenCalledTimes(2))
+    expect(persist).toHaveBeenLastCalledWith('transaction-1', true)
+  })
+
   it('coalesces rapid changes to the latest desired state', async () => {
     const first = deferred()
     const persist = vi
