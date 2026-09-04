@@ -30,6 +30,7 @@
       "outputs": []
     },
     "test": {
+      "passThroughEnv": ["DATABASE_URL"],
       "outputs": []
     },
     "clean": {

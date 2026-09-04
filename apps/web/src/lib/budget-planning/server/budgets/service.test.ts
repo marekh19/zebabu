@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   listBudgetsByUser: vi.fn(),
   transaction: vi.fn(),
   updateTransactionById: vi.fn(),
+  updateTransactionPaidById: vi.fn(),
 }))
 
 vi.mock('$lib/server/persistence/database', () => ({
@@ -38,6 +39,7 @@ vi.mock('../persistence/budget-repository', () => ({
   listBudgetsByUser: mocks.listBudgetsByUser,
   updateBudgetCategorySortOrders: vi.fn(),
   updateTransactionById: mocks.updateTransactionById,
+  updateTransactionPaidById: mocks.updateTransactionPaidById,
 }))
 
 import {
@@ -46,6 +48,7 @@ import {
   getBudgetDetail,
   listBudgets,
   updateTransaction,
+  updateTransactionPaid,
 } from './service'
 
 describe('deleteTransaction', () => {
@@ -146,6 +149,36 @@ describe('updateTransaction', () => {
         isPaid: true,
         note: null,
       },
+    )
+  })
+})
+
+describe('updateTransactionPaid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.transaction.mockImplementation(
+      (callback: (transaction: object) => unknown) => callback({}),
+    )
+  })
+
+  it('rejects a transaction outside the owned route budget', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue(undefined)
+
+    await expect(
+      updateTransactionPaid('budget-1', 'user-1', 'transaction-1', true),
+    ).resolves.toEqual({ error: 'not_found' })
+    expect(mocks.updateTransactionPaidById).not.toHaveBeenCalled()
+  })
+
+  it('updates only the paid state', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue({ id: 'transaction-1' })
+
+    await updateTransactionPaid('budget-1', 'user-1', 'transaction-1', false)
+
+    expect(mocks.updateTransactionPaidById).toHaveBeenCalledWith(
+      {},
+      'transaction-1',
+      false,
     )
   })
 })

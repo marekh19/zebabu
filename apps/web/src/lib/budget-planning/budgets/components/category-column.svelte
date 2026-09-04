@@ -30,6 +30,8 @@
       transaction: PlannedTransaction,
       trigger: HTMLElement,
     ) => void
+    onToggleTransactionPaid?: (transaction: PlannedTransaction) => void
+    paidBusyTransactionIds?: readonly string[]
   }
 
   let {
@@ -38,6 +40,8 @@
     isOverlay = false,
     onAddTransaction,
     onEditTransaction,
+    onToggleTransactionPaid,
+    paidBusyTransactionIds = [],
     onDeleteTransaction,
   }: Props = $props()
 
@@ -105,6 +109,8 @@
           <TransactionRow
             transaction={t}
             onEdit={onEditTransaction}
+            onTogglePaid={onToggleTransactionPaid}
+            isPaidBusy={paidBusyTransactionIds.includes(t.id)}
             onDelete={onDeleteTransaction}
           />
         {/each}

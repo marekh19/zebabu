@@ -13,6 +13,7 @@ export {
   listBudgets,
   reorderBudgetCategories,
   updateTransaction,
+  updateTransactionPaid,
 } from './budgets/service'
 export {
   CategoryInUseError,

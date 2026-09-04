@@ -223,6 +223,8 @@
   "budget_detail_transaction_note_label": "Note (optional)",
   "budget_detail_transaction_note_placeholder": "Add details",
   "budget_detail_transaction_paid_label": "Paid",
+  "budget_detail_transaction_paid_toggle_label": "Toggle paid status for {transactionName}",
+  "budget_detail_transaction_paid_error": "Failed to update paid status",
   "budget_detail_transaction_submit": "Add transaction",
   "budget_detail_transaction_submitting": "Adding...",
   "budget_detail_transaction_cancel": "Cancel",
