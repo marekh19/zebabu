@@ -24,6 +24,7 @@ import {
   findBudgetOwner,
   findMonthlyBudget,
   findOwnedBudgetCategory,
+  findOwnedTransaction,
   findScenarioBudget,
   insertBudget,
   insertBudgetCategories,
@@ -31,6 +32,7 @@ import {
   insertTransactions,
   listBudgetsByUser,
   updateBudgetCategorySortOrders,
+  updateTransactionById,
 } from '../persistence/budget-repository'
 
 export class DuplicateMonthlyBudgetError extends Error {
@@ -277,7 +279,7 @@ export async function getBudgetDetail(
   }
 }
 
-type CreateTransactionData = {
+type EditableTransactionData = {
   name: string
   amount: number
   isPaid: boolean
@@ -288,7 +290,7 @@ export async function createTransaction(
   budgetId: string,
   userId: string,
   budgetCategoryId: string,
-  data: CreateTransactionData,
+  data: EditableTransactionData,
 ) {
   return db.transaction(async (tx) => {
     const destination = await findOwnedBudgetCategory(
@@ -301,6 +303,32 @@ export async function createTransaction(
 
     await insertTransactionAtEnd(tx, {
       budgetCategoryId,
+      name: data.name,
+      amount: String(data.amount),
+      isPaid: data.isPaid,
+      note: data.note || null,
+    })
+
+    return {}
+  })
+}
+
+export async function updateTransaction(
+  budgetId: string,
+  userId: string,
+  transactionId: string,
+  data: EditableTransactionData,
+) {
+  return db.transaction(async (tx) => {
+    const found = await findOwnedTransaction(
+      tx,
+      transactionId,
+      budgetId,
+      userId,
+    )
+    if (!found) return { error: 'not_found' as const }
+
+    await updateTransactionById(tx, transactionId, {
       name: data.name,
       amount: String(data.amount),
       isPaid: data.isPaid,

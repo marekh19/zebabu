@@ -4,9 +4,11 @@ const mocks = vi.hoisted(() => ({
   findBudgetById: vi.fn(),
   findCategoriesNotInBudget: vi.fn(),
   findOwnedBudgetCategory: vi.fn(),
+  findOwnedTransaction: vi.fn(),
   insertTransactionAtEnd: vi.fn(),
   listBudgetsByUser: vi.fn(),
   transaction: vi.fn(),
+  updateTransactionById: vi.fn(),
 }))
 
 vi.mock('$lib/server/persistence/database', () => ({
@@ -25,6 +27,7 @@ vi.mock('../persistence/budget-repository', () => ({
   findBudgetOwner: vi.fn(),
   findMonthlyBudget: vi.fn(),
   findOwnedBudgetCategory: mocks.findOwnedBudgetCategory,
+  findOwnedTransaction: mocks.findOwnedTransaction,
   findScenarioBudget: vi.fn(),
   insertBudget: vi.fn(),
   insertBudgetCategories: vi.fn(),
@@ -32,9 +35,15 @@ vi.mock('../persistence/budget-repository', () => ({
   insertTransactions: vi.fn(),
   listBudgetsByUser: mocks.listBudgetsByUser,
   updateBudgetCategorySortOrders: vi.fn(),
+  updateTransactionById: mocks.updateTransactionById,
 }))
 
-import { createTransaction, getBudgetDetail, listBudgets } from './service'
+import {
+  createTransaction,
+  getBudgetDetail,
+  listBudgets,
+  updateTransaction,
+} from './service'
 
 describe('createTransaction', () => {
   beforeEach(() => {
@@ -56,6 +65,55 @@ describe('createTransaction', () => {
 
     expect(result).toEqual({ error: 'not_found' })
     expect(mocks.insertTransactionAtEnd).not.toHaveBeenCalled()
+  })
+})
+
+describe('updateTransaction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.transaction.mockImplementation(
+      (callback: (transaction: object) => unknown) => callback({}),
+    )
+  })
+
+  it('rejects a transaction outside the owned route budget', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue(undefined)
+
+    const result = await updateTransaction(
+      'budget-1',
+      'user-1',
+      'transaction-1',
+      { name: 'Rent', amount: 1000, isPaid: true, note: '' },
+    )
+
+    expect(result).toEqual({ error: 'not_found' })
+    expect(mocks.updateTransactionById).not.toHaveBeenCalled()
+  })
+
+  it('updates only editable fields', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue({
+      id: 'transaction-1',
+      budgetCategoryId: 'budget-category-1',
+      sortOrder: 3,
+    })
+
+    await updateTransaction('budget-1', 'user-1', 'transaction-1', {
+      name: 'Rent updated',
+      amount: 1200.5,
+      isPaid: true,
+      note: '',
+    })
+
+    expect(mocks.updateTransactionById).toHaveBeenCalledWith(
+      {},
+      'transaction-1',
+      {
+        name: 'Rent updated',
+        amount: '1200.5',
+        isPaid: true,
+        note: null,
+      },
+    )
   })
 })
 

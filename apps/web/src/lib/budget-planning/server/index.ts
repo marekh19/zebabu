@@ -11,6 +11,7 @@ export {
   getBudgetDetail,
   listBudgets,
   reorderBudgetCategories,
+  updateTransaction,
 } from './budgets/service'
 export {
   CategoryInUseError,

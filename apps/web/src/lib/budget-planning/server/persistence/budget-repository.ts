@@ -139,6 +139,51 @@ export function findOwnedBudgetCategory(
     .then((found) => (isOwnedBudgetCategory(found, userId) ? found : undefined))
 }
 
+export async function findOwnedTransaction(
+  tx: DbTransaction,
+  transactionId: string,
+  budgetId: string,
+  userId: string,
+) {
+  const [found] = await tx
+    .select({
+      id: transaction.id,
+      budgetCategoryId: transaction.budgetCategoryId,
+      sortOrder: transaction.sortOrder,
+    })
+    .from(transaction)
+    .innerJoin(
+      budgetCategory,
+      eq(transaction.budgetCategoryId, budgetCategory.id),
+    )
+    .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+    .where(
+      and(
+        eq(transaction.id, transactionId),
+        eq(budget.id, budgetId),
+        eq(budget.userId, userId),
+      ),
+    )
+    .limit(1)
+
+  return found
+}
+
+export function updateTransactionById(
+  tx: DbTransaction,
+  transactionId: string,
+  values: Pick<
+    typeof transaction.$inferInsert,
+    'name' | 'amount' | 'isPaid' | 'note'
+  >,
+) {
+  return tx
+    .update(transaction)
+    .set(values)
+    .where(eq(transaction.id, transactionId))
+    .returning()
+}
+
 export async function insertTransactionAtEnd(
   tx: DbTransaction,
   values: Omit<typeof transaction.$inferInsert, 'sortOrder'>,
