@@ -223,6 +223,8 @@
   "budget_detail_transaction_note_label": "Poznámka (volitelné)",
   "budget_detail_transaction_note_placeholder": "Přidejte podrobnosti",
   "budget_detail_transaction_paid_label": "Zaplaceno",
+  "budget_detail_transaction_paid_toggle_label": "Přepnout stav zaplacení transakce {transactionName}",
+  "budget_detail_transaction_paid_error": "Stav zaplacení se nepodařilo změnit",
   "budget_detail_transaction_submit": "Přidat transakci",
   "budget_detail_transaction_submitting": "Přidávání...",
   "budget_detail_transaction_cancel": "Zrušit",

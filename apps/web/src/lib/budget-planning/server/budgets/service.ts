@@ -33,6 +33,7 @@ import {
   listBudgetsByUser,
   updateBudgetCategorySortOrders,
   updateTransactionById,
+  updateTransactionPaidById,
 } from '../persistence/budget-repository'
 
 export class DuplicateMonthlyBudgetError extends Error {
@@ -334,6 +335,27 @@ export async function updateTransaction(
       isPaid: data.isPaid,
       note: data.note || null,
     })
+
+    return {}
+  })
+}
+
+export async function updateTransactionPaid(
+  budgetId: string,
+  userId: string,
+  transactionId: string,
+  isPaid: boolean,
+) {
+  return db.transaction(async (tx) => {
+    const found = await findOwnedTransaction(
+      tx,
+      transactionId,
+      budgetId,
+      userId,
+    )
+    if (!found) return { error: 'not_found' as const }
+
+    await updateTransactionPaidById(tx, transactionId, isPaid)
 
     return {}
   })

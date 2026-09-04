@@ -23,6 +23,8 @@
     isOverlay?: boolean
     onAddTransaction?: (budgetCategory: BudgetCategory) => void
     onEditTransaction?: (transaction: PlannedTransaction) => void
+    onToggleTransactionPaid?: (transaction: PlannedTransaction) => void
+    paidBusyTransactionIds?: readonly string[]
   }
 
   let {
@@ -31,6 +33,8 @@
     isOverlay = false,
     onAddTransaction,
     onEditTransaction,
+    onToggleTransactionPaid,
+    paidBusyTransactionIds = [],
   }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
@@ -94,7 +98,12 @@
         </p>
       {:else}
         {#each budgetCategory.transactions as t (t.id)}
-          <TransactionRow transaction={t} onEdit={onEditTransaction} />
+          <TransactionRow
+            transaction={t}
+            onEdit={onEditTransaction}
+            onTogglePaid={onToggleTransactionPaid}
+            isPaidBusy={paidBusyTransactionIds.includes(t.id)}
+          />
         {/each}
       {/if}
 

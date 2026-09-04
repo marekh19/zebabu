@@ -28,6 +28,7 @@
   import type { createCreateTransactionSchema } from '../schemas/create-transaction-schema'
   import type { createUpdateTransactionSchema } from '../schemas/update-transaction-schema'
   import EditTransactionDialog from './edit-transaction-dialog.svelte'
+  import { createPaidToggleQueue } from '../paid-toggle-queue'
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -61,6 +62,7 @@
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
+  let paidBusyTransactionIds = $state<readonly string[]>([])
 
   const sensors = [PointerSensor, KeyboardSensor]
 
@@ -104,6 +106,47 @@
     editTrigger = undefined
     selectedTransaction = undefined
   }
+
+  function updatePaidState(transactionId: string, isPaid: boolean) {
+    items = items.map((budgetCategory) => ({
+      ...budgetCategory,
+      transactions: budgetCategory.transactions.map((transaction) =>
+        transaction.id === transactionId
+          ? { ...transaction, isPaid }
+          : transaction,
+      ),
+    }))
+
+    if (selectedTransaction?.id === transactionId) {
+      selectedTransaction = { ...selectedTransaction, isPaid }
+    }
+  }
+
+  function updatePaidBusyState(transactionId: string, isBusy: boolean) {
+    paidBusyTransactionIds = isBusy
+      ? [...paidBusyTransactionIds, transactionId]
+      : paidBusyTransactionIds.filter((id) => id !== transactionId)
+  }
+
+  const paidToggleQueue = createPaidToggleQueue({
+    persist: async (transactionId, isPaid) => {
+      const response = await fetch(
+        resolve(
+          `/budgets/${page.params.id}/transactions/${transactionId}/paid`,
+        ),
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isPaid }),
+        },
+      )
+
+      if (!response.ok) throw new Error('Paid state update failed')
+    },
+    onChange: updatePaidState,
+    onBusyChange: updatePaidBusyState,
+    onError: () => toast.error(m.budget_detail_transaction_paid_error()),
+  })
 
   async function handleDragEnd(event: { canceled: boolean }) {
     if (event.canceled) return
@@ -157,6 +200,9 @@
           {index}
           onAddTransaction={openTransactionDialog}
           onEditTransaction={openEditDialog}
+          onToggleTransactionPaid={(transaction) =>
+            paidToggleQueue.toggle(transaction.id, transaction.isPaid)}
+          {paidBusyTransactionIds}
         />
       {/each}
       {#if availableCategories.length > 0}
