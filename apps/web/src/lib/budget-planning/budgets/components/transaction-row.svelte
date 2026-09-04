@@ -31,13 +31,13 @@
 {#if onEdit}
   <button
     type="button"
-    class="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-11 w-full items-start gap-2 rounded-md border border-transparent px-2 py-1.5 outline-none focus-visible:ring-[3px]"
+    class="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-11 w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 outline-none focus-visible:ring-[3px]"
     onclick={() => onEdit(t)}
   >
     {@render content()}
   </button>
 {:else}
-  <div class="flex min-h-11 items-start gap-2 rounded-md px-2 py-1.5">
+  <div class="flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5">
     {@render content()}
   </div>
 {/if}
