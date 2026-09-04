@@ -14,6 +14,7 @@
 </script>
 
 <a
+  id={`add-transaction-${budgetCategoryId}`}
   href={resolve(
     `/budgets/${page.params.id}?createTransactionCategory=${encodeURIComponent(budgetCategoryId)}`,
   )}

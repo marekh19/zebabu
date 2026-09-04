@@ -23,9 +23,14 @@
     onConfirm,
     loading = false,
   }: Props = $props()
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (loading && !nextOpen) return
+    onOpenChange(nextOpen)
+  }
 </script>
 
-<Dialog.Root {open} {onOpenChange}>
+<Dialog.Root {open} onOpenChange={handleOpenChange}>
   <Dialog.Content showCloseButton={false}>
     <Dialog.Header>
       <Dialog.Title>{title}</Dialog.Title>

@@ -3,12 +3,14 @@ import {
   addBudgetCategorySchema,
   createCreateTransactionSchema,
   createUpdateTransactionSchema,
+  deleteTransactionSchema,
   getBudgetDisplayName,
 } from '$lib/budget-planning'
 import {
   addBudgetCategory,
   createTransaction,
   deleteBudget,
+  deleteTransaction,
   getBudgetDetail,
   handleDuplicateBudgetAction,
   updateTransaction,
@@ -174,5 +176,32 @@ export const actions: Actions = {
       redirect(303, resolve(`/budgets/${params.id}`))
 
     return { updateTransactionForm: form }
+  },
+
+  deleteTransaction: async ({ request, params, locals }) => {
+    const userId = getAuthenticatedUserId(locals)
+    const form = await superValidate(request, zod4(deleteTransactionSchema))
+
+    if (!form.valid) return fail(400)
+
+    const result = await deleteTransaction(
+      params.id,
+      userId,
+      form.data.transactionId,
+    ).catch((error: unknown) => {
+      console.error('Deleting transaction failed:', error)
+      return null
+    })
+
+    if (!result)
+      return fail(500, { deleteTransactionError: 'unexpected' as const })
+
+    if (result.error === 'not_found')
+      return fail(404, { deleteTransactionError: 'not_found' as const })
+
+    if (!request.headers.has('x-sveltekit-action'))
+      redirect(303, resolve(`/budgets/${params.id}`))
+
+    return {}
   },
 }

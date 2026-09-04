@@ -21,7 +21,7 @@
 - [x] [US-3.5 Prevent Deleting Last Category](03-5-prevent-delete-last-category.md)
 - [x] [US-4.1 Create Transaction](04-1-create-transaction.md)
 - [x] [US-4.2 Edit Transaction](04-2-edit-transaction.md)
-- [ ] [US-4.3 Delete Transaction](04-3-delete-transaction.md)
+- [x] [US-4.3 Delete Transaction](04-3-delete-transaction.md)
 - [ ] [US-4.4 Mark Transaction Paid](04-4-mark-transaction-paid.md)
 - [ ] [US-4.5 Move Transaction](04-5-move-transaction.md)
 - [ ] [US-4.6 Reorder Transactions](04-6-reorder-transactions.md)

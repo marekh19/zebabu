@@ -22,7 +22,14 @@
     index: number
     isOverlay?: boolean
     onAddTransaction?: (budgetCategory: BudgetCategory) => void
-    onEditTransaction?: (transaction: PlannedTransaction) => void
+    onEditTransaction?: (
+      transaction: PlannedTransaction,
+      trigger: HTMLElement,
+    ) => void
+    onDeleteTransaction?: (
+      transaction: PlannedTransaction,
+      trigger: HTMLElement,
+    ) => void
   }
 
   let {
@@ -31,6 +38,7 @@
     isOverlay = false,
     onAddTransaction,
     onEditTransaction,
+    onDeleteTransaction,
   }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
@@ -94,7 +102,11 @@
         </p>
       {:else}
         {#each budgetCategory.transactions as t (t.id)}
-          <TransactionRow transaction={t} onEdit={onEditTransaction} />
+          <TransactionRow
+            transaction={t}
+            onEdit={onEditTransaction}
+            onDelete={onDeleteTransaction}
+          />
         {/each}
       {/if}
 
