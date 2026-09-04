@@ -5,7 +5,10 @@
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
   import TransactionRow from './transaction-row.svelte'
   import AddTransactionRow from './add-transaction-row.svelte'
-  import type { BudgetCategory } from '$lib/budget-planning/model'
+  import type {
+    BudgetCategory,
+    PlannedTransaction,
+  } from '$lib/budget-planning/model'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
 
@@ -19,6 +22,7 @@
     index: number
     isOverlay?: boolean
     onAddTransaction?: (budgetCategory: BudgetCategory) => void
+    onEditTransaction?: (transaction: PlannedTransaction) => void
   }
 
   let {
@@ -26,6 +30,7 @@
     index,
     isOverlay = false,
     onAddTransaction,
+    onEditTransaction,
   }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
@@ -89,7 +94,7 @@
         </p>
       {:else}
         {#each budgetCategory.transactions as t (t.id)}
-          <TransactionRow transaction={t} />
+          <TransactionRow transaction={t} onEdit={onEditTransaction} />
         {/each}
       {/if}
 

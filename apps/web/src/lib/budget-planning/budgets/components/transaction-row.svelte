@@ -5,15 +5,16 @@
 
   type Props = {
     transaction: PlannedTransaction
+    onEdit?: (transaction: PlannedTransaction) => void
   }
 
-  let { transaction: t }: Props = $props()
+  let { transaction: t, onEdit }: Props = $props()
 
   const formattedAmount = $derived(formatDecimal(t.amount))
 </script>
 
-<div class="flex min-h-11 items-start gap-2 rounded-md px-2 py-1.5">
-  <div class="min-w-0 flex-1">
+{#snippet content()}
+  <div class="min-w-0 flex-1 text-left">
     <p class="truncate text-sm">{t.name}</p>
     {#if t.note}
       <p class="text-muted-foreground truncate text-xs">{t.note}</p>
@@ -25,4 +26,18 @@
       <CheckIcon class="size-3.5 text-emerald-500" />
     {/if}
   </div>
-</div>
+{/snippet}
+
+{#if onEdit}
+  <button
+    type="button"
+    class="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-11 w-full items-start gap-2 rounded-md border border-transparent px-2 py-1.5 outline-none focus-visible:ring-[3px]"
+    onclick={() => onEdit(t)}
+  >
+    {@render content()}
+  </button>
+{:else}
+  <div class="flex min-h-11 items-start gap-2 rounded-md px-2 py-1.5">
+    {@render content()}
+  </div>
+{/if}

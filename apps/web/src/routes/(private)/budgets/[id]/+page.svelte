@@ -9,6 +9,7 @@
     createTransactionErrorMessages,
     getActionError,
     getBudgetDisplayName,
+    updateTransactionErrorMessages,
   } from '$lib/budget-planning'
 
   let { data, form: actionData } = $props()
@@ -24,6 +25,14 @@
       actionData,
       'createTransactionError',
       createTransactionErrorMessages,
+    ),
+  )
+
+  const updateTransactionError = $derived(
+    getActionError(
+      actionData,
+      'updateTransactionError',
+      updateTransactionErrorMessages,
     ),
   )
 
@@ -53,5 +62,10 @@
     createTransactionForm={data.createTransactionForm}
     {createTransactionError}
     initialTransactionCategoryId={data.createTransactionCategoryId}
+    updateTransactionForm={actionData?.updateTransactionForm ??
+      data.updateTransactionForm}
+    {updateTransactionError}
+    initialEditTransactionId={actionData?.updateTransactionForm?.data
+      .transactionId}
   />
 </div>

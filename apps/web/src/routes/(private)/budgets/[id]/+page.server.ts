@@ -2,6 +2,7 @@ import { resolve } from '$app/paths'
 import {
   addBudgetCategorySchema,
   createCreateTransactionSchema,
+  createUpdateTransactionSchema,
   getBudgetDisplayName,
 } from '$lib/budget-planning'
 import {
@@ -10,6 +11,7 @@ import {
   deleteBudget,
   getBudgetDetail,
   handleDuplicateBudgetAction,
+  updateTransaction,
 } from '$lib/budget-planning/server'
 import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { error, fail, redirect } from '@sveltejs/kit'
@@ -30,10 +32,12 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     error(ERROR_STATUS[result.error])
   }
 
-  const [addCategoryForm, createTransactionForm] = await Promise.all([
-    superValidate(zod4(addBudgetCategorySchema)),
-    superValidate(zod4(createCreateTransactionSchema())),
-  ])
+  const [addCategoryForm, createTransactionForm, updateTransactionForm] =
+    await Promise.all([
+      superValidate(zod4(addBudgetCategorySchema)),
+      superValidate(zod4(createCreateTransactionSchema())),
+      superValidate(zod4(createUpdateTransactionSchema())),
+    ])
   const requestedTransactionCategoryId = url.searchParams.get(
     'createTransactionCategory',
   )
@@ -43,6 +47,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     availableCategories: result.availableCategories,
     addCategoryForm,
     createTransactionForm,
+    updateTransactionForm,
     createTransactionCategoryId: result.budget.budgetCategories.find(
       ({ id }) => id === requestedTransactionCategoryId,
     )?.id,
@@ -132,5 +137,42 @@ export const actions: Actions = {
       redirect(303, resolve(`/budgets/${params.id}`))
 
     return { createTransactionForm: form }
+  },
+
+  updateTransaction: async ({ request, params, locals }) => {
+    const userId = getAuthenticatedUserId(locals)
+    const form = await superValidate(
+      request,
+      zod4(createUpdateTransactionSchema()),
+    )
+
+    if (!form.valid) return fail(400, { updateTransactionForm: form })
+
+    const result = await updateTransaction(
+      params.id,
+      userId,
+      form.data.transactionId,
+      form.data,
+    ).catch((error: unknown) => {
+      console.error('Updating transaction failed:', error)
+      return null
+    })
+
+    if (!result)
+      return fail(500, {
+        updateTransactionForm: form,
+        updateTransactionError: 'unexpected' as const,
+      })
+
+    if (result.error === 'not_found')
+      return fail(404, {
+        updateTransactionForm: form,
+        updateTransactionError: 'not_found' as const,
+      })
+
+    if (!request.headers.has('x-sveltekit-action'))
+      redirect(303, resolve(`/budgets/${params.id}`))
+
+    return { updateTransactionForm: form }
   },
 }
