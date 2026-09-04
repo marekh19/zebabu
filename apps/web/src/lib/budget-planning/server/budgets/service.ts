@@ -20,6 +20,7 @@ import {
 } from '../model-mappers'
 import {
   deleteBudgetById,
+  deleteTransactionById,
   findBudgetById,
   findBudgetOwner,
   findMonthlyBudget,
@@ -357,6 +358,25 @@ export async function updateTransactionPaid(
 
     await updateTransactionPaidById(tx, transactionId, isPaid)
 
+    return {}
+  })
+}
+
+export async function deleteTransaction(
+  budgetId: string,
+  userId: string,
+  transactionId: string,
+) {
+  return db.transaction(async (tx) => {
+    const found = await findOwnedTransaction(
+      tx,
+      transactionId,
+      budgetId,
+      userId,
+    )
+    if (!found) return { error: 'not_found' as const }
+
+    await deleteTransactionById(tx, transactionId)
     return {}
   })
 }

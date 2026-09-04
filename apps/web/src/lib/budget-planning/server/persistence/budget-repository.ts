@@ -196,6 +196,13 @@ export function updateTransactionPaidById(
     .returning()
 }
 
+export function deleteTransactionById(
+  tx: DbTransaction,
+  transactionId: string,
+) {
+  return tx.delete(transaction).where(eq(transaction.id, transactionId))
+}
+
 export async function insertTransactionAtEnd(
   tx: DbTransaction,
   values: Omit<typeof transaction.$inferInsert, 'sortOrder'>,

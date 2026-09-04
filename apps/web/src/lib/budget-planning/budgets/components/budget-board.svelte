@@ -1,8 +1,13 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
+  import { enhance } from '$app/forms'
+  import { invalidateAll } from '$app/navigation'
   import { resolve } from '$app/paths'
   import { page } from '$app/state'
+  import { tick } from 'svelte'
   import { toast } from 'svelte-sonner'
+  import { ensureDefined } from 'narrowland'
+  import ConfirmDialog from '$lib/components/confirm-dialog.svelte'
   import CategoryColumn from './category-column.svelte'
   import AddCategoryColumn from './add-category-column.svelte'
   import {
@@ -29,6 +34,7 @@
   import type { createUpdateTransactionSchema } from '../schemas/update-transaction-schema'
   import EditTransactionDialog from './edit-transaction-dialog.svelte'
   import { createPaidToggleQueue } from '../paid-toggle-queue'
+  import { getTransactionDeleteFocusId } from './transaction-delete'
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -85,15 +91,27 @@
   let editDialogOpen = $state(selectedTransaction !== undefined)
   let editTrigger: HTMLElement | undefined
 
+  type DeleteSelection = {
+    readonly transaction: PlannedTransaction
+    readonly focusId: string
+  }
+
+  let deleteSelection = $state<DeleteSelection>()
+  let deleteDialogOpen = $state(false)
+  let deleting = $state(false)
+  let deleteTrigger: HTMLElement | undefined
+  let deleteForm = $state<HTMLFormElement>()
+
   function openTransactionDialog(budgetCategory: BudgetCategory) {
     selectedBudgetCategory = budgetCategory
     transactionDialogOpen = true
   }
 
-  function openEditDialog(transaction: PlannedTransaction) {
-    if (document.activeElement instanceof HTMLElement) {
-      editTrigger = document.activeElement
-    }
+  function openEditDialog(
+    transaction: PlannedTransaction,
+    trigger: HTMLElement,
+  ) {
+    editTrigger = trigger
     selectedTransaction = transaction
     editDialogOpen = true
   }
@@ -147,6 +165,40 @@
     onBusyChange: updatePaidBusyState,
     onError: () => toast.error(m.budget_detail_transaction_paid_error()),
   })
+
+  function openDeleteDialog(
+    transaction: PlannedTransaction,
+    trigger: HTMLElement,
+  ) {
+    const budgetCategory = items.find(({ transactions }) =>
+      transactions.some(({ id }) => id === transaction.id),
+    )
+    if (!budgetCategory) return
+
+    deleteSelection = {
+      transaction,
+      focusId: getTransactionDeleteFocusId(
+        budgetCategory.id,
+        budgetCategory.transactions,
+        transaction.id,
+      ),
+    }
+    deleteTrigger = trigger
+    deleteDialogOpen = true
+  }
+
+  async function handleDeleteOpenChange(open: boolean) {
+    if (deleting && !open) return
+
+    deleteDialogOpen = open
+    if (open) return
+
+    const trigger = deleteTrigger
+    deleteSelection = undefined
+    deleteTrigger = undefined
+    await tick()
+    trigger?.focus()
+  }
 
   async function handleDragEnd(event: { canceled: boolean }) {
     if (event.canceled) return
@@ -203,6 +255,7 @@
           onToggleTransactionPaid={(transaction) =>
             paidToggleQueue.toggle(transaction.id, transaction.isPaid)}
           {paidBusyTransactionIds}
+          onDeleteTransaction={openDeleteDialog}
         />
       {/each}
       {#if availableCategories.length > 0}
@@ -241,3 +294,61 @@
   error={updateTransactionError}
   onOpenChange={handleEditOpenChange}
 />
+
+{#if deleteSelection}
+  <ConfirmDialog
+    open={deleteDialogOpen}
+    onOpenChange={handleDeleteOpenChange}
+    title={m.budget_detail_transaction_delete_title()}
+    description={m.budget_detail_transaction_delete_description({
+      name: deleteSelection.transaction.name,
+    })}
+    confirmLabel={m.budget_detail_transaction_delete_confirm()}
+    cancelLabel={m.budget_detail_transaction_cancel()}
+    loading={deleting}
+    onConfirm={() => deleteForm?.requestSubmit()}
+  />
+
+  <form
+    method="POST"
+    action="?/deleteTransaction"
+    bind:this={deleteForm}
+    aria-hidden="true"
+    class="absolute"
+    use:enhance={() => {
+      deleting = true
+      return async ({ result, update }) => {
+        deleting = false
+
+        if (result.type === 'success') {
+          const deleted = ensureDefined(deleteSelection)
+          deleteDialogOpen = false
+          toast.success(
+            m.budget_detail_transaction_delete_success({
+              name: deleted.transaction.name,
+            }),
+          )
+          await invalidateAll()
+          await tick()
+          document.getElementById(deleted.focusId)?.focus()
+          deleteSelection = undefined
+          deleteTrigger = undefined
+          return
+        }
+
+        if (result.type === 'redirect') {
+          await update()
+          return
+        }
+
+        toast.error(m.budget_detail_transaction_delete_error())
+      }
+    }}
+  >
+    <input
+      type="hidden"
+      name="transactionId"
+      value={deleteSelection.transaction.id}
+    />
+  </form>
+{/if}

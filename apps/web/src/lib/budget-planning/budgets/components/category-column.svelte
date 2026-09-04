@@ -22,7 +22,14 @@
     index: number
     isOverlay?: boolean
     onAddTransaction?: (budgetCategory: BudgetCategory) => void
-    onEditTransaction?: (transaction: PlannedTransaction) => void
+    onEditTransaction?: (
+      transaction: PlannedTransaction,
+      trigger: HTMLElement,
+    ) => void
+    onDeleteTransaction?: (
+      transaction: PlannedTransaction,
+      trigger: HTMLElement,
+    ) => void
     onToggleTransactionPaid?: (transaction: PlannedTransaction) => void
     paidBusyTransactionIds?: readonly string[]
   }
@@ -35,6 +42,7 @@
     onEditTransaction,
     onToggleTransactionPaid,
     paidBusyTransactionIds = [],
+    onDeleteTransaction,
   }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
@@ -103,6 +111,7 @@
             onEdit={onEditTransaction}
             onTogglePaid={onToggleTransactionPaid}
             isPaidBusy={paidBusyTransactionIds.includes(t.id)}
+            onDelete={onDeleteTransaction}
           />
         {/each}
       {/if}

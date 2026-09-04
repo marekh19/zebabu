@@ -7,6 +7,7 @@ export {
   createScenarioBudget,
   createTransaction,
   deleteBudget,
+  deleteTransaction,
   duplicateBudget,
   getBudgetDetail,
   listBudgets,
