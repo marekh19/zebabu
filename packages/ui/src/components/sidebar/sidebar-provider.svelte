@@ -1,10 +1,10 @@
 <script lang="ts">
   import * as Tooltip from '../tooltip/index.js'
   import { cn, type WithElementRef } from '../../utils.js'
+  import { onMount } from 'svelte'
   import type { HTMLAttributes } from 'svelte/elements'
   import {
-    SIDEBAR_COOKIE_MAX_AGE,
-    SIDEBAR_COOKIE_NAME,
+    SIDEBAR_STORAGE_KEY,
     SIDEBAR_WIDTH,
     SIDEBAR_WIDTH_ICON,
   } from './constants.js'
@@ -29,9 +29,23 @@
       open = value
       onOpenChange(value)
 
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      try {
+        localStorage.setItem(SIDEBAR_STORAGE_KEY, String(open))
+      } catch {
+        // Storage can be unavailable in privacy-restricted browsers.
+      }
     },
+  })
+
+  onMount(() => {
+    try {
+      const storedOpen = localStorage.getItem(SIDEBAR_STORAGE_KEY)
+      if (storedOpen === 'true' || storedOpen === 'false') {
+        open = storedOpen === 'true'
+      }
+    } catch {
+      // Keep the default when storage is unavailable.
+    }
   })
 </script>
 

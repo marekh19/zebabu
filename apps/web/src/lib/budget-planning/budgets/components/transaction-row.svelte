@@ -83,7 +83,12 @@
       <DropdownMenu.Root>
         <DropdownMenu.Trigger bind:ref={actionsTrigger}>
           {#snippet child({ props })}
-            <Button variant="ghost" size="icon-sm" {...props}>
+            <Button
+              class="self-center"
+              variant="ghost"
+              size="icon-sm"
+              {...props}
+            >
               <EllipsisVerticalIcon />
               <span class="sr-only">
                 {m.budget_detail_transaction_actions_label({ name: t.name })}
