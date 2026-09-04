@@ -3,7 +3,7 @@
 **Epic:** User Authentication & Profile Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** ☐ Not Started
+**Status:** ✅ Complete
 **Triage:** ready-for-agent
 
 ## User Story
@@ -30,14 +30,14 @@
 
 ## Acceptance Criteria
 
-- [ ] Changing language through the existing switcher immediately updates translated text and formatted values.
-- [ ] The selected language survives navigation and browser reload through Paraglide's existing cookie strategy.
-- [ ] Language switching behaves the same on public and private pages and requires no account update.
-- [ ] Displayed decimal amounts use `en-US` or `cs-CZ` separators and retain two fraction digits.
-- [ ] Budget month names and creation dates follow the mapped formatting locale while retaining their current precision.
-- [ ] Numeric inputs, submitted values, and database values remain locale-neutral.
-- [ ] Budget amounts remain currency-neutral; this story adds no currency symbols or conversion.
-- [ ] The profile page remains limited to account preferences such as primary currency.
+- [x] Changing language through the existing switcher immediately updates translated text and formatted values.
+- [x] The selected language survives navigation and browser reload through Paraglide's existing cookie strategy.
+- [x] Language switching behaves the same on public and private pages and requires no account update.
+- [x] Displayed decimal amounts use `en-US` or `cs-CZ` separators and retain two fraction digits.
+- [x] Budget month names and creation dates follow the mapped formatting locale while retaining their current precision.
+- [x] Numeric inputs, submitted values, and database values remain locale-neutral.
+- [x] Budget amounts remain currency-neutral; this story adds no currency symbols or conversion.
+- [x] The profile page remains limited to account preferences such as primary currency.
 
 ## Technical Implementation
 
@@ -57,10 +57,10 @@
 
 ## Testing Checklist
 
-- [ ] Formatting tests cover decimals for `en-US` and `cs-CZ`, including two fraction digits.
-- [ ] Formatting tests cover budget month names and creation dates for both languages.
-- [ ] Manual test verifies the existing switcher updates formatting on public and private pages.
-- [ ] Manual test verifies the selected language survives a reload.
+- [x] Formatting tests cover decimals for `en-US` and `cs-CZ`, including two fraction digits.
+- [x] Formatting tests cover budget month names and creation dates for both languages.
+- [x] Manual test verifies the existing switcher updates formatting on public and private pages.
+- [x] Manual test verifies the selected language survives a reload.
 
 ## Dependencies
 
