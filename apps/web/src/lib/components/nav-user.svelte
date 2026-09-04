@@ -42,6 +42,7 @@
       <DropdownMenu.Trigger>
         {#snippet child({ props })}
           <Sidebar.MenuButton
+            aria-label={`${user.name}, ${user.email}`}
             size="lg"
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             {...props}
