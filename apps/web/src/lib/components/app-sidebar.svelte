@@ -20,11 +20,13 @@
     page.url.pathname.startsWith(resolve(path) + '/')
 </script>
 
-<Sidebar.Root variant="floating" collapsible="offcanvas" {...restProps}>
+<Sidebar.Root variant="floating" collapsible="icon" {...restProps}>
   <Sidebar.Header>
-    <div class="flex h-12 items-center gap-2 px-2">
+    <div
+      class="flex h-12 items-center gap-2 overflow-hidden px-2 group-data-[collapsible=icon]:px-0"
+    >
       <div
-        class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+        class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg"
       >
         <span class="text-sm font-bold">Z</span>
       </div>
@@ -37,6 +39,7 @@
         {#each sidebarRoutes as route (route.path)}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton
+              aria-label={route.label()}
               isActive={checkIsRouteActive(route.path)}
               tooltipContent={route.label()}
             >
