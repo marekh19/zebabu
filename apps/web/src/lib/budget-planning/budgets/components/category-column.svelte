@@ -40,6 +40,10 @@
     paidBusyTransactionIds?: readonly string[]
     transactionDragBusy?: boolean
     transactionTargetCategoryId?: string
+    onTransactionDragKeyDown?: (
+      transactionId: string,
+      event: KeyboardEvent,
+    ) => void
   }
 
   let {
@@ -53,6 +57,7 @@
     onDeleteTransaction,
     transactionDragBusy = false,
     transactionTargetCategoryId,
+    onTransactionDragKeyDown,
   }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
@@ -142,6 +147,7 @@
             index={transactionIndex}
             dragGroupId={transactionGroupId}
             dragDisabled={transactionDragBusy}
+            onDragKeyDown={onTransactionDragKeyDown}
             onEdit={onEditTransaction}
             onTogglePaid={onToggleTransactionPaid}
             isPaidBusy={paidBusyTransactionIds.includes(t.id)}

@@ -50,14 +50,23 @@
     getTransaction,
     getTransactionLocation,
     getTransactionPositionCommand,
+    moveTransactionByKeyboard,
     toTransactionGroups,
     TRANSACTION_DRAG_TYPE,
     withTransactionGroups,
+    type TransactionDragDirection,
   } from '../transaction-position'
 
   type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
   type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
   type DragEndEvent = Parameters<DragDropEvents['dragend']>[0]
+  const KEYBOARD_DIRECTIONS: Partial<Record<string, TransactionDragDirection>> =
+    {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
+    }
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -94,6 +103,7 @@
   let paidBusyTransactionIds = $state<readonly string[]>([])
   let transactionDragBusy = $state(false)
   let transactionDragStartItems = $state<readonly BudgetCategory[]>([])
+  let activeTransactionId = $state<string>()
   let transactionTargetCategoryId = $state<string>()
   let transactionDragAnnouncement = $state('')
 
@@ -324,6 +334,7 @@
     if (source.type !== TRANSACTION_DRAG_TYPE) return
 
     const transactionId = String(source.id)
+    activeTransactionId = transactionId
     announceTransactionPosition(
       transactionId,
       m.budget_detail_transaction_drag_pickup,
@@ -345,6 +356,27 @@
     items = withTransactionGroups(items, groups)
 
     const transactionId = String(source.id)
+    const location = getTransactionLocation(items, transactionId)
+    transactionTargetCategoryId = location?.budgetCategoryId
+    announceTransactionPosition(
+      transactionId,
+      m.budget_detail_transaction_drag_move,
+    )
+  }
+
+  function handleTransactionDragKeyDown(
+    transactionId: string,
+    event: KeyboardEvent,
+  ) {
+    if (activeTransactionId !== transactionId) return
+
+    const direction = KEYBOARD_DIRECTIONS[event.code]
+    if (!direction) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    items = moveTransactionByKeyboard(items, transactionId, direction)
+
     const location = getTransactionLocation(items, transactionId)
     transactionTargetCategoryId = location?.budgetCategoryId
     announceTransactionPosition(
@@ -459,6 +491,7 @@
     }
 
     transactionTargetCategoryId = undefined
+    activeTransactionId = undefined
   }
 
   function findItemBySourceId(sourceId: string | number) {
@@ -490,6 +523,7 @@
           onDeleteTransaction={openDeleteDialog}
           {transactionDragBusy}
           {transactionTargetCategoryId}
+          onTransactionDragKeyDown={handleTransactionDragKeyDown}
         />
       {/each}
       {#if availableCategories.length > 0}

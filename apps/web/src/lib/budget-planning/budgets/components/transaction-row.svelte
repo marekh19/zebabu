@@ -24,6 +24,7 @@
     dragGroupId?: string
     dragDisabled?: boolean
     isOverlay?: boolean
+    onDragKeyDown?: (transactionId: string, event: KeyboardEvent) => void
   }
 
   let {
@@ -37,6 +38,7 @@
     dragGroupId = '',
     dragDisabled = false,
     isOverlay = false,
+    onDragKeyDown,
   }: Props = $props()
   let actionsTrigger = $state<HTMLElement | null>(null)
 
@@ -79,6 +81,7 @@
       aria-label={m.budget_detail_transaction_drag_handle({ name: t.name })}
       aria-disabled={dragDisabled}
       disabled={dragDisabled}
+      onkeydowncapture={(event) => onDragKeyDown?.(t.id, event)}
       class="text-muted-foreground hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-11 w-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent outline-none focus-visible:ring-[3px] active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
       {@attach handleRef}
     >

@@ -2,6 +2,7 @@ import type {
   BudgetCategory,
   PlannedTransaction,
 } from '$lib/budget-planning/model'
+import { arrayMove } from '@dnd-kit/helpers'
 
 export type TransactionLocation = Readonly<{
   budgetCategoryId: string
@@ -12,6 +13,8 @@ export type TransactionPositionCommand = Readonly<{
   targetBudgetCategoryId: string
   targetIndex: number
 }>
+
+export type TransactionDragDirection = 'up' | 'down' | 'left' | 'right'
 
 export const TRANSACTION_DRAG_TYPE = 'transaction'
 export const CATEGORY_DRAG_TYPE = 'budget-category'
@@ -81,6 +84,74 @@ export function getTransactionPositionCommand(
   }
 }
 
+export function moveTransactionByKeyboard(
+  categories: readonly BudgetCategory[],
+  transactionId: string,
+  direction: TransactionDragDirection,
+): BudgetCategory[] {
+  const location = getTransactionLocation(categories, transactionId)
+  if (!location) return [...categories]
+
+  const sourceCategoryIndex = categories.findIndex(
+    ({ id }) => id === location.budgetCategoryId,
+  )
+  const sourceCategory = categories.at(sourceCategoryIndex)
+  if (!sourceCategory) return [...categories]
+
+  if (direction === 'up' || direction === 'down') {
+    const offset = direction === 'up' ? -1 : 1
+    const targetIndex = Math.max(
+      0,
+      Math.min(location.index + offset, sourceCategory.transactions.length - 1),
+    )
+    if (targetIndex === location.index) return [...categories]
+
+    const transactions = arrayMove(
+      [...sourceCategory.transactions],
+      location.index,
+      targetIndex,
+    )
+
+    return categories.map((category) =>
+      category.id === sourceCategory.id
+        ? { ...category, transactions }
+        : category,
+    )
+  }
+
+  const categoryOffset = direction === 'left' ? -1 : 1
+  const targetCategory = categories.at(sourceCategoryIndex + categoryOffset)
+  if (!targetCategory) return [...categories]
+
+  const transaction = sourceCategory.transactions.at(location.index)
+  if (!transaction) return [...categories]
+
+  const targetIndex = Math.min(
+    location.index,
+    targetCategory.transactions.length,
+  )
+  const targetTransactions = [
+    ...targetCategory.transactions.slice(0, targetIndex),
+    transaction,
+    ...targetCategory.transactions.slice(targetIndex),
+  ]
+
+  return categories.map((category) => {
+    if (category.id === sourceCategory.id) {
+      return {
+        ...category,
+        transactions: category.transactions.filter(
+          ({ id }) => id !== transactionId,
+        ),
+      }
+    }
+    if (category.id === targetCategory.id) {
+      return { ...category, transactions: targetTransactions }
+    }
+    return category
+  })
+}
+
 type CommitTransactionPositionInput = Readonly<{
   persist: () => Promise<Response>
   refresh: () => Promise<void>
@@ -99,20 +170,20 @@ export async function commitTransactionPosition({
   onSettled,
 }: CommitTransactionPositionInput) {
   onBusyChange(true)
+  let confirmed = false
 
   try {
     const response = await persist()
     if (!response.ok) throw new Error('Transaction position update failed')
+    confirmed = true
+    await refresh().catch(() => undefined)
   } catch {
     onRollback()
     onError()
+  } finally {
     onBusyChange(false)
     await onSettled()
-    return false
   }
 
-  await refresh().catch(() => undefined)
-  onBusyChange(false)
-  await onSettled()
-  return true
+  return confirmed
 }
