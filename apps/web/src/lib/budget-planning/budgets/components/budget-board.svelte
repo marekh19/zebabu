@@ -15,8 +15,16 @@
     DragOverlay,
     KeyboardSensor,
     PointerSensor,
+    type DragDropEvents,
   } from '@dnd-kit-svelte/svelte'
   import { move } from '@dnd-kit/helpers'
+  import {
+    Accessibility,
+    AutoScroller,
+    Cursor,
+    Feedback,
+    PreventSelection,
+  } from '@dnd-kit/dom'
   import type {
     AvailableCategory,
     BudgetCategory,
@@ -35,6 +43,21 @@
   import EditTransactionDialog from './edit-transaction-dialog.svelte'
   import { createPaidToggleQueue } from '../paid-toggle-queue'
   import { getTransactionDeleteFocusId } from './transaction-delete'
+  import TransactionRow from './transaction-row.svelte'
+  import {
+    CATEGORY_DRAG_TYPE,
+    commitTransactionPosition,
+    getTransaction,
+    getTransactionGroupId,
+    getTransactionLocation,
+    toTransactionGroups,
+    TRANSACTION_DRAG_TYPE,
+    withTransactionGroups,
+  } from '../transaction-position'
+
+  type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
+  type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
+  type DragEndEvent = Parameters<DragDropEvents['dragend']>[0]
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -69,8 +92,65 @@
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
   let paidBusyTransactionIds = $state<readonly string[]>([])
+  let transactionDragBusy = $state(false)
+  let transactionDragStartItems = $state<readonly BudgetCategory[]>([])
+  let transactionTargetCategoryId = $state<string>()
+  let transactionDragAnnouncement = $state('')
 
   const sensors = [PointerSensor, KeyboardSensor]
+  const plugins = [
+    Accessibility.configure({
+      screenReaderInstructions: {
+        draggable: m.budget_detail_drag_instructions(),
+      },
+      announcements: {
+        dragstart: (event: DragStartEvent) => {
+          const source = event.operation.source
+          if (!source || source.type !== CATEGORY_DRAG_TYPE) return undefined
+
+          const category = items.find(({ id }) => id === source.id)
+          if (!category) return undefined
+          return m.budget_detail_category_drag_pickup({
+            name: category.category.name,
+          })
+        },
+        dragover: (event: DragOverEvent) => {
+          const source = event.operation.source
+          if (!source || source.type !== CATEGORY_DRAG_TYPE) return undefined
+
+          const position = items.findIndex(({ id }) => id === source.id)
+          const category = items.at(position)
+          if (!category || position === -1) return undefined
+          return m.budget_detail_category_drag_move({
+            name: category.category.name,
+            position: position + 1,
+            count: items.length,
+          })
+        },
+        dragend: (event: DragEndEvent) => {
+          const source = event.operation.source
+          if (!source || source.type !== CATEGORY_DRAG_TYPE) return undefined
+
+          const position = items.findIndex(({ id }) => id === source.id)
+          const category = items.at(position)
+          if (!category || position === -1) return undefined
+          return event.canceled
+            ? m.budget_detail_category_drag_cancel({
+                name: category.category.name,
+              })
+            : m.budget_detail_category_drag_drop({
+                name: category.category.name,
+                position: position + 1,
+                count: items.length,
+              })
+        },
+      },
+    }),
+    AutoScroller,
+    Cursor,
+    Feedback,
+    PreventSelection,
+  ]
 
   // svelte-ignore state_referenced_locally
   // The query parameter only seeds the dialog; later selection is local UI state.
@@ -200,8 +280,87 @@
     trigger?.focus()
   }
 
-  async function handleDragEnd(event: { canceled: boolean }) {
-    if (event.canceled) return
+  function copyItems(categories: readonly BudgetCategory[]) {
+    return categories.map((budgetCategory) => ({
+      ...budgetCategory,
+      transactions: [...budgetCategory.transactions],
+    }))
+  }
+
+  function findCategoryName(budgetCategoryId: string) {
+    return items.find(({ id }) => id === budgetCategoryId)?.category.name ?? ''
+  }
+
+  function announceTransactionPosition(
+    transactionId: string,
+    message: typeof m.budget_detail_transaction_drag_move,
+  ) {
+    const transaction = getTransaction(items, transactionId)
+    const location = getTransactionLocation(items, transactionId)
+    if (!transaction || !location) return
+
+    const count =
+      items.find(({ id }) => id === location.budgetCategoryId)?.transactions
+        .length ?? 0
+    transactionDragAnnouncement = message({
+      name: transaction.name,
+      category: findCategoryName(location.budgetCategoryId),
+      position: location.index + 1,
+      count,
+    })
+  }
+
+  function focusTransactionHandle(transactionId: string) {
+    return tick().then(() =>
+      document.getElementById(`transaction-drag-${transactionId}`)?.focus(),
+    )
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const source = event.operation.source
+    if (!source) return
+
+    transactionDragStartItems = copyItems(items)
+    if (source.type !== TRANSACTION_DRAG_TYPE) return
+
+    const transactionId = String(source.id)
+    announceTransactionPosition(
+      transactionId,
+      m.budget_detail_transaction_drag_pickup,
+    )
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const source = event.operation.source
+    if (!source) return
+
+    if (source.type === CATEGORY_DRAG_TYPE) {
+      items = move(items, event)
+      return
+    }
+
+    if (source.type !== TRANSACTION_DRAG_TYPE) return
+
+    const groups = move(
+      toTransactionGroups(items, getTransactionGroupId),
+      event,
+    )
+    items = withTransactionGroups(items, groups, getTransactionGroupId)
+
+    const transactionId = String(source.id)
+    const location = getTransactionLocation(items, transactionId)
+    transactionTargetCategoryId = location?.budgetCategoryId
+    announceTransactionPosition(
+      transactionId,
+      m.budget_detail_transaction_drag_move,
+    )
+  }
+
+  async function handleCategoryDragEnd(event: DragEndEvent) {
+    if (event.canceled || !event.operation.target) {
+      items = copyItems(transactionDragStartItems)
+      return
+    }
 
     const currentIds = items.map((item) => item.id)
 
@@ -232,17 +391,100 @@
     }
   }
 
+  async function handleTransactionDragEnd(event: DragEndEvent) {
+    const source = event.operation.source
+    if (!source) return
+
+    const transactionId = String(source.id)
+    const transaction = getTransaction(transactionDragStartItems, transactionId)
+    const previous = getTransactionLocation(
+      transactionDragStartItems,
+      transactionId,
+    )
+    const current = getTransactionLocation(items, transactionId)
+    const canceled = event.canceled || !event.operation.target
+
+    if (
+      canceled ||
+      !previous ||
+      !current ||
+      (previous.budgetCategoryId === current.budgetCategoryId &&
+        previous.index === current.index)
+    ) {
+      items = copyItems(transactionDragStartItems)
+      if (transaction) {
+        transactionDragAnnouncement = m.budget_detail_transaction_drag_cancel({
+          name: transaction.name,
+        })
+      }
+      await focusTransactionHandle(transactionId)
+      return
+    }
+
+    announceTransactionPosition(
+      transactionId,
+      m.budget_detail_transaction_drag_drop,
+    )
+
+    await commitTransactionPosition({
+      persist: () =>
+        fetch(
+          resolve(
+            `/budgets/${page.params.id}/transactions/${transactionId}/position`,
+          ),
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              targetBudgetCategoryId: current.budgetCategoryId,
+              targetIndex: current.index,
+            }),
+          },
+        ),
+      refresh: invalidateAll,
+      onBusyChange: (busy) => (transactionDragBusy = busy),
+      onFailure: () => {
+        items = copyItems(transactionDragStartItems)
+        if (!transaction) return
+
+        transactionDragAnnouncement = m.budget_detail_transaction_drag_error({
+          name: transaction.name,
+        })
+        toast.error(
+          m.budget_detail_transaction_drag_error({ name: transaction.name }),
+        )
+      },
+    })
+
+    await focusTransactionHandle(transactionId)
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const sourceType = event.operation.source?.type
+
+    if (sourceType === TRANSACTION_DRAG_TYPE) {
+      await handleTransactionDragEnd(event)
+    } else if (sourceType === CATEGORY_DRAG_TYPE) {
+      await handleCategoryDragEnd(event)
+    }
+
+    transactionTargetCategoryId = undefined
+  }
+
   function findItemBySourceId(sourceId: string | number) {
     return items.find((bc) => bc.id === sourceId)
   }
 </script>
 
-<div class="max-w-full snap-x snap-mandatory overflow-x-auto pb-4 sm:snap-none">
+<div
+  class="max-w-full snap-x snap-mandatory overflow-x-auto pb-4 sm:snap-none"
+  aria-busy={transactionDragBusy}
+>
   <DragDropProvider
     {sensors}
-    onDragOver={(event) => {
-      items = move(items, event)
-    }}
+    {plugins}
+    onDragStart={handleDragStart}
+    onDragOver={handleDragOver}
     onDragEnd={handleDragEnd}
   >
     <div class="flex gap-4">
@@ -256,6 +498,8 @@
             paidToggleQueue.toggle(transaction.id, transaction.isPaid)}
           {paidBusyTransactionIds}
           onDeleteTransaction={openDeleteDialog}
+          {transactionDragBusy}
+          {transactionTargetCategoryId}
         />
       {/each}
       {#if availableCategories.length > 0}
@@ -270,13 +514,20 @@
     <DragOverlay>
       {#snippet children(source)}
         {@const item = findItemBySourceId(source.id)}
-        {#if item}
+        {@const transaction = getTransaction(items, source.id)}
+        {#if source.type === CATEGORY_DRAG_TYPE && item}
           <CategoryColumn budgetCategory={item} index={0} isOverlay />
+        {:else if source.type === TRANSACTION_DRAG_TYPE && transaction}
+          <TransactionRow {transaction} isOverlay />
         {/if}
       {/snippet}
     </DragOverlay>
   </DragDropProvider>
 </div>
+
+<p class="sr-only" aria-live="polite" aria-atomic="true">
+  {transactionDragAnnouncement}
+</p>
 
 <CreateTransactionDialog
   bind:open={transactionDialogOpen}

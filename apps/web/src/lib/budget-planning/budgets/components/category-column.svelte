@@ -3,6 +3,7 @@
   import { formatDecimal } from '$lib/utils'
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical'
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
+  import { useDroppable } from '@dnd-kit-svelte/svelte'
   import TransactionRow from './transaction-row.svelte'
   import AddTransactionRow from './add-transaction-row.svelte'
   import type {
@@ -11,6 +12,11 @@
   } from '$lib/budget-planning/model'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
+  import {
+    CATEGORY_DRAG_TYPE,
+    getTransactionGroupId,
+    TRANSACTION_DRAG_TYPE,
+  } from '../transaction-position'
 
   const CATEGORY_TYPE_LABELS = {
     [CategoryType.Income]: m.budget_detail_type_income,
@@ -32,6 +38,8 @@
     ) => void
     onToggleTransactionPaid?: (transaction: PlannedTransaction) => void
     paidBusyTransactionIds?: readonly string[]
+    transactionDragBusy?: boolean
+    transactionTargetCategoryId?: string
   }
 
   let {
@@ -43,11 +51,25 @@
     onToggleTransactionPaid,
     paidBusyTransactionIds = [],
     onDeleteTransaction,
+    transactionDragBusy = false,
+    transactionTargetCategoryId,
   }: Props = $props()
 
   const { ref, handleRef, isDragSource } = useSortable({
     id: () => budgetCategory.id,
     index: () => index,
+    type: CATEGORY_DRAG_TYPE,
+    accept: CATEGORY_DRAG_TYPE,
+    register: () => !isOverlay,
+  })
+
+  const transactionGroupId = $derived(getTransactionGroupId(budgetCategory.id))
+  const { ref: transactionDropRef, isDropTarget } = useDroppable({
+    id: () => transactionGroupId,
+    type: TRANSACTION_DRAG_TYPE,
+    accept: TRANSACTION_DRAG_TYPE,
+    disabled: () => isOverlay || transactionDragBusy,
+    register: () => !isOverlay,
   })
 
   const total = $derived(
@@ -57,6 +79,9 @@
   const formattedTotal = $derived(formatDecimal(total))
 
   const dragging = $derived(isDragSource.current && !isOverlay)
+  const transactionTargeted = $derived(
+    isDropTarget.current || transactionTargetCategoryId === budgetCategory.id,
+  )
 </script>
 
 <div
@@ -99,15 +124,24 @@
       <span class="text-sm font-bold tabular-nums">{formattedTotal}</span>
     </div>
 
-    <div class="flex flex-1 flex-col gap-0.5 p-1.5">
+    <div
+      class="flex min-h-14 flex-1 flex-col gap-0.5 rounded-b-lg p-1.5 {transactionTargeted
+        ? 'bg-primary/5 ring-primary/30 ring-2 ring-inset'
+        : ''}"
+      {@attach transactionDropRef}
+    >
       {#if budgetCategory.transactions.length === 0}
         <p class="text-muted-foreground px-2 py-3 text-center text-xs">
           {m.budget_detail_no_transactions()}
         </p>
       {:else}
-        {#each budgetCategory.transactions as t (t.id)}
+        {#each budgetCategory.transactions as t, transactionIndex (t.id)}
           <TransactionRow
             transaction={t}
+            budgetCategoryId={budgetCategory.id}
+            index={transactionIndex}
+            dragGroupId={transactionGroupId}
+            dragDisabled={transactionDragBusy}
             onEdit={onEditTransaction}
             onTogglePaid={onToggleTransactionPaid}
             isPaidBusy={paidBusyTransactionIds.includes(t.id)}

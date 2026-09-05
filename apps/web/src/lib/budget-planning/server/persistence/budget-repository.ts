@@ -223,3 +223,48 @@ export async function insertTransactionAtEnd(
     .values({ ...values, sortOrder: nextTransactionSortOrder(lastTransaction) })
     .returning()
 }
+
+export function lockBudgetTransactions(tx: DbTransaction, budgetId: string) {
+  return tx.execute(sql`select pg_advisory_xact_lock(hashtext(${budgetId}))`)
+}
+
+export function listTransactionIds(
+  tx: DbTransaction,
+  budgetCategoryId: string,
+) {
+  return tx
+    .select({ id: transaction.id })
+    .from(transaction)
+    .where(eq(transaction.budgetCategoryId, budgetCategoryId))
+    .orderBy(asc(transaction.sortOrder), asc(transaction.id))
+}
+
+export async function updateTransactionPositions(
+  tx: DbTransaction,
+  transactionId: string,
+  targetBudgetCategoryId: string,
+  sourceIds: readonly string[],
+  targetIds: readonly string[],
+) {
+  await tx
+    .update(transaction)
+    .set({ budgetCategoryId: targetBudgetCategoryId })
+    .where(eq(transaction.id, transactionId))
+
+  const positions = new Map([
+    ...sourceIds.map((id, sortOrder) => [id, sortOrder] as const),
+    ...targetIds.map((id, sortOrder) => [id, sortOrder] as const),
+  ])
+  const sqlChunks: SQL[] = [sql`(case`]
+
+  for (const [id, sortOrder] of positions) {
+    sqlChunks.push(sql`when ${transaction.id} = ${id} then ${sortOrder}`)
+  }
+
+  sqlChunks.push(sql`end)::integer`)
+
+  return tx
+    .update(transaction)
+    .set({ sortOrder: sql.join(sqlChunks, sql.raw(' ')) })
+    .where(inArray(transaction.id, [...positions.keys()]))
+}

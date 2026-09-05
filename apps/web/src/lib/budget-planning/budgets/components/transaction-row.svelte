@@ -5,10 +5,13 @@
   import CheckIcon from '@lucide/svelte/icons/check'
   import CircleIcon from '@lucide/svelte/icons/circle'
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical'
+  import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical'
   import PencilIcon from '@lucide/svelte/icons/pencil'
   import Trash2Icon from '@lucide/svelte/icons/trash-2'
   import { formatDecimal } from '$lib/utils'
   import type { PlannedTransaction } from '$lib/budget-planning/model'
+  import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
+  import { TRANSACTION_DRAG_TYPE } from '../transaction-position'
 
   type Props = {
     transaction: PlannedTransaction
@@ -16,6 +19,11 @@
     onTogglePaid?: (transaction: PlannedTransaction) => void
     onDelete?: (transaction: PlannedTransaction, trigger: HTMLElement) => void
     isPaidBusy?: boolean
+    budgetCategoryId?: string
+    index?: number
+    dragGroupId?: string
+    dragDisabled?: boolean
+    isOverlay?: boolean
   }
 
   let {
@@ -24,10 +32,26 @@
     onTogglePaid,
     onDelete,
     isPaidBusy = false,
+    budgetCategoryId,
+    index = 0,
+    dragGroupId = '',
+    dragDisabled = false,
+    isOverlay = false,
   }: Props = $props()
   let actionsTrigger = $state<HTMLElement | null>(null)
 
   const formattedAmount = $derived(formatDecimal(t.amount))
+  const sortableEnabled = $derived(budgetCategoryId !== undefined && !isOverlay)
+  const { ref, handleRef, isDragSource } = useSortable({
+    id: () => t.id,
+    index: () => index,
+    group: () => dragGroupId,
+    type: TRANSACTION_DRAG_TYPE,
+    accept: TRANSACTION_DRAG_TYPE,
+    disabled: () => dragDisabled || !sortableEnabled,
+    register: () => sortableEnabled,
+  })
+  const dragging = $derived(isDragSource.current && !isOverlay)
 </script>
 
 {#snippet details()}
@@ -44,8 +68,22 @@
 
 {#if onEdit}
   <div
-    class="group focus-within:bg-muted hover:bg-muted flex min-h-11 items-stretch rounded-md"
+    class="group focus-within:bg-muted hover:bg-muted relative flex min-h-11 items-stretch rounded-md {dragging
+      ? 'invisible'
+      : ''} {isOverlay ? 'bg-background ring-primary/25 shadow-lg ring-2' : ''}"
+    {@attach ref}
   >
+    <button
+      id={`transaction-drag-${t.id}`}
+      type="button"
+      aria-label={m.budget_detail_transaction_drag_handle({ name: t.name })}
+      aria-disabled={dragDisabled}
+      disabled={dragDisabled}
+      class="text-muted-foreground hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-11 w-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent outline-none focus-visible:ring-[3px] active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
+      {@attach handleRef}
+    >
+      <GripVerticalIcon class="size-4" />
+    </button>
     <button
       id={`transaction-${t.id}`}
       type="button"
@@ -118,9 +156,19 @@
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     {/if}
+
+    {#if dragging}
+      <div
+        class="border-primary/40 bg-primary/5 visible absolute inset-0 rounded-md border-2 border-dashed"
+      ></div>
+    {/if}
   </div>
 {:else}
-  <div class="flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5">
+  <div
+    class="bg-background flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 {isOverlay
+      ? 'ring-primary/25 shadow-lg ring-2'
+      : ''}"
+  >
     {@render details()}
     {#if t.isPaid}
       <CheckIcon class="size-3.5 text-emerald-500" />

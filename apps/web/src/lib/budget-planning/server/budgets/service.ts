@@ -32,10 +32,14 @@ import {
   insertTransactionAtEnd,
   insertTransactions,
   listBudgetsByUser,
+  listTransactionIds,
+  lockBudgetTransactions,
   updateBudgetCategorySortOrders,
   updateTransactionById,
   updateTransactionPaidById,
+  updateTransactionPositions,
 } from '../persistence/budget-repository'
+import { positionTransactionIds } from './transaction-rules'
 
 export class DuplicateMonthlyBudgetError extends Error {
   constructor() {
@@ -357,6 +361,58 @@ export async function updateTransactionPaid(
     if (!found) return { error: 'not_found' as const }
 
     await updateTransactionPaidById(tx, transactionId, isPaid)
+
+    return {}
+  })
+}
+
+export async function positionTransaction(
+  budgetId: string,
+  userId: string,
+  transactionId: string,
+  targetBudgetCategoryId: string,
+  targetIndex: number,
+) {
+  return db.transaction(async (tx) => {
+    await lockBudgetTransactions(tx, budgetId)
+
+    const found = await findOwnedTransaction(
+      tx,
+      transactionId,
+      budgetId,
+      userId,
+    )
+    if (!found) return { error: 'not_found' as const }
+
+    const target = await findOwnedBudgetCategory(
+      tx,
+      targetBudgetCategoryId,
+      budgetId,
+      userId,
+    )
+    if (!target) return { error: 'not_found' as const }
+
+    const sourceRows = await listTransactionIds(tx, found.budgetCategoryId)
+    const sameCategory = found.budgetCategoryId === targetBudgetCategoryId
+    const targetRows = sameCategory
+      ? sourceRows
+      : await listTransactionIds(tx, targetBudgetCategoryId)
+    const positions = positionTransactionIds(
+      sourceRows.map(({ id }) => id),
+      targetRows.map(({ id }) => id),
+      transactionId,
+      targetIndex,
+      sameCategory,
+    )
+    if (!positions) return { error: 'invalid_position' as const }
+
+    await updateTransactionPositions(
+      tx,
+      transactionId,
+      targetBudgetCategoryId,
+      positions.sourceIds,
+      positions.targetIds,
+    )
 
     return {}
   })

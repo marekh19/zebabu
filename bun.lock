@@ -22,6 +22,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@dnd-kit-svelte/svelte": "^0.1.6",
+        "@dnd-kit/dom": "~0.2.4",
         "@dnd-kit/helpers": "~0.2.4",
         "@zebabu/emails": "workspace:*",
         "@zebabu/ui": "workspace:*",
