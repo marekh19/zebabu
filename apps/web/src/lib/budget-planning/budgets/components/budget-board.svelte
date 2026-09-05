@@ -13,7 +13,6 @@
   import {
     DragDropProvider,
     DragOverlay,
-    KeyboardSensor,
     PointerSensor,
     type DragDropEvents,
   } from '@dnd-kit-svelte/svelte'
@@ -56,6 +55,7 @@
     withTransactionGroups,
     type TransactionDragDirection,
   } from '../transaction-position'
+  import { TransactionKeyboardSensor } from '../transaction-keyboard-sensor'
 
   type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
   type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
@@ -107,7 +107,7 @@
   let transactionTargetCategoryId = $state<string>()
   let transactionDragAnnouncement = $state('')
 
-  const sensors = [PointerSensor, KeyboardSensor]
+  const sensors = [PointerSensor, TransactionKeyboardSensor]
   const plugins = [
     Accessibility.configure({
       screenReaderInstructions: {

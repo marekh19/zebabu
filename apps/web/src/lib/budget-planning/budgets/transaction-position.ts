@@ -170,20 +170,18 @@ export async function commitTransactionPosition({
   onSettled,
 }: CommitTransactionPositionInput) {
   onBusyChange(true)
-  let confirmed = false
 
   try {
     const response = await persist()
     if (!response.ok) throw new Error('Transaction position update failed')
-    confirmed = true
     await refresh().catch(() => undefined)
+    return true
   } catch {
     onRollback()
     onError()
+    return false
   } finally {
     onBusyChange(false)
     await onSettled()
   }
-
-  return confirmed
 }
