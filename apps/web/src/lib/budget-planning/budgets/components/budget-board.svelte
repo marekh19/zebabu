@@ -320,10 +320,11 @@
     })
   }
 
-  function focusTransactionHandle(transactionId: string) {
-    return tick().then(() =>
-      document.getElementById(`transaction-drag-${transactionId}`)?.focus(),
-    )
+  async function focusTransactionHandle(transactionId: string) {
+    await tick()
+    const handle = document.getElementById(`transaction-drag-${transactionId}`)
+    handle?.focus()
+    handle?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -364,7 +365,7 @@
     )
   }
 
-  function handleTransactionDragKeyDown(
+  async function handleTransactionDragKeyDown(
     transactionId: string,
     event: KeyboardEvent,
   ) {
@@ -383,6 +384,7 @@
       transactionId,
       m.budget_detail_transaction_drag_move,
     )
+    await focusTransactionHandle(transactionId)
   }
 
   async function handleCategoryDragEnd(event: DragEndEvent) {

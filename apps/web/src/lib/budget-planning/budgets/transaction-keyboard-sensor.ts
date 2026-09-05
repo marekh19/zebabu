@@ -1,9 +1,12 @@
 import { KeyboardSensor } from '@dnd-kit/dom'
-import { TRANSACTION_DRAG_TYPE } from './transaction-position'
+import {
+  TRANSACTION_DRAG_TYPE,
+  type TransactionDragDirection,
+} from './transaction-position'
 
 export class TransactionKeyboardSensor extends KeyboardSensor {
   protected override handleMove(
-    direction: 'up' | 'down' | 'left' | 'right',
+    direction: TransactionDragDirection,
     event: KeyboardEvent,
   ) {
     if (this.manager.dragOperation.source?.type === TRANSACTION_DRAG_TYPE)
