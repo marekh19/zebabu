@@ -255,13 +255,14 @@ export async function updateTransactionPositions(
     ...sourceIds.map((id, sortOrder) => [id, sortOrder] as const),
     ...targetIds.map((id, sortOrder) => [id, sortOrder] as const),
   ])
-  const sqlChunks: SQL[] = [sql`(case`]
-
-  for (const [id, sortOrder] of positions) {
-    sqlChunks.push(sql`when ${transaction.id} = ${id} then ${sortOrder}`)
-  }
-
-  sqlChunks.push(sql`end)::integer`)
+  const sqlChunks: SQL[] = [
+    sql`(case`,
+    ...[...positions].map(
+      ([id, sortOrder]) =>
+        sql`when ${transaction.id} = ${id} then ${sortOrder}`,
+    ),
+    sql`end)::integer`,
+  ]
 
   return tx
     .update(transaction)

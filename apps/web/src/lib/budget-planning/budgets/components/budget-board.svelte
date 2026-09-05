@@ -48,8 +48,8 @@
     CATEGORY_DRAG_TYPE,
     commitTransactionPosition,
     getTransaction,
-    getTransactionGroupId,
     getTransactionLocation,
+    getTransactionPositionCommand,
     toTransactionGroups,
     TRANSACTION_DRAG_TYPE,
     withTransactionGroups,
@@ -341,11 +341,8 @@
 
     if (source.type !== TRANSACTION_DRAG_TYPE) return
 
-    const groups = move(
-      toTransactionGroups(items, getTransactionGroupId),
-      event,
-    )
-    items = withTransactionGroups(items, groups, getTransactionGroupId)
+    const groups = move(toTransactionGroups(items), event)
+    items = withTransactionGroups(items, groups)
 
     const transactionId = String(source.id)
     const location = getTransactionLocation(items, transactionId)
@@ -403,14 +400,9 @@
     )
     const current = getTransactionLocation(items, transactionId)
     const canceled = event.canceled || !event.operation.target
+    const command = getTransactionPositionCommand(previous, current)
 
-    if (
-      canceled ||
-      !previous ||
-      !current ||
-      (previous.budgetCategoryId === current.budgetCategoryId &&
-        previous.index === current.index)
-    ) {
+    if (canceled || !command) {
       items = copyItems(transactionDragStartItems)
       if (transaction) {
         transactionDragAnnouncement = m.budget_detail_transaction_drag_cancel({
@@ -435,16 +427,15 @@
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              targetBudgetCategoryId: current.budgetCategoryId,
-              targetIndex: current.index,
-            }),
+            body: JSON.stringify(command),
           },
         ),
       refresh: invalidateAll,
       onBusyChange: (busy) => (transactionDragBusy = busy),
-      onFailure: () => {
+      onRollback: () => {
         items = copyItems(transactionDragStartItems)
+      },
+      onError: () => {
         if (!transaction) return
 
         transactionDragAnnouncement = m.budget_detail_transaction_drag_error({
@@ -454,9 +445,8 @@
           m.budget_detail_transaction_drag_error({ name: transaction.name }),
         )
       },
+      onSettled: () => focusTransactionHandle(transactionId),
     })
-
-    await focusTransactionHandle(transactionId)
   }
 
   async function handleDragEnd(event: DragEndEvent) {

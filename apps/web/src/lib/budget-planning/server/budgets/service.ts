@@ -366,34 +366,46 @@ export async function updateTransactionPaid(
   })
 }
 
-export async function positionTransaction(
-  budgetId: string,
-  userId: string,
-  transactionId: string,
-  targetBudgetCategoryId: string,
-  targetIndex: number,
-) {
+type PositionTransactionCommand = Readonly<{
+  budgetId: string
+  userId: string
+  transactionId: string
+  targetBudgetCategoryId: string
+  targetIndex: number
+}>
+
+export async function positionTransaction({
+  budgetId,
+  userId,
+  transactionId,
+  targetBudgetCategoryId,
+  targetIndex,
+}: PositionTransactionCommand) {
   return db.transaction(async (tx) => {
     await lockBudgetTransactions(tx, budgetId)
 
-    const found = await findOwnedTransaction(
+    const sourceTransaction = await findOwnedTransaction(
       tx,
       transactionId,
       budgetId,
       userId,
     )
-    if (!found) return { error: 'not_found' as const }
+    if (!sourceTransaction) return { error: 'not_found' as const }
 
-    const target = await findOwnedBudgetCategory(
+    const targetBudgetCategory = await findOwnedBudgetCategory(
       tx,
       targetBudgetCategoryId,
       budgetId,
       userId,
     )
-    if (!target) return { error: 'not_found' as const }
+    if (!targetBudgetCategory) return { error: 'not_found' as const }
 
-    const sourceRows = await listTransactionIds(tx, found.budgetCategoryId)
-    const sameCategory = found.budgetCategoryId === targetBudgetCategoryId
+    const sourceRows = await listTransactionIds(
+      tx,
+      sourceTransaction.budgetCategoryId,
+    )
+    const sameCategory =
+      sourceTransaction.budgetCategoryId === targetBudgetCategoryId
     const targetRows = sameCategory
       ? sourceRows
       : await listTransactionIds(tx, targetBudgetCategoryId)

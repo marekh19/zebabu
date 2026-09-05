@@ -8,6 +8,11 @@ export type TransactionLocation = Readonly<{
   index: number
 }>
 
+export type TransactionPositionCommand = Readonly<{
+  targetBudgetCategoryId: string
+  targetIndex: number
+}>
+
 export const TRANSACTION_DRAG_TYPE = 'transaction'
 export const CATEGORY_DRAG_TYPE = 'budget-category'
 export const getTransactionGroupId = (budgetCategoryId: string) =>
@@ -39,48 +44,75 @@ export function getTransaction(
 
 export function toTransactionGroups(
   categories: readonly BudgetCategory[],
-  groupId: (budgetCategoryId: string) => string,
 ): Record<string, PlannedTransaction[]> {
   return Object.fromEntries(
-    categories.map(({ id, transactions }) => [groupId(id), [...transactions]]),
+    categories.map(({ id, transactions }) => [
+      getTransactionGroupId(id),
+      [...transactions],
+    ]),
   )
 }
 
 export function withTransactionGroups(
   categories: readonly BudgetCategory[],
   groups: Readonly<Record<string, readonly PlannedTransaction[]>>,
-  groupId: (budgetCategoryId: string) => string,
 ): BudgetCategory[] {
   return categories.map((budgetCategory) => ({
     ...budgetCategory,
-    transactions: groups[groupId(budgetCategory.id)] ?? [],
+    transactions: groups[getTransactionGroupId(budgetCategory.id)] ?? [],
   }))
+}
+
+export function getTransactionPositionCommand(
+  previous: TransactionLocation | undefined,
+  current: TransactionLocation | undefined,
+): TransactionPositionCommand | undefined {
+  if (!previous || !current) return undefined
+  if (
+    previous.budgetCategoryId === current.budgetCategoryId &&
+    previous.index === current.index
+  ) {
+    return undefined
+  }
+
+  return {
+    targetBudgetCategoryId: current.budgetCategoryId,
+    targetIndex: current.index,
+  }
 }
 
 type CommitTransactionPositionInput = Readonly<{
   persist: () => Promise<Response>
   refresh: () => Promise<void>
   onBusyChange: (busy: boolean) => void
-  onFailure: () => void
+  onRollback: () => void
+  onError: () => void
+  onSettled: () => Promise<void>
 }>
 
 export async function commitTransactionPosition({
   persist,
   refresh,
   onBusyChange,
-  onFailure,
+  onRollback,
+  onError,
+  onSettled,
 }: CommitTransactionPositionInput) {
   onBusyChange(true)
 
   try {
     const response = await persist()
     if (!response.ok) throw new Error('Transaction position update failed')
-    await refresh()
-    return true
   } catch {
-    onFailure()
-    return false
-  } finally {
+    onRollback()
+    onError()
     onBusyChange(false)
+    await onSettled()
+    return false
   }
+
+  await refresh().catch(() => undefined)
+  onBusyChange(false)
+  await onSettled()
+  return true
 }

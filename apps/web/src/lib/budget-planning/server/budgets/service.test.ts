@@ -78,7 +78,13 @@ describe('positionTransaction', () => {
       .mockResolvedValueOnce([{ id: 'transaction-3' }])
 
     await expect(
-      positionTransaction('budget-1', 'user-1', 'transaction-2', 'target', 0),
+      positionTransaction({
+        budgetId: 'budget-1',
+        userId: 'user-1',
+        transactionId: 'transaction-2',
+        targetBudgetCategoryId: 'target',
+        targetIndex: 0,
+      }),
     ).resolves.toEqual({})
 
     expect(mocks.lockBudgetTransactions).toHaveBeenCalledWith({}, 'budget-1')
@@ -104,13 +110,13 @@ describe('positionTransaction', () => {
       { id: 'transaction-3' },
     ])
 
-    await positionTransaction(
-      'budget-1',
-      'user-1',
-      'transaction-3',
-      'source',
-      1,
-    )
+    await positionTransaction({
+      budgetId: 'budget-1',
+      userId: 'user-1',
+      transactionId: 'transaction-3',
+      targetBudgetCategoryId: 'source',
+      targetIndex: 1,
+    })
 
     expect(mocks.updateTransactionPositions).toHaveBeenCalledWith(
       {},
@@ -126,7 +132,13 @@ describe('positionTransaction', () => {
     mocks.findOwnedTransaction.mockResolvedValue(undefined)
 
     await expect(
-      positionTransaction('budget-1', 'user-1', 'missing', 'target', 0),
+      positionTransaction({
+        budgetId: 'budget-1',
+        userId: 'user-1',
+        transactionId: 'missing',
+        targetBudgetCategoryId: 'target',
+        targetIndex: 0,
+      }),
     ).resolves.toEqual({ error: 'not_found' })
     expect(mocks.findOwnedBudgetCategory).not.toHaveBeenCalled()
     expect(mocks.updateTransactionPositions).not.toHaveBeenCalled()
@@ -144,7 +156,13 @@ describe('positionTransaction', () => {
       .mockResolvedValueOnce([])
 
     await expect(
-      positionTransaction('budget-1', 'user-1', 'transaction-1', 'target', 1),
+      positionTransaction({
+        budgetId: 'budget-1',
+        userId: 'user-1',
+        transactionId: 'transaction-1',
+        targetBudgetCategoryId: 'target',
+        targetIndex: 1,
+      }),
     ).resolves.toEqual({ error: 'invalid_position' })
     expect(mocks.updateTransactionPositions).not.toHaveBeenCalled()
   })

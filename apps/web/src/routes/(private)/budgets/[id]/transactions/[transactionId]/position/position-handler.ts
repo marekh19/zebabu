@@ -27,13 +27,13 @@ export async function patchTransactionPosition({
     return json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const result = await positionTransaction(
+  const result = await positionTransaction({
     budgetId,
     userId,
     transactionId,
-    parsed.data.targetBudgetCategoryId,
-    parsed.data.targetIndex,
-  )
+    targetBudgetCategoryId: parsed.data.targetBudgetCategoryId,
+    targetIndex: parsed.data.targetIndex,
+  })
 
   if (result.error === 'not_found') {
     return json({ error: 'Transaction not found' }, { status: 404 })
