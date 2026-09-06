@@ -18,6 +18,10 @@ export type TransactionDragDirection = 'up' | 'down' | 'left' | 'right'
 
 export const TRANSACTION_DRAG_TYPE = 'transaction'
 export const CATEGORY_DRAG_TYPE = 'budget-category'
+export const TRANSACTION_COLLISION_PRIORITY = {
+  group: 0,
+  item: 1,
+} as const
 export const getTransactionGroupId = (budgetCategoryId: string) =>
   `transactions:${budgetCategoryId}`
 
