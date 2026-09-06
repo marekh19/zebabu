@@ -56,6 +56,7 @@
     type TransactionDragDirection,
   } from '../transaction-position'
   import { TransactionKeyboardSensor } from '../transaction-keyboard-sensor'
+  import { getTransactionBoardSnapClass } from '../transaction-drag-behavior'
 
   type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
   type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
@@ -502,7 +503,9 @@
 </script>
 
 <div
-  class="max-w-full snap-x snap-mandatory overflow-x-auto pb-4 sm:snap-none"
+  class="max-w-full overflow-x-auto pb-4 {getTransactionBoardSnapClass(
+    activeTransactionId !== undefined,
+  )}"
   aria-busy={transactionDragBusy}
 >
   <DragDropProvider

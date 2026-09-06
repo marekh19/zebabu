@@ -17,6 +17,7 @@
     getTransactionGroupId,
     TRANSACTION_DRAG_TYPE,
   } from '../transaction-position'
+  import { transactionCollisionPriority } from '../transaction-drag-behavior'
 
   const CATEGORY_TYPE_LABELS = {
     [CategoryType.Income]: m.budget_detail_type_income,
@@ -73,6 +74,7 @@
     id: () => transactionGroupId,
     type: TRANSACTION_DRAG_TYPE,
     accept: TRANSACTION_DRAG_TYPE,
+    collisionPriority: transactionCollisionPriority.group,
     disabled: () => isOverlay || transactionDragBusy,
     register: () => !isOverlay,
   })

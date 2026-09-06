@@ -12,6 +12,7 @@
   import type { PlannedTransaction } from '$lib/budget-planning/model'
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
   import { TRANSACTION_DRAG_TYPE } from '../transaction-position'
+  import { transactionCollisionPriority } from '../transaction-drag-behavior'
 
   type Props = {
     transaction: PlannedTransaction
@@ -50,6 +51,7 @@
     group: () => dragGroupId,
     type: TRANSACTION_DRAG_TYPE,
     accept: TRANSACTION_DRAG_TYPE,
+    collisionPriority: transactionCollisionPriority.item,
     disabled: () => dragDisabled || !sortableEnabled,
     register: () => sortableEnabled,
   })
