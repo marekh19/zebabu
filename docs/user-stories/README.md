@@ -36,13 +36,14 @@ See the compact [user story index](INDEX.md) for one story per line.
 
 ### Epic 3: Category Management (P0 - MVP Critical)
 
-**Story Points:** 8 | **Status:** ☑ Done
+**Story Points:** 11 | **Status:** 🟡 In Progress
 
 - [x] `03-1-create-category.md` - Create Category
 - [x] `03-2-edit-category.md` - Edit Category
 - [x] `03-3-delete-category.md` - Delete Category
 - [x] `03-4-reorder-categories.md` - Reorder Categories via Drag & Drop
 - [x] `03-5-prevent-delete-last-category.md` - Prevent Deleting Last Income/Expense Category
+- [ ] `03-6-configure-default-expense-allocations.md` - Configure Default Expense Allocation Targets
 
 ### Epic 4: Transaction Management (P0 - MVP Critical)
 
@@ -57,17 +58,18 @@ See the compact [user story index](INDEX.md) for one story per line.
 
 ### Epic 5: Budget Calculations & Validation (P0 - MVP Critical)
 
-**Story Points:** 5 | **Status:** 🟡 In Progress
+**Story Points:** 15 | **Status:** 🟡 In Progress
 
 - [x] `05-1-display-total-income.md` - Display Total Income
 - [x] `05-2-display-total-expenses.md` - Display Total Expenses
 - [x] `05-3-display-budget-balance.md` - Display Budget Balance
-- [ ] `05-4-display-allocation-percentage.md` - Display Allocation Percentage
+- [x] `05-4-display-allocation-percentage.md` - Display Allocation Percentage (wontfix)
 - [x] `05-5-display-unallocated-amount.md` - Display Unallocated Amount
 - [x] `05-6-warn-over-budget.md` - Warn If Over Budget
 - [x] `05-7-warn-unallocated.md` - Warn If Not Fully Allocated
-- [ ] `05-8-category-totals.md` - Display Per-Category Totals and Percentages
-- [ ] `05-9-category-variance.md` - Display Variance Between Target and Actual
+- [x] `05-8-category-totals.md` - Display Per-Category Totals
+- [ ] `05-9-set-budget-expense-allocations.md` - Set Expense Allocation Targets for a Budget
+- [ ] `05-10-compare-budgeted-allocation-targets.md` - Compare Budgeted Shares with Allocation Targets
 
 ### Epic 6: Multi-Currency Support (P1 - Important)
 

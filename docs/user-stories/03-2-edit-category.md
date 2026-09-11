@@ -11,13 +11,13 @@
 
 **As a** user,
 **I want to** edit a category's details,
-**So that** I can update its name, color, icon, or target allocation as my needs change.
+**So that** I can keep its name and appearance current.
 
 ---
 
 ## Description
 
-Implement category editing functionality allowing users to modify existing categories. Users should be able to change the name, color, icon, and target percentage. Category type (income/expense) cannot be changed after creation to prevent data inconsistency.
+Implement Category editing for name and color. Category type cannot be changed after creation. Icon selection is separate work.
 
 ---
 
@@ -25,7 +25,7 @@ Implement category editing functionality allowing users to modify existing categ
 
 - [x] Edit button available on category header
 - [x] Edit modal pre-populated with current values
-- [ ] Can change: name, color, icon, target percentage (name and color implemented)
+- [ ] Can change: name, color, icon (name and color implemented)
 - [x] Cannot change: type (income/expense)
 - [x] Changes immediately reflected on board
 - [x] Validation same as create
@@ -72,7 +72,6 @@ export async function updateCategory(
     name?: string
     color?: string
     icon?: string
-    targetPercentage?: number | null
   },
 ): Promise<Category> {
   const [category] = await db
@@ -102,7 +101,6 @@ export const updateCategorySchema = z.object({
     .regex(/^#[0-9A-Fa-f]{6}$/)
     .optional(),
   icon: z.string().max(50).optional(),
-  targetPercentage: z.number().min(0).max(100).nullable().optional(),
 })
 ```
 
@@ -141,7 +139,6 @@ export const updateCategorySchema = z.object({
       $form.name = category.name
       $form.color = category.color || undefined
       $form.icon = category.icon || undefined
-      $form.targetPercentage = category.targetPercentage || undefined
     }
   })
 </script>
@@ -197,19 +194,6 @@ export const updateCategorySchema = z.object({
           </div>
         </div>
 
-        <label>
-          Target Allocation (%)
-          <input
-            type="number"
-            name="targetPercentage"
-            bind:value={$form.targetPercentage}
-            min="0"
-            max="100"
-            step="0.1"
-            placeholder="Optional"
-          />
-        </label>
-
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick={onClose}>
             Cancel
@@ -229,7 +213,6 @@ export const updateCategorySchema = z.object({
 - Same validation as create
 - Type cannot be changed after creation
 - All other fields can be modified
-- Target percentage can be cleared (set to null)
 
 ---
 
@@ -242,8 +225,6 @@ export const updateCategorySchema = z.object({
   - [ ] Can change name
   - [ ] Can change color
   - [ ] Can change icon
-  - [ ] Can change target percentage
-  - [ ] Can clear target percentage
   - [ ] Cannot change type
   - [ ] Changes reflected immediately
   - [ ] Validation works same as create

@@ -24,6 +24,14 @@ _Avoid_: Category, budget column
 A planned income or expense entry assigned to a BudgetCategory.
 _Avoid_: Line item, allocation
 
+**Allocation Target**:
+The desired percentage of a Budget's total planned income for one expense Category. A Category may provide a default; a BudgetCategory owns the target used by one Budget.
+_Avoid_: Actual allocation, allocation percentage
+
+**Budgeted Share**:
+An expense Category's total planned amount as a percentage of its Budget's total planned income.
+_Avoid_: Actual allocation, actual percentage
+
 **Monthly Budget**:
 A Budget for one calendar month and year. A User may have at most one for that period.
 

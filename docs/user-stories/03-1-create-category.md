@@ -17,7 +17,7 @@
 
 ## Description
 
-Implement category creation functionality allowing users to add new categories to their budgets. Categories group related transactions and have properties like name, type (income/expense), color, icon, and optional target allocation percentage.
+Implement Category creation for the reusable Category catalog. Categories group related Transactions and have a name, income or expense type, and color. Icon selection is separate work.
 
 ---
 
@@ -26,7 +26,7 @@ Implement category creation functionality allowing users to add new categories t
 - [ ] "Add Category" button visible on budget board (the board button links an existing category)
 - [ ] Category creation form/modal includes all fields
 - [x] Required: name, type (income/expense)
-- [ ] Optional: color picker, icon selector, target percentage (color picker implemented)
+- [ ] Optional: color picker and icon selector (color picker implemented)
 - [ ] Categories added to end of list (highest order number)
 - [x] Success feedback after creation
 - [ ] New category immediately visible on board
@@ -59,7 +59,6 @@ Implement category creation functionality allowing users to add new categories t
    - Color picker (predefined colors)
    - Icon picker (emoji or icon library)
    - Type selector (Income/Expense radio buttons)
-   - Target percentage slider/input
 
 3. **Add Action Handler**
    - Parse and validate form data
@@ -88,7 +87,6 @@ export async function createCategory(
     type: 'income' | 'expense'
     color?: string
     icon?: string
-    targetPercentage?: number
   },
 ): Promise<Category> {
   // Get next order number
@@ -109,7 +107,6 @@ export async function createCategory(
       color: data.color || null,
       icon: data.icon || null,
       order,
-      targetPercentage: data.targetPercentage || null,
     })
     .returning()
 
@@ -150,7 +147,6 @@ export const createCategorySchema = z.object({
     .regex(/^#[0-9A-Fa-f]{6}$/)
     .optional(),
   icon: z.string().max(50).optional(),
-  targetPercentage: z.number().min(0).max(100).optional(),
 })
 ```
 
@@ -264,25 +260,6 @@ export const createCategorySchema = z.object({
           </div>
         </div>
 
-        <label>
-          Target Allocation (%)
-          <input
-            type="number"
-            name="targetPercentage"
-            bind:value={$form.targetPercentage}
-            min="0"
-            max="100"
-            step="0.1"
-            placeholder="Optional"
-          />
-          <span class="help-text">
-            Set a target percentage of total income for this category
-          </span>
-        </label>
-        {#if $errors.targetPercentage}
-          <span class="error">{$errors.targetPercentage}</span>
-        {/if}
-
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick={onClose}>
             Cancel
@@ -326,7 +303,6 @@ export const actions: Actions = {
 ## Validation & Business Rules
 
 - **BR-10**: Category type must be 'income' or 'expense'
-- **BR-11**: Target percentage must be 0-100 if provided
 - **BR-13**: Category name is required
 - Name length: 1-100 characters
 - Color format: hex color (#RRGGBB) if provided
@@ -347,7 +323,6 @@ export const actions: Actions = {
   - [ ] Can create expense category
   - [ ] Can select color from picker
   - [ ] Can select icon from picker
-  - [ ] Can set target percentage
   - [ ] New category appears on board
   - [ ] Category added at end of list
   - [ ] Validation prevents empty names
