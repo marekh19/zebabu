@@ -1,96 +1,43 @@
-# [US-5.8] Display Per-Category Totals and Percentages
+# [US-5.8] Display Per-Category Totals
 
 **Epic:** Budget Calculations & Validation
 **Priority:** P0 (MVP Critical)
 **Story Points:** 1
-**Status:** 🟡 In Progress
+**Status:** ☑ Done
 
 ---
 
 ## User Story
 
 **As a** user,
-**I want to** see totals and percentages for each category,
-**So that** I understand my spending distribution.
+**I want to** see the total planned amount in each category,
+**So that** I can understand the category without adding its transactions myself.
 
 ---
 
-## Description
+## Resolution
 
-Calculate and display for each category: total amount, percentage of total income, and number of transactions. Show in category header or footer.
+Each category column shows the sum of its planned Transactions below the header.
+The total uses the active locale and updates with the board's Transaction state.
+
+Percentages and aggregate Transaction or paid counts are excluded. Percentages
+belong with the optional allocation-target feature, where they support a concrete
+comparison. Paid state remains visible on each Transaction.
 
 ---
 
 ## Acceptance Criteria
 
-- [x] Each category shows total amount
-- [ ] Each category shows % of total income
-- [ ] Shows transaction count
-- [ ] Shows paid vs unpaid count
-- [x] Updates in real-time
-- [ ] Formatted with currency and percentage
-
----
-
-## Technical Implementation
-
-```typescript
-export function calculateCategoryTotals(
-  category: Category,
-  totalIncome: number,
-  exchangeRates: ExchangeRate[],
-  user: User,
-): CategoryTotals {
-  const total = category.transactions.reduce((sum, t) => {
-    return (
-      sum +
-      convertToPrimaryCurrency(
-        Number(t.amount),
-        t.currency,
-        user.primaryCurrency,
-        exchangeRates,
-      )
-    )
-  }, 0)
-
-  const percentage = totalIncome > 0 ? (total / totalIncome) * 100 : 0
-  const paidCount = category.transactions.filter((t) => t.isPaid).length
-
-  return {
-    total,
-    percentage,
-    transactionCount: category.transactions.length,
-    paidCount,
-    unpaidCount: category.transactions.length - paidCount,
-  }
-}
-```
-
-```svelte
-<div class="category-footer">
-  <div class="category-total">
-    <strong
-      >{formatCurrency(
-        categoryTotal,
-        user.primaryCurrency,
-        user.locale,
-      )}</strong
-    >
-    <span class="percentage"
-      >({formatPercentage(categoryPercentage, user.locale)})</span
-    >
-  </div>
-  <div class="category-stats">
-    <span>{paidCount} / {totalCount} paid</span>
-  </div>
-</div>
-```
+- [x] Each Category shows the sum of all its planned Transactions.
+- [x] An empty Category shows zero using the active locale.
+- [x] Paid and unpaid Transactions contribute equally to the planned total.
+- [x] Totals update when Transactions are added, edited, deleted, or moved.
+- [x] Totals use locale-aware decimal formatting.
 
 ---
 
 ## Dependencies
 
-- Depends on: US-5.1 (Total Income)
-- Blocks: US-5.9 (Display Variance)
+- None
 
 ---
