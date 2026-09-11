@@ -1,3 +1,4 @@
+export { default as AllocationComparisonChart } from './allocation-targets/allocation-comparison-chart.svelte'
 export { default as AllocationTargetEditor } from './allocation-targets/allocation-target-editor.svelte'
 export { areDefaultAllocationTargetsEnabled } from './allocation-targets/rules'
 export { createAllocationTargetsSchema } from './allocation-targets/schema'
