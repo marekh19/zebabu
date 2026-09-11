@@ -151,6 +151,8 @@
   "budget_detail_transaction_drag_drop": "Dropped {name}, position {position} of {count} in {category}.",
   "budget_detail_transaction_drag_cancel": "Cancelled dragging {name}.",
   "budget_detail_transaction_drag_error": "Failed to move {name}. The previous order was restored.",
+  "budget_detail_transaction_drag_refresh_error": "Moved {name}, but totals could not be refreshed.",
+  "budget_detail_transaction_drag_retry": "Retry",
   "budget_detail_drag_instructions": "Press Space to pick up or drop. Use arrow keys to move. Press Escape to cancel.",
   "budget_detail_category_drag_pickup": "Picked up category {name}.",
   "budget_detail_category_drag_move": "Category {name}, position {position} of {count}.",

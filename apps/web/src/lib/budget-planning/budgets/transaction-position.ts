@@ -155,37 +155,3 @@ export function moveTransactionByKeyboard(
     return category
   })
 }
-
-type CommitTransactionPositionInput = Readonly<{
-  persist: () => Promise<Response>
-  refresh: () => Promise<void>
-  onBusyChange: (busy: boolean) => void
-  onRollback: () => void
-  onError: () => void
-  onSettled: () => Promise<void>
-}>
-
-export async function commitTransactionPosition({
-  persist,
-  refresh,
-  onBusyChange,
-  onRollback,
-  onError,
-  onSettled,
-}: CommitTransactionPositionInput) {
-  onBusyChange(true)
-
-  try {
-    const response = await persist()
-    if (!response.ok) throw new Error('Transaction position update failed')
-    await refresh().catch(() => undefined)
-    return true
-  } catch {
-    onRollback()
-    onError()
-    return false
-  } finally {
-    onBusyChange(false)
-    await onSettled()
-  }
-}
