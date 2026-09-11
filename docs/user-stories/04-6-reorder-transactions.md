@@ -3,254 +3,92 @@
 **Epic:** Transaction Management
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
-
----
+**Status:** ☒ Done
+**Triage:** ready-for-agent
 
 ## User Story
 
 **As a** user,
 **I want to** drag transactions within a category to reorder them,
-**So that** I can organize transactions by priority or any order that makes sense to me.
+**So that** I can organize them in the order that suits my budget.
 
----
+## Current-State Alignment
+
+- Transactions already load by `sortOrder`; creation appends after the current highest value.
+- Transaction deletion deliberately leaves gaps for this story to normalize.
+- The budget board already uses `@dnd-kit-svelte/svelte` with pointer and keyboard sensors for category reordering.
+- Transaction rows already contain edit, paid, and actions controls, so dragging needs a separate handle.
+- US-4.5 owns cross-category movement and will be implemented with this story.
+- US-8.3 duplicates this story.
 
 ## Description
 
-Implement drag-and-drop reordering for transactions within the same category. This allows users to organize their transaction lists in a way that makes sense for their workflow, such as by priority, due date, or importance.
-
----
+Extend the existing board drag system so transactions can be reordered at exact positions within a category. The board previews the order locally, persists one positioning command, and refreshes authoritative page data after success.
 
 ## Acceptance Criteria
 
-- [ ] Can drag transactions up/down within same category
-- [ ] Visual feedback during drag (placeholder, ghost)
-- [ ] Drop updates transaction order
-- [ ] Order persists to database
-- [ ] Smooth animations
-- [ ] Optimistic UI update
-- [ ] Works on touch devices
-- [ ] Order maintained after page reload
-
----
+- [x] A transaction can be dragged to any exact position within its current category.
+- [x] Each transaction row has a dedicated leading drag handle; edit, paid, and actions controls do not start a drag.
+- [x] Pointer, touch, and keyboard dragging work through the handle.
+- [x] Dragging auto-scrolls vertically through a long category.
+- [x] Dragging shows live row rearrangement, a row overlay, and an insertion gap consistent with category dragging.
+- [x] Keyboard dragging uses Space to pick up or drop, Escape to cancel, and up/down to change position.
+- [x] Focus remains on the reordered transaction's handle after a drop or cancellation.
+- [x] Assistive technology receives localized announcements for pickup, position changes, drop, cancellation, and failure.
+- [x] Dropping sends the transaction id, current budget-category id, and target index. The client does not send authoritative order lists or sort-order values.
+- [x] The server verifies that the user owns the route budget and that the transaction and category belong to it.
+- [x] The category is normalized to contiguous zero-based order atomically.
+- [x] A successful reorder persists after page reload and refreshes authoritative page data without a browser reload.
+- [x] Further transaction dragging is disabled while the reorder is saving; the board exposes its busy state without a spinner or success toast.
+- [x] A failed reorder restores the previous layout, preserves focus, and shows one localized error toast.
+- [x] Dropping outside the board, cancelling, or returning to the original position restores the original layout without a request.
+- [x] Concurrent tabs require no conflict warning; transaction-position writes are serialized per budget and the last applied command wins.
 
 ## Technical Implementation
 
-### Files to Modify/Create
+### Expected Areas
 
-- `src/routes/(app)/budgets/[id]/+page.server.ts` - Add reorderTransactions action
-- `src/lib/server/modules/transaction/service.ts` - Reorder logic
-- `src/lib/components/category/CategoryColumn.svelte` - Implement sortable transactions
-- `src/lib/components/transaction/TransactionCard.svelte` - Make draggable
+- Share the transaction positioning endpoint, service, persistence operation, drag state, accessible handle, announcements, and tests specified by US-4.5.
+- Keep pure list-position logic independent of Svelte and database code so edge cases have small unit tests.
 
-### Service Layer
+### Constraints
 
-```typescript
-// src/lib/server/modules/transaction/service.ts
-export async function reorderTransactions(
-  transactionIds: string[],
-): Promise<void> {
-  await db.transaction(async (tx) => {
-    for (let i = 0; i < transactionIds.length; i++) {
-      await tx
-        .update(transactions)
-        .set({ order: i, updatedAt: new Date() })
-        .where(eq(transactions.id, transactionIds[i]))
-    }
-  })
-}
-```
-
-### UI Components
-
-```svelte
-<!-- Enhanced CategoryColumn.svelte with sortable transactions -->
-<script lang="ts">
-  import {
-    SortableContext,
-    verticalListSortingStrategy,
-  } from '@dnd-kit/sortable'
-  import SortableTransactionCard from '../transaction/SortableTransactionCard.svelte'
-  import type { Category } from '$lib/server/db/schema/categories'
-
-  let { category }: { category: Category } = $props()
-
-  let localTransactions = $state(category.transactions)
-
-  async function handleReorder(transactionIds: string[]) {
-    // Optimistic update
-    localTransactions = transactionIds.map((id) =>
-      localTransactions.find((t) => t.id === id)!,
-    )
-
-    // Persist to server
-    try {
-      await fetch('?/reorderTransactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          categoryId: category.id,
-          transactionIds,
-        }),
-      })
-    } catch (error) {
-      // Rollback on error
-      localTransactions = category.transactions
-      alert('Failed to reorder transactions')
-    }
-  }
-</script>
-
-<div class="category-column">
-  <div class="category-header">
-    <h3>{category.name}</h3>
-  </div>
-
-  <div class="transactions-list">
-    <SortableContext
-      items={localTransactions.map((t) => t.id)}
-      strategy={verticalListSortingStrategy}
-    >
-      {#each localTransactions as transaction (transaction.id)}
-        <SortableTransactionCard {transaction} />
-      {/each}
-    </SortableContext>
-
-    {#if localTransactions.length === 0}
-      <div class="empty-category">No transactions yet</div>
-    {/if}
-
-    <button class="add-transaction-btn"> + Add Transaction </button>
-  </div>
-</div>
-```
-
-```svelte
-<!-- src/lib/components/transaction/SortableTransactionCard.svelte -->
-<script lang="ts">
-  import { useSortable } from '@dnd-kit/sortable'
-  import { CSS } from '@dnd-kit/utilities'
-  import type { Transaction } from '$lib/server/db/schema/transactions'
-
-  let { transaction }: { transaction: Transaction } = $props()
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: transaction.id })
-
-  const style = $derived(
-    CSS.Transform.toString(transform) +
-      (isDragging ? ' opacity: 0.5; cursor: grabbing;' : ' cursor: grab;'),
-  )
-</script>
-
-<div
-  bind:this={setNodeRef}
-  style={`${style} ${transition}`}
-  class="transaction-card"
-  class:dragging={isDragging}
-  {...attributes}
-  {...listeners}
->
-  <div class="drag-handle">⋮⋮</div>
-
-  <div class="transaction-content">
-    <h4>{transaction.title}</h4>
-    <p class="amount">{transaction.amount} {transaction.currency}</p>
-    {#if transaction.isPaid}
-      <span class="paid-badge">✓ Paid</span>
-    {/if}
-  </div>
-
-  <div class="transaction-actions">
-    <button
-      class="btn-icon"
-      onclick={(e) => {
-        e.stopPropagation() /* edit */
-      }}
-    >
-      ✏️
-    </button>
-    <button
-      class="btn-icon"
-      onclick={(e) => {
-        e.stopPropagation() /* delete */
-      }}
-    >
-      🗑️
-    </button>
-  </div>
-</div>
-
-<style>
-  .transaction-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    margin-bottom: 8px;
-  }
-
-  .transaction-card.dragging {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    transform: rotate(2deg);
-  }
-
-  .drag-handle {
-    cursor: grab;
-    color: #9ca3af;
-    font-size: 18px;
-  }
-
-  .drag-handle:active {
-    cursor: grabbing;
-  }
-</style>
-```
-
----
+1. Use the same `{ targetBudgetCategoryId, targetIndex }` positioning command as US-4.5; source and target categories are equal for this story.
+2. Reject malformed or out-of-range target positions. The UI clamps keyboard movement to available positions.
+3. Return the same not-found response for missing, out-of-budget, and unauthorized identifiers.
+4. Serialize transaction-position commands for one budget inside the database transaction. Do not add versioning or conflict UI.
+5. Remove the transaction before interpreting its target index, then write contiguous zero-based `sortOrder` values for the category.
+6. Preserve all transaction fields except `sortOrder`. Let existing database behavior update `updatedAt`.
+7. Reuse the installed drag dependencies and established category-drag styling. Do not introduce another drag library.
+8. Keep the add-transaction row after every sortable transaction slot; it is not draggable and never becomes an insertion target.
+9. Disable only transaction drag handles during persistence. Existing row actions retain their behavior.
+10. Treat an unchanged final position as a client-side no-op.
 
 ## Validation & Business Rules
 
-- **BR-17**: Transaction order must be non-negative
-- Order is sequential from 0 within each category
-- All transactions in category reordered atomically
-
----
+- A transaction may be reordered only inside a budget category belonging to the owned route budget.
+- A target index is a zero-based insertion position after removing the transaction from its current position.
+- The category's transaction orders are contiguous from zero after every successful reorder.
+- The persistence operation is atomic.
 
 ## Testing Checklist
 
-- [ ] Unit tests for reorder service
-- [ ] Integration test for drag-and-drop
-- [ ] Manual testing checklist:
-  - [ ] Can drag transactions up/down
-  - [ ] Visual feedback during drag
-  - [ ] Order persists to database
-  - [ ] Order maintained after reload
-  - [ ] Works on touch devices
-  - [ ] Smooth animations
-  - [ ] Error handling works
-
----
+- [x] Pure ordering tests cover moving to the start, middle, and end.
+- [x] Pure ordering tests cover existing gaps, unchanged input, one-item categories, and invalid target indices.
+- [x] Endpoint tests cover malformed input, missing records, another budget owned by the same user, and another user's budget.
+- [x] Persistence or service tests prove atomic normalization and preservation of other transaction fields.
+- [x] Client test covers successful persistence, busy-state locking, refresh, rollback, and one error toast.
+- [ ] Manual test covers pointer, touch, keyboard, vertical auto-scroll, focus restoration, and screen-reader announcements.
+- [ ] Manual test confirms category dragging and transaction edit, paid, delete, and add controls still work.
 
 ## Dependencies
 
-- Depends on: US-4.1 (Create Transaction), US-3.1 (Create Category)
-- Blocks: US-8.3 (Drag Transactions Within Category)
-
----
+- Depends on: US-4.1 (Create Transaction), US-3.1 (Create Category), US-8.1 (Trello Board Layout)
+- Implement with: US-4.5 (Move Transaction Between Categories)
+- Duplicated by: US-8.3 (Drag Transactions Within Category)
+- Blocks: None
 
 ## Notes
 
-- Consider keyboard navigation for accessibility
-- Add visual indicators for drag handle
-- Consider auto-scroll when dragging near edges
-- Future: Save user's preferred order preference
+- Close US-8.3 as a duplicate when this story is complete.
+- User-defined automatic sorting modes are outside this story.

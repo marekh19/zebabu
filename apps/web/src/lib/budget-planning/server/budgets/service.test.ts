@@ -7,10 +7,13 @@ const mocks = vi.hoisted(() => ({
   findOwnedBudgetCategory: vi.fn(),
   findOwnedTransaction: vi.fn(),
   insertTransactionAtEnd: vi.fn(),
+  listTransactionIds: vi.fn(),
   listBudgetsByUser: vi.fn(),
+  lockBudgetTransactions: vi.fn(),
   transaction: vi.fn(),
   updateTransactionById: vi.fn(),
   updateTransactionPaidById: vi.fn(),
+  updateTransactionPositions: vi.fn(),
 }))
 
 vi.mock('$lib/server/persistence/database', () => ({
@@ -36,10 +39,13 @@ vi.mock('../persistence/budget-repository', () => ({
   insertBudgetCategories: vi.fn(),
   insertTransactionAtEnd: mocks.insertTransactionAtEnd,
   insertTransactions: vi.fn(),
+  listTransactionIds: mocks.listTransactionIds,
   listBudgetsByUser: mocks.listBudgetsByUser,
+  lockBudgetTransactions: mocks.lockBudgetTransactions,
   updateBudgetCategorySortOrders: vi.fn(),
   updateTransactionById: mocks.updateTransactionById,
   updateTransactionPaidById: mocks.updateTransactionPaidById,
+  updateTransactionPositions: mocks.updateTransactionPositions,
 }))
 
 import {
@@ -47,9 +53,120 @@ import {
   deleteTransaction,
   getBudgetDetail,
   listBudgets,
+  positionTransaction,
   updateTransaction,
   updateTransactionPaid,
 } from './service'
+
+describe('positionTransaction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.transaction.mockImplementation(
+      (callback: (transaction: object) => unknown) => callback({}),
+    )
+  })
+
+  it('locks the budget and moves a transaction between normalized categories', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue({
+      id: 'transaction-2',
+      budgetCategoryId: 'source',
+      sortOrder: 4,
+    })
+    mocks.findOwnedBudgetCategory.mockResolvedValue({ id: 'target' })
+    mocks.listTransactionIds
+      .mockResolvedValueOnce([{ id: 'transaction-1' }, { id: 'transaction-2' }])
+      .mockResolvedValueOnce([{ id: 'transaction-3' }])
+
+    await expect(
+      positionTransaction({
+        budgetId: 'budget-1',
+        userId: 'user-1',
+        transactionId: 'transaction-2',
+        targetBudgetCategoryId: 'target',
+        targetIndex: 0,
+      }),
+    ).resolves.toEqual({})
+
+    expect(mocks.lockBudgetTransactions).toHaveBeenCalledWith({}, 'budget-1')
+    expect(mocks.updateTransactionPositions).toHaveBeenCalledWith(
+      {},
+      'transaction-2',
+      'target',
+      ['transaction-1'],
+      ['transaction-2', 'transaction-3'],
+    )
+  })
+
+  it('normalizes a same-category reorder', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue({
+      id: 'transaction-3',
+      budgetCategoryId: 'source',
+      sortOrder: 8,
+    })
+    mocks.findOwnedBudgetCategory.mockResolvedValue({ id: 'source' })
+    mocks.listTransactionIds.mockResolvedValue([
+      { id: 'transaction-1' },
+      { id: 'transaction-2' },
+      { id: 'transaction-3' },
+    ])
+
+    await positionTransaction({
+      budgetId: 'budget-1',
+      userId: 'user-1',
+      transactionId: 'transaction-3',
+      targetBudgetCategoryId: 'source',
+      targetIndex: 1,
+    })
+
+    expect(mocks.updateTransactionPositions).toHaveBeenCalledWith(
+      {},
+      'transaction-3',
+      'source',
+      ['transaction-1', 'transaction-3', 'transaction-2'],
+      ['transaction-1', 'transaction-3', 'transaction-2'],
+    )
+    expect(mocks.listTransactionIds).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects missing or out-of-budget records with one error', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue(undefined)
+
+    await expect(
+      positionTransaction({
+        budgetId: 'budget-1',
+        userId: 'user-1',
+        transactionId: 'missing',
+        targetBudgetCategoryId: 'target',
+        targetIndex: 0,
+      }),
+    ).resolves.toEqual({ error: 'not_found' })
+    expect(mocks.findOwnedBudgetCategory).not.toHaveBeenCalled()
+    expect(mocks.updateTransactionPositions).not.toHaveBeenCalled()
+  })
+
+  it('rejects an out-of-range position', async () => {
+    mocks.findOwnedTransaction.mockResolvedValue({
+      id: 'transaction-1',
+      budgetCategoryId: 'source',
+      sortOrder: 0,
+    })
+    mocks.findOwnedBudgetCategory.mockResolvedValue({ id: 'target' })
+    mocks.listTransactionIds
+      .mockResolvedValueOnce([{ id: 'transaction-1' }])
+      .mockResolvedValueOnce([])
+
+    await expect(
+      positionTransaction({
+        budgetId: 'budget-1',
+        userId: 'user-1',
+        transactionId: 'transaction-1',
+        targetBudgetCategoryId: 'target',
+        targetIndex: 1,
+      }),
+    ).resolves.toEqual({ error: 'invalid_position' })
+    expect(mocks.updateTransactionPositions).not.toHaveBeenCalled()
+  })
+})
 
 describe('deleteTransaction', () => {
   beforeEach(() => {

@@ -13,10 +13,17 @@
   import {
     DragDropProvider,
     DragOverlay,
-    KeyboardSensor,
     PointerSensor,
+    type DragDropEvents,
   } from '@dnd-kit-svelte/svelte'
   import { move } from '@dnd-kit/helpers'
+  import {
+    Accessibility,
+    AutoScroller,
+    Cursor,
+    Feedback,
+    PreventSelection,
+  } from '@dnd-kit/dom'
   import type {
     AvailableCategory,
     BudgetCategory,
@@ -35,6 +42,18 @@
   import EditTransactionDialog from './edit-transaction-dialog.svelte'
   import { createPaidToggleQueue } from '../paid-toggle-queue'
   import { getTransactionDeleteFocusId } from './transaction-delete'
+  import TransactionRow from './transaction-row.svelte'
+  import {
+    CATEGORY_DRAG_TYPE,
+    getTransaction,
+    TRANSACTION_DRAG_TYPE,
+  } from '../transaction-position'
+  import { TransactionKeyboardSensor } from '../transaction-keyboard-sensor'
+  import { createTransactionDrag } from '../transaction-drag.svelte'
+
+  type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
+  type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
+  type DragEndEvent = Parameters<DragDropEvents['dragend']>[0]
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -69,8 +88,68 @@
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
   let lastPersistedIds = $derived(budgetCategories.map((bc) => bc.id))
   let paidBusyTransactionIds = $state<readonly string[]>([])
+  let categoryDragStartItems = $state<readonly BudgetCategory[]>([])
 
-  const sensors = [PointerSensor, KeyboardSensor]
+  const transactionDrag = createTransactionDrag({
+    getBudgetId: () => ensureDefined(page.params.id),
+    getItems: () => items,
+    setItems: (nextItems) => (items = nextItems),
+  })
+
+  const sensors = [PointerSensor, TransactionKeyboardSensor]
+  const plugins = [
+    Accessibility.configure({
+      screenReaderInstructions: {
+        draggable: m.budget_detail_drag_instructions(),
+      },
+      announcements: {
+        dragstart: (event: DragStartEvent) => {
+          const source = event.operation.source
+          if (!source || source.type !== CATEGORY_DRAG_TYPE) return undefined
+
+          const category = items.find(({ id }) => id === source.id)
+          if (!category) return undefined
+          return m.budget_detail_category_drag_pickup({
+            name: category.category.name,
+          })
+        },
+        dragover: (event: DragOverEvent) => {
+          const source = event.operation.source
+          if (!source || source.type !== CATEGORY_DRAG_TYPE) return undefined
+
+          const position = items.findIndex(({ id }) => id === source.id)
+          const category = items.at(position)
+          if (!category || position === -1) return undefined
+          return m.budget_detail_category_drag_move({
+            name: category.category.name,
+            position: position + 1,
+            count: items.length,
+          })
+        },
+        dragend: (event: DragEndEvent) => {
+          const source = event.operation.source
+          if (!source || source.type !== CATEGORY_DRAG_TYPE) return undefined
+
+          const position = items.findIndex(({ id }) => id === source.id)
+          const category = items.at(position)
+          if (!category || position === -1) return undefined
+          return event.canceled
+            ? m.budget_detail_category_drag_cancel({
+                name: category.category.name,
+              })
+            : m.budget_detail_category_drag_drop({
+                name: category.category.name,
+                position: position + 1,
+                count: items.length,
+              })
+        },
+      },
+    }),
+    AutoScroller,
+    Cursor,
+    Feedback,
+    PreventSelection,
+  ]
 
   // svelte-ignore state_referenced_locally
   // The query parameter only seeds the dialog; later selection is local UI state.
@@ -200,8 +279,34 @@
     trigger?.focus()
   }
 
-  async function handleDragEnd(event: { canceled: boolean }) {
-    if (event.canceled) return
+  function handleDragStart(event: DragStartEvent) {
+    const source = event.operation.source
+    if (!source) return
+
+    if (source.type === TRANSACTION_DRAG_TYPE) {
+      transactionDrag.handleDragStart(event)
+      return
+    }
+    if (source.type === CATEGORY_DRAG_TYPE) categoryDragStartItems = items
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const source = event.operation.source
+    if (!source) return
+
+    if (source.type === CATEGORY_DRAG_TYPE) {
+      items = move(items, event)
+      return
+    }
+
+    transactionDrag.handleDragOver(event)
+  }
+
+  async function handleCategoryDragEnd(event: DragEndEvent) {
+    if (event.canceled || !event.operation.target) {
+      items = [...categoryDragStartItems]
+      return
+    }
 
     const currentIds = items.map((item) => item.id)
 
@@ -232,17 +337,32 @@
     }
   }
 
+  async function handleDragEnd(event: DragEndEvent) {
+    const sourceType = event.operation.source?.type
+
+    if (sourceType === TRANSACTION_DRAG_TYPE) {
+      await transactionDrag.handleDragEnd(event)
+    } else if (sourceType === CATEGORY_DRAG_TYPE) {
+      await handleCategoryDragEnd(event)
+    }
+  }
+
   function findItemBySourceId(sourceId: string | number) {
     return items.find((bc) => bc.id === sourceId)
   }
 </script>
 
-<div class="max-w-full snap-x snap-mandatory overflow-x-auto pb-4 sm:snap-none">
+<div
+  class="max-w-full overflow-x-auto pb-4 {transactionDrag.activeId === undefined
+    ? 'snap-x snap-mandatory sm:snap-none'
+    : 'snap-none'}"
+  aria-busy={transactionDrag.busy}
+>
   <DragDropProvider
     {sensors}
-    onDragOver={(event) => {
-      items = move(items, event)
-    }}
+    {plugins}
+    onDragStart={handleDragStart}
+    onDragOver={handleDragOver}
     onDragEnd={handleDragEnd}
   >
     <div class="flex gap-4">
@@ -256,6 +376,9 @@
             paidToggleQueue.toggle(transaction.id, transaction.isPaid)}
           {paidBusyTransactionIds}
           onDeleteTransaction={openDeleteDialog}
+          transactionDragBusy={transactionDrag.busy}
+          transactionTargetCategoryId={transactionDrag.targetCategoryId}
+          onTransactionDragKeyDown={transactionDrag.handleDragKeyDown}
         />
       {/each}
       {#if availableCategories.length > 0}
@@ -270,13 +393,20 @@
     <DragOverlay>
       {#snippet children(source)}
         {@const item = findItemBySourceId(source.id)}
-        {#if item}
+        {@const transaction = getTransaction(items, source.id)}
+        {#if source.type === CATEGORY_DRAG_TYPE && item}
           <CategoryColumn budgetCategory={item} index={0} isOverlay />
+        {:else if source.type === TRANSACTION_DRAG_TYPE && transaction}
+          <TransactionRow {transaction} isOverlay />
         {/if}
       {/snippet}
     </DragOverlay>
   </DragDropProvider>
 </div>
+
+<p class="sr-only" aria-live="polite" aria-atomic="true">
+  {transactionDrag.announcement}
+</p>
 
 <CreateTransactionDialog
   bind:open={transactionDialogOpen}

@@ -23,14 +23,15 @@
   },
   "dependencies": {
     "@dnd-kit-svelte/svelte": "^0.1.6",
+    "@dnd-kit/dom": "~0.2.4",
     "@dnd-kit/helpers": "~0.2.4",
     "@zebabu/emails": "workspace:*",
     "@zebabu/ui": "workspace:*",
     "better-auth": "^1.7.1",
+    "drizzle-orm": "^0.45.1",
     "mode-watcher": "^1.1.0",
     "nanoid": "^6.0.1",
-    "narrowland": "^1.9.0",
-    "drizzle-orm": "^0.45.1"
+    "narrowland": "^1.9.0"
   },
   "devDependencies": {
     "@inlang/paraglide-js": "^2.24.1",

@@ -11,6 +11,7 @@ export {
   duplicateBudget,
   getBudgetDetail,
   listBudgets,
+  positionTransaction,
   reorderBudgetCategories,
   updateTransaction,
   updateTransactionPaid,

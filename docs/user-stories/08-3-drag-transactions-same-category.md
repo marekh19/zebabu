@@ -3,7 +3,7 @@
 **Epic:** Trello-Like UI & Drag-and-Drop
 **Priority:** P0 (MVP Critical)
 **Story Points:** 2
-**Status:** ☐ Not Started
+**Status:** ☒ Done — duplicate of US-4.6
 
 ---
 
@@ -23,7 +23,7 @@ This is a duplicate of US-4.6 (Reorder Transactions). Included here for complete
 
 ## Acceptance Criteria
 
-- [ ] Same as US-4.6
+- [x] Same as US-4.6
 
 ---
 

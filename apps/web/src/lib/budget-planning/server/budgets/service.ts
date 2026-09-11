@@ -32,10 +32,14 @@ import {
   insertTransactionAtEnd,
   insertTransactions,
   listBudgetsByUser,
+  listTransactionIds,
+  lockBudgetTransactions,
   updateBudgetCategorySortOrders,
   updateTransactionById,
   updateTransactionPaidById,
+  updateTransactionPositions,
 } from '../persistence/budget-repository'
+import { positionTransactionIds } from './transaction-rules'
 
 export class DuplicateMonthlyBudgetError extends Error {
   constructor() {
@@ -357,6 +361,70 @@ export async function updateTransactionPaid(
     if (!found) return { error: 'not_found' as const }
 
     await updateTransactionPaidById(tx, transactionId, isPaid)
+
+    return {}
+  })
+}
+
+type PositionTransactionCommand = Readonly<{
+  budgetId: string
+  userId: string
+  transactionId: string
+  targetBudgetCategoryId: string
+  targetIndex: number
+}>
+
+export async function positionTransaction({
+  budgetId,
+  userId,
+  transactionId,
+  targetBudgetCategoryId,
+  targetIndex,
+}: PositionTransactionCommand) {
+  return db.transaction(async (tx) => {
+    await lockBudgetTransactions(tx, budgetId)
+
+    const sourceTransaction = await findOwnedTransaction(
+      tx,
+      transactionId,
+      budgetId,
+      userId,
+    )
+    if (!sourceTransaction) return { error: 'not_found' as const }
+
+    const targetBudgetCategory = await findOwnedBudgetCategory(
+      tx,
+      targetBudgetCategoryId,
+      budgetId,
+      userId,
+    )
+    if (!targetBudgetCategory) return { error: 'not_found' as const }
+
+    const sourceRows = await listTransactionIds(
+      tx,
+      sourceTransaction.budgetCategoryId,
+    )
+    const sameCategory =
+      sourceTransaction.budgetCategoryId === targetBudgetCategoryId
+    const targetRows = sameCategory
+      ? sourceRows
+      : await listTransactionIds(tx, targetBudgetCategoryId)
+    const positions = positionTransactionIds(
+      sourceRows.map(({ id }) => id),
+      targetRows.map(({ id }) => id),
+      transactionId,
+      targetIndex,
+      sameCategory,
+    )
+    if (!positions) return { error: 'invalid_position' as const }
+
+    await updateTransactionPositions(
+      tx,
+      transactionId,
+      targetBudgetCategoryId,
+      positions.sourceIds,
+      positions.targetIds,
+    )
 
     return {}
   })

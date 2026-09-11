@@ -23,8 +23,8 @@
 - [x] [US-4.2 Edit Transaction](04-2-edit-transaction.md)
 - [x] [US-4.3 Delete Transaction](04-3-delete-transaction.md)
 - [x] [US-4.4 Mark Transaction Paid](04-4-mark-transaction-paid.md)
-- [ ] [US-4.5 Move Transaction](04-5-move-transaction.md)
-- [ ] [US-4.6 Reorder Transactions](04-6-reorder-transactions.md)
+- [x] [US-4.5 Move Transaction](04-5-move-transaction.md)
+- [x] [US-4.6 Reorder Transactions](04-6-reorder-transactions.md)
 - [x] [US-5.1 Display Total Income](05-1-display-total-income.md)
 - [x] [US-5.2 Display Total Expenses](05-2-display-total-expenses.md)
 - [x] [US-5.3 Display Budget Balance](05-3-display-budget-balance.md)
@@ -43,8 +43,8 @@
 - [ ] [US-7.2 Import Budget from CSV](07-2-import-budget-csv.md)
 - [x] [US-8.1 Trello Board Layout](08-1-trello-board-layout.md)
 - [x] [US-8.2 Drag Categories](08-2-drag-categories.md)
-- [ ] [US-8.3 Drag Transactions Within Category](08-3-drag-transactions-same-category.md)
-- [ ] [US-8.4 Drag Transactions Between Categories](08-4-drag-transactions-between-categories.md)
+- [x] [US-8.3 Drag Transactions Within Category](08-3-drag-transactions-same-category.md) — closed as duplicate of US-4.6
+- [x] [US-8.4 Drag Transactions Between Categories](08-4-drag-transactions-between-categories.md) — closed as duplicate of US-4.5
 - [x] [US-8.5 Transaction Edit Modal](08-5-transaction-edit-modal.md) — closed as duplicate of US-4.2
 - [ ] [US-8.6 Add Transaction Inline](08-6-add-transaction-inline.md)
 - [ ] [US-8.7 Add Category Button](08-7-add-category-button.md)
