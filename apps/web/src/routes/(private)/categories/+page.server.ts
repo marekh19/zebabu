@@ -1,4 +1,5 @@
 import {
+  createAllocationTargetsSchema,
   createCreateCategorySchema,
   createUpdateCategorySchema,
 } from '$lib/budget-planning'
@@ -8,8 +9,11 @@ import {
   createCategory,
   deleteCategory,
   DuplicateCategoryError,
+  InvalidAllocationTargetsError,
   LastCategoryOfTypeError,
   listCategories,
+  NonZeroAllocationTargetError,
+  saveDefaultAllocationTargets,
   updateCategory,
 } from '$lib/budget-planning/server'
 import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
@@ -22,8 +26,28 @@ export const load: PageServerLoad = async ({ locals }) => {
   const categories = await listCategories(getAuthenticatedUserId(locals))
   const form = await superValidate(zod4(createCreateCategorySchema()))
   const editForm = await superValidate(zod4(createUpdateCategorySchema()))
+  const expenseCategories = categories.filter(({ type }) => type === 'expense')
+  const enabled =
+    expenseCategories.length > 0 &&
+    expenseCategories.every(
+      ({ defaultAllocationTarget }) => defaultAllocationTarget !== null,
+    )
+  const allocationForm = await superValidate(
+    {
+      enabled,
+      targets: expenseCategories.map(({ id, defaultAllocationTarget }) => ({
+        categoryId: id,
+        value: enabled
+          ? Number(defaultAllocationTarget)
+          : expenseCategories.length === 1
+            ? 100
+            : 0,
+      })),
+    },
+    zod4(createAllocationTargetsSchema()),
+  )
 
-  return { categories, form, editForm }
+  return { categories, form, editForm, allocationForm }
 }
 
 export const actions: Actions = {
@@ -100,6 +124,9 @@ export const actions: Actions = {
       if (error instanceof CategoryInUseError) {
         return fail(409, { error: 'in_use' as const })
       }
+      if (error instanceof NonZeroAllocationTargetError) {
+        return fail(409, { error: 'non_zero_target' as const })
+      }
       if (error instanceof CategoryNotFoundError) {
         return fail(404, { error: 'not_found' as const })
       }
@@ -108,5 +135,35 @@ export const actions: Actions = {
     }
 
     return {}
+  },
+
+  saveAllocationTargets: async ({ request, locals }) => {
+    const allocationForm = await superValidate(
+      request,
+      zod4(createAllocationTargetsSchema()),
+    )
+
+    if (!allocationForm.valid) return fail(400, { allocationForm })
+
+    try {
+      await saveDefaultAllocationTargets(
+        getAuthenticatedUserId(locals),
+        allocationForm.data,
+      )
+    } catch (error) {
+      if (error instanceof InvalidAllocationTargetsError) {
+        return fail(400, {
+          allocationForm,
+          allocationError: 'invalid' as const,
+        })
+      }
+      console.error('Default allocation target update failed:', error)
+      return fail(500, {
+        allocationForm,
+        allocationError: 'unexpected' as const,
+      })
+    }
+
+    return { allocationForm }
   },
 }

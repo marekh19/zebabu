@@ -1,3 +1,6 @@
+export { default as AllocationTargetEditor } from './allocation-targets/allocation-target-editor.svelte'
+export { createAllocationTargetsSchema } from './allocation-targets/schema'
+export type { AllocationTargetsInput } from './allocation-targets/schema'
 export { default as BudgetActions } from './budgets/components/budget-actions.svelte'
 export { default as BudgetBoard } from './budgets/components/budget-board.svelte'
 export { default as BudgetList } from './budgets/components/budget-list.svelte'
@@ -15,6 +18,7 @@ export { createCreateCategorySchema } from './categories/schemas/create-category
 export { createUpdateCategorySchema } from './categories/schemas/update-category-schema'
 export {
   addBudgetCategoryErrorMessages,
+  allocationTargetsErrorMessages,
   createBudgetErrorMessages,
   createCategoryErrorMessages,
   createTransactionErrorMessages,

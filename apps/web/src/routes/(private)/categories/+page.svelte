@@ -1,6 +1,8 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
   import {
+    AllocationTargetEditor,
+    allocationTargetsErrorMessages,
     CategoryCard,
     CreateCategoryDialog,
     createCategoryErrorMessages,
@@ -15,10 +17,36 @@
   const error = $derived(
     getActionError(actionData, 'error', createCategoryErrorMessages),
   )
+  const allocationError = $derived(
+    getActionError(
+      actionData,
+      'allocationError',
+      allocationTargetsErrorMessages,
+    ),
+  )
+  const expenseCategories = $derived(
+    data.categories.filter(({ type }) => type === 'expense'),
+  )
 </script>
 
 <div class="flex flex-col items-start gap-6">
-  <h1 class="text-3xl font-bold">{m.categories_title()}</h1>
+  <div class="flex w-full flex-wrap items-center justify-between gap-3">
+    <h1 class="text-3xl font-bold">{m.categories_title()}</h1>
+    <AllocationTargetEditor
+      data={data.allocationForm}
+      categories={expenseCategories}
+      action="?/saveAllocationTargets"
+      error={allocationError}
+      labels={{
+        action: m.allocation_targets_action(),
+        title: m.allocation_targets_defaults_title(),
+        description: m.allocation_targets_defaults_description(),
+        toggle: m.allocation_targets_defaults_toggle(),
+        confirmTitle: m.allocation_targets_defaults_disable_title(),
+        confirmDescription: m.allocation_targets_defaults_disable_description(),
+      }}
+    />
+  </div>
 
   {#if data.categories.length === 0}
     <p class="text-muted-foreground">{m.categories_empty_state()}</p>

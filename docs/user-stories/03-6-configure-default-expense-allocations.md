@@ -4,7 +4,7 @@
 **Priority:** P1
 **Story Points:** 3
 **Triage:** ready-for-agent
-**Status:** ☐ Not Started
+**Status:** ☑ Done
 
 ---
 
@@ -27,20 +27,20 @@ existing Budget.
 
 ## Acceptance Criteria
 
-- [ ] The Categories page has a labeled **Allocation targets** action beside its title.
-- [ ] The editor states that defaults affect future Budgets only.
-- [ ] **Use allocation targets** enables or disables the complete default set.
-- [ ] Only expense Categories appear in the editor; income Categories never have targets.
-- [ ] Each target accepts 0–100 with at most one decimal place.
-- [ ] A running total shows the percentage remaining or over 100%.
-- [ ] Save is available only when enabled targets total exactly 100.0%.
-- [ ] The complete target set is validated and saved atomically.
-- [ ] First-time setup starts at 0%, except a sole expense Category starts at 100%.
-- [ ] Disabling configured targets requires confirmation and clears the complete set.
-- [ ] A new expense Category gets 0% when defaults are enabled and no target otherwise.
-- [ ] A Category with a non-zero default cannot be deleted until its target is reallocated.
-- [ ] Controls, validation, confirmation, and feedback are keyboard and screen-reader accessible.
-- [ ] Visible text is localized in English and Czech.
+- [x] The Categories page has a labeled **Allocation targets** action beside its title.
+- [x] The editor states that defaults affect future Budgets only.
+- [x] **Use allocation targets** enables or disables the complete default set.
+- [x] Only expense Categories appear in the editor; income Categories never have targets.
+- [x] Each target accepts 0–100 with at most one decimal place.
+- [x] A running total shows the percentage remaining or over 100%.
+- [x] Save is available only when enabled targets total exactly 100.0%.
+- [x] The complete target set is validated and saved atomically.
+- [x] First-time setup starts at 0%, except a sole expense Category starts at 100%.
+- [x] Disabling configured targets requires confirmation and clears the complete set.
+- [x] A new expense Category gets 0% when defaults are enabled and no target otherwise.
+- [x] A Category with a non-zero default cannot be deleted until its target is reallocated.
+- [x] Controls, validation, confirmation, and feedback are keyboard and screen-reader accessible.
+- [x] Visible text is localized in English and Czech.
 
 ---
 
@@ -55,9 +55,9 @@ existing Budget.
 
 ## Testing Checklist
 
-- [ ] Schema tests cover range, one-decimal precision, incomplete sets, and totals below, equal to, and above 100%.
-- [ ] Service tests cover ownership, atomic updates, disabling, Category creation at 0%, and non-zero target deletion.
-- [ ] Route tests cover invalid and successful submissions.
+- [x] Schema tests cover range, one-decimal precision, incomplete sets, and totals below, equal to, and above 100%.
+- [x] Service tests cover ownership, atomic updates, disabling, Category creation at 0%, and non-zero target deletion.
+- [x] Route tests cover invalid and successful submissions.
 - [ ] Manual testing covers keyboard use, focus restoration, running-total feedback, and both locales.
 
 ---

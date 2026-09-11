@@ -16,6 +16,7 @@ export async function findCategoriesWithBudgetUsageByUser(userId: string) {
       name: category.name,
       type: category.type,
       color: category.color,
+      defaultAllocationTarget: category.defaultAllocationTarget,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
       budgetUsageCount: count(budgetCategory.id),
@@ -29,6 +30,7 @@ export async function findCategoriesWithBudgetUsageByUser(userId: string) {
       category.name,
       category.type,
       category.color,
+      category.defaultAllocationTarget,
       category.createdAt,
       category.updatedAt,
     )
@@ -131,6 +133,7 @@ export function findCategoriesNotInBudget(userId: string, budgetId: string) {
       name: category.name,
       type: category.type,
       color: category.color,
+      defaultAllocationTarget: category.defaultAllocationTarget,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
     })
@@ -160,4 +163,15 @@ export function updateCategoryTx(
     .set({ name: data.name, color: data.color })
     .where(eq(category.id, categoryId))
     .returning()
+}
+
+export function updateCategoryDefaultAllocationTargetTx(
+  tx: DbTransaction,
+  categoryId: string,
+  defaultAllocationTarget: string | null,
+) {
+  return tx
+    .update(category)
+    .set({ defaultAllocationTarget })
+    .where(eq(category.id, categoryId))
 }

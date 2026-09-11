@@ -33,6 +33,7 @@ export type Category = {
   readonly name: string
   readonly type: CategoryType
   readonly color: CategoryColor
+  readonly defaultAllocationTarget: string | null
 }
 
 export type BudgetCategory = {

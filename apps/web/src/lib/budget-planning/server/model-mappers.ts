@@ -27,6 +27,7 @@ type PersistedCategory = {
   name: string
   type: CategoryType
   color: CategoryColor
+  defaultAllocationTarget: string | null
 }
 
 type PersistedTransaction = {
@@ -89,6 +90,7 @@ export function toBudgetDetail(budget: PersistedBudgetDetail): BudgetDetail {
         name: placement.category.name,
         type: placement.category.type,
         color: placement.category.color,
+        defaultAllocationTarget: placement.category.defaultAllocationTarget,
       },
       transactions: placement.transactions.map((transaction) => ({
         id: transaction.id,
@@ -115,6 +117,7 @@ export function toCategoryListItem(
     name: category.name,
     type: category.type,
     color: category.color,
+    defaultAllocationTarget: category.defaultAllocationTarget,
     budgetUsageCount: category.budgetUsageCount,
   }
 }

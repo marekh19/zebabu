@@ -64,6 +64,13 @@
       "when": 1788354322567,
       "tag": "0008_rich_ultron",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789169364067,
+      "tag": "0009_blushing_jetstream",
+      "breakpoints": true
     }
   ]
 }
