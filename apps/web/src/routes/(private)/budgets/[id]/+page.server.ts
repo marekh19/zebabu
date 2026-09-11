@@ -1,6 +1,7 @@
 import { resolve } from '$app/paths'
 import {
   addBudgetCategorySchema,
+  createAllocationTargetsSchema,
   createCreateTransactionSchema,
   createUpdateTransactionSchema,
   deleteTransactionSchema,
@@ -12,7 +13,10 @@ import {
   deleteBudget,
   deleteTransaction,
   getBudgetDetail,
+  getCompleteDefaultAllocationTargets,
   handleDuplicateBudgetAction,
+  InvalidBudgetAllocationTargetsError,
+  saveBudgetAllocationTargets,
   updateTransaction,
 } from '$lib/budget-planning/server'
 import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
@@ -34,12 +38,47 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     error(ERROR_STATUS[result.error])
   }
 
-  const [addCategoryForm, createTransactionForm, updateTransactionForm] =
-    await Promise.all([
-      superValidate(zod4(addBudgetCategorySchema)),
-      superValidate(zod4(createCreateTransactionSchema())),
-      superValidate(zod4(createUpdateTransactionSchema())),
-    ])
+  const defaultAllocationTargets =
+    await getCompleteDefaultAllocationTargets(userId)
+  const defaultTargetsByCategoryId = new Map(
+    defaultAllocationTargets?.map(({ categoryId, value }) => [
+      categoryId,
+      value,
+    ]),
+  )
+  const expenseCategories = result.budget.budgetCategories.filter(
+    ({ category }) => category.type === 'expense',
+  )
+  const allocationTargetsEnabled =
+    expenseCategories.length > 0 &&
+    expenseCategories.every(({ allocationTarget }) => allocationTarget !== null)
+
+  const [
+    addCategoryForm,
+    createTransactionForm,
+    updateTransactionForm,
+    allocationForm,
+  ] = await Promise.all([
+    superValidate(zod4(addBudgetCategorySchema)),
+    superValidate(zod4(createCreateTransactionSchema())),
+    superValidate(zod4(createUpdateTransactionSchema())),
+    superValidate(
+      {
+        enabled: allocationTargetsEnabled,
+        targets: expenseCategories.map(
+          ({ id, allocationTarget, category }) => ({
+            categoryId: id,
+            value: allocationTargetsEnabled
+              ? Number(allocationTarget)
+              : expenseCategories.length === 1
+                ? 100
+                : (defaultTargetsByCategoryId.get(category.id) ?? 0),
+          }),
+        ),
+      },
+      zod4(createAllocationTargetsSchema()),
+    ),
+  ])
   const requestedTransactionCategoryId = url.searchParams.get(
     'createTransactionCategory',
   )
@@ -50,6 +89,11 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
     addCategoryForm,
     createTransactionForm,
     updateTransactionForm,
+    allocationForm,
+    currentDefaultTargets: expenseCategories.flatMap(({ id, category }) => {
+      const value = defaultTargetsByCategoryId.get(category.id)
+      return value === undefined ? [] : [{ categoryId: id, value }]
+    }),
     createTransactionCategoryId: result.budget.budgetCategories.find(
       ({ id }) => id === requestedTransactionCategoryId,
     )?.id,
@@ -102,6 +146,37 @@ export const actions: Actions = {
       })
 
     return { addCategoryForm: form }
+  },
+
+  saveAllocationTargets: async ({ request, params, locals }) => {
+    const allocationForm = await superValidate(
+      request,
+      zod4(createAllocationTargetsSchema()),
+    )
+    if (!allocationForm.valid) return fail(400, { allocationForm })
+
+    try {
+      const result = await saveBudgetAllocationTargets(
+        params.id,
+        getAuthenticatedUserId(locals),
+        allocationForm.data,
+      )
+      if (result.error) return fail(ERROR_STATUS[result.error])
+    } catch (error) {
+      if (error instanceof InvalidBudgetAllocationTargetsError) {
+        return fail(400, {
+          allocationForm,
+          allocationError: 'invalid' as const,
+        })
+      }
+      console.error('Budget allocation target update failed:', error)
+      return fail(500, {
+        allocationForm,
+        allocationError: 'unexpected' as const,
+      })
+    }
+
+    return { allocationForm }
   },
 
   createTransaction: async ({ request, params, locals }) => {

@@ -1,3 +1,4 @@
+import type { AllocationTargetsInput } from '$lib/budget-planning/allocation-targets/schema'
 import { BudgetType } from '$lib/budget-planning/budgets/types'
 import type {
   AvailableCategory,
@@ -23,6 +24,7 @@ import {
   deleteTransactionById,
   findBudgetById,
   findBudgetOwner,
+  findBudgetWithCategoriesTx,
   findMonthlyBudget,
   findOwnedBudgetCategory,
   findOwnedTransaction,
@@ -34,6 +36,7 @@ import {
   listBudgetsByUser,
   listTransactionIds,
   lockBudgetTransactions,
+  updateBudgetCategoryAllocationTargetTx,
   updateBudgetCategorySortOrders,
   updateTransactionById,
   updateTransactionPaidById,
@@ -55,6 +58,15 @@ export class DuplicateScenarioBudgetError extends Error {
   }
 }
 
+export class InvalidBudgetAllocationTargetsError extends Error {
+  constructor() {
+    super(
+      'Allocation targets must include every expense BudgetCategory and total 100.0%',
+    )
+    this.name = 'InvalidBudgetAllocationTargetsError'
+  }
+}
+
 function checkOwnership(
   found: { userId: string } | null | undefined,
   userId: string,
@@ -68,10 +80,18 @@ async function linkUserCategoriesToBudget(
   tx: DbTransaction,
   userId: string,
   budgetId: string,
+  useDefaultAllocationTargets: boolean,
 ) {
   const categories = await findCategoriesByUserTx(tx, userId)
 
   if (categories.length === 0) return
+
+  const expenseCategories = categories.filter(({ type }) => type === 'expense')
+  const defaultsComplete =
+    expenseCategories.length > 0 &&
+    expenseCategories.every(
+      ({ defaultAllocationTarget }) => defaultAllocationTarget !== null,
+    )
 
   await insertBudgetCategories(
     tx,
@@ -79,13 +99,27 @@ async function linkUserCategoriesToBudget(
       budgetId,
       categoryId: cat.id,
       sortOrder: index,
+      allocationTarget:
+        useDefaultAllocationTargets &&
+        defaultsComplete &&
+        cat.type === 'expense'
+          ? cat.defaultAllocationTarget
+          : null,
     })),
   )
 }
 
 export async function createMonthlyBudget(
   userId: string,
-  { month, year }: { month: number; year: number },
+  {
+    month,
+    year,
+    useDefaultAllocationTargets,
+  }: {
+    month: number
+    year: number
+    useDefaultAllocationTargets: boolean
+  },
 ) {
   return db.transaction(async (tx) => {
     const existing = await findMonthlyBudget(userId, month, year, tx)
@@ -98,14 +132,22 @@ export async function createMonthlyBudget(
       month,
       year,
     })
-    await linkUserCategoriesToBudget(tx, userId, inserted.id)
+    await linkUserCategoriesToBudget(
+      tx,
+      userId,
+      inserted.id,
+      useDefaultAllocationTargets,
+    )
     return { id: inserted.id }
   })
 }
 
 export async function createScenarioBudget(
   userId: string,
-  { name }: { name: string },
+  {
+    name,
+    useDefaultAllocationTargets,
+  }: { name: string; useDefaultAllocationTargets: boolean },
 ) {
   return db.transaction(async (tx) => {
     const existing = await findScenarioBudget(userId, name, tx)
@@ -118,7 +160,12 @@ export async function createScenarioBudget(
       month: null,
       year: null,
     })
-    await linkUserCategoriesToBudget(tx, userId, inserted.id)
+    await linkUserCategoriesToBudget(
+      tx,
+      userId,
+      inserted.id,
+      useDefaultAllocationTargets,
+    )
     return { id: inserted.id }
   })
 }
@@ -210,6 +257,7 @@ export async function duplicateBudget(
           budgetId: inserted.id,
           categoryId: bc.categoryId,
           sortOrder: bc.sortOrder,
+          allocationTarget: bc.allocationTarget,
         })),
       )
 
@@ -249,12 +297,82 @@ export async function addBudgetCategory(
 
   const currentBudget = await findBudgetById(budgetId)
   const sortOrder = currentBudget?.budgetCategories.length ?? 0
+  const expenseCategories =
+    currentBudget?.budgetCategories.filter(
+      ({ category }) => category.type === 'expense',
+    ) ?? []
+  const targetsEnabled =
+    expenseCategories.length > 0 &&
+    expenseCategories.every(({ allocationTarget }) => allocationTarget !== null)
 
   await db.transaction((tx) =>
-    insertBudgetCategories(tx, [{ budgetId, categoryId, sortOrder }]),
+    insertBudgetCategories(tx, [
+      {
+        budgetId,
+        categoryId,
+        sortOrder,
+        allocationTarget:
+          foundCategory.type === 'expense' && targetsEnabled ? '0.0' : null,
+      },
+    ]),
   )
 
   return {}
+}
+
+export async function saveBudgetAllocationTargets(
+  budgetId: string,
+  userId: string,
+  data: AllocationTargetsInput,
+): Promise<{ error?: 'not_found' | 'access_denied' }> {
+  return db.transaction(async (tx) => {
+    const found = await findBudgetWithCategoriesTx(tx, budgetId)
+    const ownershipError = checkOwnership(found, userId)
+    if (ownershipError) return { error: ownershipError }
+
+    const expenseCategories = ensureDefined(found).budgetCategories.filter(
+      ({ category }) => category.type === 'expense',
+    )
+    if (!data.enabled) {
+      await Promise.all(
+        expenseCategories.map(({ id }) =>
+          updateBudgetCategoryAllocationTargetTx(tx, id, null),
+        ),
+      )
+      return {}
+    }
+
+    const ownedIds = new Set(expenseCategories.map(({ id }) => id))
+    const submittedIds = new Set(
+      data.targets.map(({ categoryId }) => categoryId),
+    )
+    const valuesValid = data.targets.every(
+      ({ value }) => value >= 0 && value <= 100 && Number.isInteger(value * 10),
+    )
+    const totalTenths = data.targets.reduce(
+      (total, target) => total + Math.round(target.value * 10),
+      0,
+    )
+    const isComplete =
+      submittedIds.size === ownedIds.size &&
+      data.targets.length === ownedIds.size &&
+      data.targets.every(({ categoryId }) => ownedIds.has(categoryId))
+
+    if (!valuesValid || !isComplete || totalTenths !== 1000) {
+      throw new InvalidBudgetAllocationTargetsError()
+    }
+
+    await Promise.all(
+      data.targets.map(({ categoryId, value }) =>
+        updateBudgetCategoryAllocationTargetTx(
+          tx,
+          categoryId,
+          value.toFixed(1),
+        ),
+      ),
+    )
+    return {}
+  })
 }
 
 type GetBudgetDetailResult =

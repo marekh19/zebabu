@@ -101,6 +101,10 @@ export function createBudgetPlanningSchema(user: UserTable) {
         .notNull()
         .references(() => category.id, { onDelete: 'restrict' }),
       sortOrder: integer('sort_order').notNull().default(0),
+      allocationTarget: numeric('allocation_target', {
+        precision: 4,
+        scale: 1,
+      }),
       createdAt: timestamp('created_at').defaultNow().notNull(),
     },
     (table) => [

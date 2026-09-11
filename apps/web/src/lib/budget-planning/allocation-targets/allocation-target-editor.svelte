@@ -15,6 +15,7 @@
   import { createAllocationTargetsSchema } from './schema'
   import type { AllocationTargetsError } from '../errors'
   import { allocationTargetsErrorMessages } from '../errors'
+  import { fillMatchingAllocationTargets } from './values'
 
   type AllocationTargetsSchema = ReturnType<
     typeof createAllocationTargetsSchema
@@ -35,9 +36,13 @@
     labels: AllocationTargetEditorLabels
     action: string
     error?: AllocationTargetsError
+    fill?: {
+      label: string
+      targets: readonly { categoryId: string; value: number }[]
+    }
   }
 
-  let { data, categories, labels, action, error }: Props = $props()
+  let { data, categories, labels, action, error, fill }: Props = $props()
   let open = $state(false)
   let confirmOpen = $state(false)
 
@@ -100,6 +105,14 @@
       value: 0,
     }))
     confirmOpen = false
+  }
+
+  function fillTargets() {
+    if (!fill) return
+    $formData.targets = fillMatchingAllocationTargets(
+      $formData.targets,
+      fill.targets,
+    )
   }
 </script>
 
@@ -183,6 +196,16 @@
       >
         {totalMessage}
       </p>
+      {#if fill}
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!$formData.enabled}
+          onclick={fillTargets}
+        >
+          {fill.label}
+        </Button>
+      {/if}
       {#if $errors.targets?._errors}
         {#each $errors.targets._errors as message (message)}
           <p class="text-destructive text-sm" role="alert">{message}</p>

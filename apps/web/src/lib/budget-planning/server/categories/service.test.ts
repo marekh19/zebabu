@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   countCategoriesByTypeTx: vi.fn(),
   deleteCategoryTx: vi.fn(),
   findBudgetCategoryByCategoryIdTx: vi.fn(),
+  findCategoriesByUser: vi.fn(),
   findCategoriesByUserTx: vi.fn(),
   findCategoriesWithBudgetUsageByUser: vi.fn(),
   findCategoryByIdTx: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock('../persistence/category-repository', () => mocks)
 import {
   createCategory,
   deleteCategory,
+  getCompleteDefaultAllocationTargets,
   InvalidAllocationTargetsError,
   NonZeroAllocationTargetError,
   saveDefaultAllocationTargets,
@@ -128,5 +130,16 @@ describe('category allocation target service', () => {
       NonZeroAllocationTargetError,
     )
     expect(mocks.deleteCategoryTx).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [[expense('rent', '100.0')], [{ categoryId: 'rent', value: 100 }]],
+    [[expense('rent', null)], null],
+  ])('returns only a complete default set', async (categories, expected) => {
+    mocks.findCategoriesByUser.mockResolvedValue(categories)
+
+    await expect(
+      getCompleteDefaultAllocationTargets('user-1'),
+    ).resolves.toEqual(expected)
   })
 })

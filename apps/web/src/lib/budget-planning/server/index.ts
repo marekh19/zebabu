@@ -2,6 +2,7 @@ export { handleDuplicateBudgetAction } from './budgets/action-helpers'
 export {
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
+  InvalidBudgetAllocationTargetsError,
   addBudgetCategory,
   createMonthlyBudget,
   createScenarioBudget,
@@ -13,6 +14,7 @@ export {
   listBudgets,
   positionTransaction,
   reorderBudgetCategories,
+  saveBudgetAllocationTargets,
   updateTransaction,
   updateTransactionPaid,
 } from './budgets/service'
@@ -25,6 +27,7 @@ export {
   NonZeroAllocationTargetError,
   createCategory,
   deleteCategory,
+  getCompleteDefaultAllocationTargets,
   listCategories,
   saveDefaultAllocationTargets,
   seedDefaultCategories,

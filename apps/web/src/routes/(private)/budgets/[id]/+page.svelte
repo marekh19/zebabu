@@ -2,6 +2,8 @@
   import * as m from '$lib/paraglide/messages'
   import { Badge } from '@zebabu/ui/badge'
   import {
+    AllocationTargetEditor,
+    allocationTargetsErrorMessages,
     addBudgetCategoryErrorMessages,
     BudgetActions,
     BudgetBoard,
@@ -19,6 +21,19 @@
   )
 
   const displayName = $derived(getBudgetDisplayName(data.budget))
+
+  const allocationError = $derived(
+    getActionError(
+      actionData,
+      'allocationError',
+      allocationTargetsErrorMessages,
+    ),
+  )
+  const expenseCategories = $derived(
+    data.budget.budgetCategories
+      .filter(({ category }) => category.type === 'expense')
+      .map(({ id, category }) => ({ id, name: category.name })),
+  )
 
   const createTransactionError = $derived(
     getActionError(
@@ -45,9 +60,29 @@
 
 <div class="flex min-w-0 flex-col gap-6">
   <div class="flex items-center justify-between">
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <h1 class="text-2xl font-bold">{displayName}</h1>
       <Badge variant="secondary">{typeBadge}</Badge>
+      <AllocationTargetEditor
+        data={data.allocationForm}
+        categories={expenseCategories}
+        action="?/saveAllocationTargets"
+        error={allocationError}
+        fill={data.currentDefaultTargets.length > 0
+          ? {
+              label: m.allocation_targets_use_current_defaults(),
+              targets: data.currentDefaultTargets,
+            }
+          : undefined}
+        labels={{
+          action: m.allocation_targets_action(),
+          title: m.allocation_targets_budget_title(),
+          description: m.allocation_targets_budget_description(),
+          toggle: m.allocation_targets_budget_toggle(),
+          confirmTitle: m.allocation_targets_budget_disable_title(),
+          confirmDescription: m.allocation_targets_budget_disable_description(),
+        }}
+      />
     </div>
     <BudgetActions triggerSize="lg" budget={data.budget} />
   </div>

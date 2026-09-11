@@ -6,6 +6,7 @@ import {
   deleteBudget,
   DuplicateMonthlyBudgetError,
   DuplicateScenarioBudgetError,
+  getCompleteDefaultAllocationTargets,
   handleDuplicateBudgetAction,
   listBudgets,
 } from '$lib/budget-planning/server'
@@ -17,10 +18,18 @@ import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ locals }) => {
-  const budgets = await listBudgets(getAuthenticatedUserId(locals))
+  const userId = getAuthenticatedUserId(locals)
+  const [budgets, defaultAllocationTargets] = await Promise.all([
+    listBudgets(userId),
+    getCompleteDefaultAllocationTargets(userId),
+  ])
   const form = await superValidate(zod4(createCreateBudgetSchema()))
 
-  return { budgets, form }
+  return {
+    budgets,
+    form,
+    hasDefaultAllocationTargets: defaultAllocationTargets !== null,
+  }
 }
 
 export const actions: Actions = {
@@ -32,7 +41,7 @@ export const actions: Actions = {
     }
 
     const userId = getAuthenticatedUserId(locals)
-    const { type, month, year, name } = form.data
+    const { type, month, year, name, useDefaultAllocationTargets } = form.data
 
     let budgetId: string
     try {
@@ -41,8 +50,12 @@ export const actions: Actions = {
           ? await createMonthlyBudget(userId, {
               month: ensureDefined(month),
               year: ensureDefined(year),
+              useDefaultAllocationTargets,
             })
-          : await createScenarioBudget(userId, { name: ensureDefined(name) })
+          : await createScenarioBudget(userId, {
+              name: ensureDefined(name),
+              useDefaultAllocationTargets,
+            })
       budgetId = budget.id
     } catch (error) {
       if (error instanceof DuplicateMonthlyBudgetError) {

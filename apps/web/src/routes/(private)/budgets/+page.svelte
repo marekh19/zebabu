@@ -32,5 +32,6 @@
   bind:open={dialogOpen}
   data={data.form}
   {error}
+  hasDefaultAllocationTargets={data.hasDefaultAllocationTargets}
   onOpenChange={(v) => (dialogOpen = v)}
 />

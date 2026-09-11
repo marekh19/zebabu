@@ -60,6 +60,20 @@ export function findBudgetById(budgetId: string) {
   })
 }
 
+export function findBudgetWithCategoriesTx(
+  tx: DbTransaction,
+  budgetId: string,
+) {
+  return tx.query.budget.findFirst({
+    where: eq(budget.id, budgetId),
+    with: {
+      budgetCategories: {
+        with: { category: true },
+      },
+    },
+  })
+}
+
 export function findBudgetOwner(budgetId: string) {
   return db.query.budget.findFirst({
     where: eq(budget.id, budgetId),
@@ -113,6 +127,17 @@ export function insertBudgetCategories(
   values: (typeof budgetCategory.$inferInsert)[],
 ) {
   return tx.insert(budgetCategory).values(values).returning()
+}
+
+export function updateBudgetCategoryAllocationTargetTx(
+  tx: DbTransaction,
+  budgetCategoryId: string,
+  allocationTarget: string | null,
+) {
+  return tx
+    .update(budgetCategory)
+    .set({ allocationTarget })
+    .where(eq(budgetCategory.id, budgetCategoryId))
 }
 
 export function insertTransactions(

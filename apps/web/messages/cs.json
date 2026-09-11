@@ -304,5 +304,12 @@
   "allocation_targets_validation_total": "Zapnuté cílové podíly musí mít součet přesně 100,0 %",
   "allocation_targets_error_invalid": "Je nutné zadat všechny cíle výdajů se součtem 100,0 %.",
   "allocation_targets_error_unexpected": "Cílové podíly se nepodařilo uložit. Zkuste to znovu.",
-  "categories_error_non_zero_target": "Před smazáním přerozdělte cílový podíl této kategorie"
+  "categories_error_non_zero_target": "Před smazáním přerozdělte cílový podíl této kategorie",
+  "budgets_create_use_default_allocation_targets": "Použít výchozí cílové podíly",
+  "allocation_targets_budget_title": "Cílové podíly rozpočtu",
+  "allocation_targets_budget_description": "Nastavte cíle pouze pro tento rozpočet. Změny výchozích hodnot ho neovlivní.",
+  "allocation_targets_budget_toggle": "Používat cílové podíly pro tento rozpočet",
+  "allocation_targets_budget_disable_title": "Vypnout cílové podíly rozpočtu?",
+  "allocation_targets_budget_disable_description": "Tímto vymažete všechny cílové podíly z tohoto rozpočtu.",
+  "allocation_targets_use_current_defaults": "Použít aktuální výchozí hodnoty"
 }

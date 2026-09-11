@@ -1,0 +1,1 @@
+ALTER TABLE "budget_category" ADD COLUMN "allocation_target" numeric(4, 1);

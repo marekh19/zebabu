@@ -31,10 +31,17 @@
     open: boolean
     data: SuperValidated<Infer<CreateBudgetSchema>>
     error: CreateBudgetError | undefined
+    hasDefaultAllocationTargets: boolean
     onOpenChange: (open: boolean) => void
   }
 
-  let { open = $bindable(), data, error, onOpenChange }: Props = $props()
+  let {
+    open = $bindable(),
+    data,
+    error,
+    hasDefaultAllocationTargets,
+    onOpenChange,
+  }: Props = $props()
 
   const createBudgetSchema = createCreateBudgetSchema()
 
@@ -76,6 +83,7 @@
       $formData.month = now.getMonth() + 1
       $formData.year = now.getFullYear()
       $formData.name = undefined
+      $formData.useDefaultAllocationTargets = hasDefaultAllocationTargets
     }
   })
 
@@ -201,6 +209,17 @@
           </Form.Control>
           <Form.FieldErrors />
         </Form.Field>
+      {/if}
+
+      {#if hasDefaultAllocationTargets}
+        <label class="flex items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            bind:checked={$formData.useDefaultAllocationTargets}
+            class="border-input text-primary focus-visible:ring-ring/50 size-4 rounded border focus-visible:ring-[3px]"
+          />
+          {m.budgets_create_use_default_allocation_targets()}
+        </label>
       {/if}
 
       <Dialog.Footer>
