@@ -4,7 +4,7 @@
 **Priority:** P1
 **Story Points:** 5
 **Triage:** ready-for-agent
-**Status:** ☑ Done
+**Status:** 🟡 In Progress
 
 ---
 
@@ -40,7 +40,7 @@ owned by BudgetCategories, not live references to Category defaults.
 - [x] Adding an expense Category to a targeted Budget gives it a 0% target.
 - [x] Duplicating a Budget copies the source Budget's targets, including the disabled state.
 - [x] All reads and writes enforce Budget ownership.
-- [x] Controls, validation, confirmation, and feedback are accessible and localized in English and Czech.
+- [ ] Controls, validation, confirmation, and feedback are accessible and localized in English and Czech.
 
 ---
 

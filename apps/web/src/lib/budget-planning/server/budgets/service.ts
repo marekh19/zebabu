@@ -1,3 +1,4 @@
+import { areDefaultAllocationTargetsEnabled } from '$lib/budget-planning/allocation-targets/rules'
 import type { AllocationTargetsInput } from '$lib/budget-planning/allocation-targets/schema'
 import { BudgetType } from '$lib/budget-planning/budgets/types'
 import type {
@@ -7,7 +8,7 @@ import type {
 import {
   findCategoriesByUserTx,
   findCategoriesNotInBudget,
-  findCategoryById,
+  findCategoryByIdTx,
 } from '$lib/budget-planning/server/persistence/category-repository'
 import {
   database as db,
@@ -35,7 +36,7 @@ import {
   insertTransactions,
   listBudgetsByUser,
   listTransactionIds,
-  lockBudgetTransactions,
+  lockBudget,
   updateBudgetCategoryAllocationTargetTx,
   updateBudgetCategorySortOrders,
   updateTransactionById,
@@ -87,11 +88,7 @@ async function linkUserCategoriesToBudget(
   if (categories.length === 0) return
 
   const expenseCategories = categories.filter(({ type }) => type === 'expense')
-  const defaultsComplete =
-    expenseCategories.length > 0 &&
-    expenseCategories.every(
-      ({ defaultAllocationTarget }) => defaultAllocationTarget !== null,
-    )
+  const defaultsComplete = areDefaultAllocationTargetsEnabled(expenseCategories)
 
   await insertBudgetCategories(
     tx,
@@ -288,36 +285,38 @@ export async function addBudgetCategory(
   userId: string,
   categoryId: string,
 ): Promise<{ error?: 'not_found' | 'access_denied' | 'category_not_found' }> {
-  const foundBudget = await findBudgetOwner(budgetId)
-  const ownershipError = checkOwnership(foundBudget, userId)
-  if (ownershipError) return { error: ownershipError }
+  return db.transaction(async (tx) => {
+    await lockBudget(tx, budgetId)
 
-  const foundCategory = await findCategoryById(categoryId, userId)
-  if (!foundCategory) return { error: 'category_not_found' }
+    const foundBudget = await findBudgetWithCategoriesTx(tx, budgetId)
+    const ownershipError = checkOwnership(foundBudget, userId)
+    if (ownershipError) return { error: ownershipError }
 
-  const currentBudget = await findBudgetById(budgetId)
-  const sortOrder = currentBudget?.budgetCategories.length ?? 0
-  const expenseCategories =
-    currentBudget?.budgetCategories.filter(
+    const foundCategory = await findCategoryByIdTx(tx, categoryId, userId)
+    if (!foundCategory) return { error: 'category_not_found' as const }
+
+    const budgetCategories = ensureDefined(foundBudget).budgetCategories
+    const expenseCategories = budgetCategories.filter(
       ({ category }) => category.type === 'expense',
-    ) ?? []
-  const targetsEnabled =
-    expenseCategories.length > 0 &&
-    expenseCategories.every(({ allocationTarget }) => allocationTarget !== null)
+    )
+    const targetsEnabled =
+      expenseCategories.length > 0 &&
+      expenseCategories.every(
+        ({ allocationTarget }) => allocationTarget !== null,
+      )
 
-  await db.transaction((tx) =>
-    insertBudgetCategories(tx, [
+    await insertBudgetCategories(tx, [
       {
         budgetId,
         categoryId,
-        sortOrder,
+        sortOrder: budgetCategories.length,
         allocationTarget:
           foundCategory.type === 'expense' && targetsEnabled ? '0.0' : null,
       },
-    ]),
-  )
+    ])
 
-  return {}
+    return {}
+  })
 }
 
 export async function saveBudgetAllocationTargets(
@@ -326,6 +325,7 @@ export async function saveBudgetAllocationTargets(
   data: AllocationTargetsInput,
 ): Promise<{ error?: 'not_found' | 'access_denied' }> {
   return db.transaction(async (tx) => {
+    await lockBudget(tx, budgetId)
     const found = await findBudgetWithCategoriesTx(tx, budgetId)
     const ownershipError = checkOwnership(found, userId)
     if (ownershipError) return { error: ownershipError }
@@ -500,7 +500,7 @@ export async function positionTransaction({
   targetIndex,
 }: PositionTransactionCommand) {
   return db.transaction(async (tx) => {
-    await lockBudgetTransactions(tx, budgetId)
+    await lockBudget(tx, budgetId)
 
     const sourceTransaction = await findOwnedTransaction(
       tx,

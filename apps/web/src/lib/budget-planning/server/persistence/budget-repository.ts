@@ -249,7 +249,7 @@ export async function insertTransactionAtEnd(
     .returning()
 }
 
-export function lockBudgetTransactions(tx: DbTransaction, budgetId: string) {
+export function lockBudget(tx: DbTransaction, budgetId: string) {
   return tx.execute(sql`select pg_advisory_xact_lock(hashtext(${budgetId}))`)
 }
 
