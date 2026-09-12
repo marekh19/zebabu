@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   findCategoryByNameExcluding: vi.fn(),
   insertCategories: vi.fn(),
   insertCategoryTx: vi.fn(),
+  lockUserCategorySetTx: vi.fn(),
   updateCategoryDefaultAllocationTargetTx: vi.fn(),
   updateCategoryTx: vi.fn(),
 }))
@@ -64,6 +65,65 @@ describe('category allocation target service', () => {
         expect.anything(),
         expect.objectContaining({ defaultAllocationTarget: expected }),
       )
+    },
+  )
+
+  it('creates an income category without a default target', async () => {
+    mocks.findCategoriesByUserTx.mockResolvedValue([expense('one', '100.0')])
+
+    await createCategory('user-1', {
+      name: 'Salary',
+      type: 'income',
+      color: 'emerald',
+    })
+
+    expect(mocks.insertCategoryTx).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ defaultAllocationTarget: null }),
+    )
+  })
+
+  it.each([
+    [
+      'create',
+      () =>
+        createCategory('user-1', {
+          name: 'Rent',
+          type: 'expense',
+          color: 'rose',
+        }),
+      mocks.findCategoryByName,
+    ],
+    [
+      'save',
+      () =>
+        saveDefaultAllocationTargets('user-1', {
+          enabled: false,
+          targets: [],
+        }),
+      mocks.findCategoriesByUserTx,
+    ],
+    [
+      'delete',
+      () => deleteCategory('rent', 'user-1'),
+      mocks.findCategoryByIdTx,
+    ],
+  ])(
+    'locks the user category set before %s',
+    async (_, operation, firstRead) => {
+      mocks.findCategoriesByUserTx.mockResolvedValue([])
+      mocks.findCategoryByIdTx.mockResolvedValue(expense('rent', '0.0'))
+      mocks.countCategoriesByTypeTx.mockResolvedValue(2)
+
+      await operation()
+
+      expect(mocks.lockUserCategorySetTx).toHaveBeenCalledWith(
+        { id: 'transaction' },
+        'user-1',
+      )
+      expect(
+        mocks.lockUserCategorySetTx.mock.invocationCallOrder[0],
+      ).toBeLessThan(firstRead.mock.invocationCallOrder[0] ?? 0)
     },
   )
 

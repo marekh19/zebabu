@@ -1,4 +1,5 @@
 import {
+  areDefaultAllocationTargetsEnabled,
   createAllocationTargetsSchema,
   createCreateCategorySchema,
   createUpdateCategorySchema,
@@ -27,11 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   const form = await superValidate(zod4(createCreateCategorySchema()))
   const editForm = await superValidate(zod4(createUpdateCategorySchema()))
   const expenseCategories = categories.filter(({ type }) => type === 'expense')
-  const enabled =
-    expenseCategories.length > 0 &&
-    expenseCategories.every(
-      ({ defaultAllocationTarget }) => defaultAllocationTarget !== null,
-    )
+  const enabled = areDefaultAllocationTargetsEnabled(expenseCategories)
   const allocationForm = await superValidate(
     {
       enabled,

@@ -1,5 +1,6 @@
 import * as m from '$lib/paraglide/messages'
 import { z } from 'zod'
+import { totalAllocationTargetTenths } from './rules'
 
 const targetSchema = z.object({
   categoryId: z.string().min(1),
@@ -21,11 +22,7 @@ export function createAllocationTargetsSchema() {
     .superRefine(({ enabled, targets }, context) => {
       if (!enabled) return
 
-      const totalTenths = targets.reduce(
-        (total, target) => total + Math.round(target.value * 10),
-        0,
-      )
-      if (totalTenths === 1000) return
+      if (totalAllocationTargetTenths(targets) === 1000) return
 
       context.addIssue({
         code: 'custom',
