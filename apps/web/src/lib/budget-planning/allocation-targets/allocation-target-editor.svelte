@@ -13,6 +13,7 @@
   } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
   import { createAllocationTargetsSchema } from './schema'
+  import { totalAllocationTargetTenths } from './rules'
   import type { AllocationTargetsError } from '../errors'
   import { allocationTargetsErrorMessages } from '../errors'
 
@@ -60,12 +61,7 @@
   })
   const { form: formData, enhance, submitting, errors } = form
 
-  const totalTenths = $derived(
-    $formData.targets.reduce(
-      (total, target) => total + Math.round(target.value * 10),
-      0,
-    ),
-  )
+  const totalTenths = $derived(totalAllocationTargetTenths($formData.targets))
   const differenceTenths = $derived(1000 - totalTenths)
   const totalValid = $derived(totalTenths === 1000)
   const totalMessage = $derived(

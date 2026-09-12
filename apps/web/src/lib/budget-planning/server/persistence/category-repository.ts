@@ -4,7 +4,7 @@ import {
   type DbTransaction,
 } from '$lib/server/persistence/database'
 import { budgetPlanningSchema } from '$lib/server/persistence/schema'
-import { and, asc, count, eq, isNull, ne } from 'drizzle-orm'
+import { and, asc, count, eq, isNull, ne, sql } from 'drizzle-orm'
 
 const { budgetCategory, category } = budgetPlanningSchema
 
@@ -63,6 +63,12 @@ export function findCategoriesByUserTx(tx: DbTransaction, userId: string) {
     where: eq(category.userId, userId),
     orderBy: asc(category.name),
   })
+}
+
+export function lockUserCategorySetTx(tx: DbTransaction, userId: string) {
+  return tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${'category-set:' + userId}))`,
+  )
 }
 
 export function findCategoriesByUser(userId: string) {

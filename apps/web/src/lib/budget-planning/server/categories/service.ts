@@ -5,6 +5,10 @@ import {
 import * as m from '$lib/paraglide/messages'
 import { database as db } from '$lib/server/persistence/database'
 import { ensureDefined } from 'narrowland'
+import {
+  areDefaultAllocationTargetsEnabled,
+  totalAllocationTargetTenths,
+} from '../../allocation-targets/rules'
 import type { AllocationTargetsInput } from '../../allocation-targets/schema'
 import { toCategoryListItem } from '../model-mappers'
 import {
@@ -18,6 +22,7 @@ import {
   findCategoryByNameExcluding,
   insertCategories,
   insertCategoryTx,
+  lockUserCategorySetTx,
   updateCategoryDefaultAllocationTargetTx,
   updateCategoryTx,
 } from '../persistence/category-repository'
@@ -88,6 +93,7 @@ export async function createCategory(
   data: { name: string; type: 'income' | 'expense'; color: CategoryColor },
 ) {
   return db.transaction(async (tx) => {
+    await lockUserCategorySetTx(tx, userId)
     const existing = await findCategoryByName(tx, userId, data.name)
     if (existing) throw new DuplicateCategoryError()
 
@@ -96,10 +102,7 @@ export async function createCategory(
       ({ type }) => type === CategoryType.Expense,
     )
     const defaultsEnabled =
-      expenseCategories.length > 0 &&
-      expenseCategories.every(
-        ({ defaultAllocationTarget }) => defaultAllocationTarget !== null,
-      )
+      areDefaultAllocationTargetsEnabled(expenseCategories)
     const defaultAllocationTarget =
       data.type === CategoryType.Expense && defaultsEnabled ? '0.0' : null
 
@@ -120,6 +123,7 @@ export function listCategories(userId: string) {
 
 export async function deleteCategory(categoryId: string, userId: string) {
   return db.transaction(async (tx) => {
+    await lockUserCategorySetTx(tx, userId)
     const cat = await findCategoryByIdTx(tx, categoryId, userId)
     if (!cat) throw new CategoryNotFoundError()
 
@@ -142,6 +146,7 @@ export async function saveDefaultAllocationTargets(
   data: AllocationTargetsInput,
 ) {
   return db.transaction(async (tx) => {
+    await lockUserCategorySetTx(tx, userId)
     const expenseCategories = (await findCategoriesByUserTx(tx, userId)).filter(
       ({ type }) => type === CategoryType.Expense,
     )
@@ -159,16 +164,12 @@ export async function saveDefaultAllocationTargets(
     const submittedIds = new Set(
       data.targets.map(({ categoryId }) => categoryId),
     )
-    const totalTenths = data.targets.reduce(
-      (total, target) => total + Math.round(target.value * 10),
-      0,
-    )
     const isComplete =
       submittedIds.size === ownedIds.size &&
       data.targets.length === ownedIds.size &&
       data.targets.every(({ categoryId }) => ownedIds.has(categoryId))
 
-    if (!isComplete || totalTenths !== 1000) {
+    if (!isComplete || totalAllocationTargetTenths(data.targets) !== 1000) {
       throw new InvalidAllocationTargetsError()
     }
 

@@ -1,4 +1,5 @@
 export { default as AllocationTargetEditor } from './allocation-targets/allocation-target-editor.svelte'
+export { areDefaultAllocationTargetsEnabled } from './allocation-targets/rules'
 export { createAllocationTargetsSchema } from './allocation-targets/schema'
 export type { AllocationTargetsInput } from './allocation-targets/schema'
 export { default as BudgetActions } from './budgets/components/budget-actions.svelte'
