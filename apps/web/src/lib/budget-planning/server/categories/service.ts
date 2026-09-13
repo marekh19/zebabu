@@ -15,6 +15,7 @@ import {
   countCategoriesByTypeTx,
   deleteCategoryTx,
   findBudgetCategoryByCategoryIdTx,
+  findCategoriesByUser,
   findCategoriesByUserTx,
   findCategoriesWithBudgetUsageByUser,
   findCategoryByIdTx,
@@ -119,6 +120,25 @@ export function listCategories(userId: string) {
   return findCategoriesWithBudgetUsageByUser(userId).then((categories) =>
     categories.map(toCategoryListItem),
   )
+}
+
+export async function getCompleteDefaultAllocationTargets(userId: string) {
+  const expenseCategories = (await findCategoriesByUser(userId)).filter(
+    ({ type }) => type === CategoryType.Expense,
+  )
+  if (
+    expenseCategories.length === 0 ||
+    expenseCategories.some(
+      ({ defaultAllocationTarget }) => defaultAllocationTarget === null,
+    )
+  ) {
+    return null
+  }
+
+  return expenseCategories.map(({ id, defaultAllocationTarget }) => ({
+    categoryId: id,
+    value: Number(defaultAllocationTarget),
+  }))
 }
 
 export async function deleteCategory(categoryId: string, userId: string) {

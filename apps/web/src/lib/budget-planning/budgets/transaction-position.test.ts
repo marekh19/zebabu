@@ -18,6 +18,7 @@ const category = (
   transactionIds: readonly string[],
 ): BudgetCategory => ({
   id,
+  allocationTarget: null,
   category: {
     id,
     name: id,

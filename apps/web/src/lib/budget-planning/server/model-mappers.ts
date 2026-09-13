@@ -41,6 +41,7 @@ type PersistedTransaction = {
 type PersistedBudgetDetail = PersistedBudget & {
   budgetCategories: {
     id: string
+    allocationTarget: string | null
     category: PersistedCategory
     transactions: PersistedTransaction[]
   }[]
@@ -85,6 +86,7 @@ export function toBudgetDetail(budget: PersistedBudgetDetail): BudgetDetail {
     ...toBudgetReference(budget),
     budgetCategories: budget.budgetCategories.map((placement) => ({
       id: placement.id,
+      allocationTarget: placement.allocationTarget,
       category: {
         id: placement.category.id,
         name: placement.category.name,

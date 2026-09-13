@@ -304,5 +304,12 @@
   "allocation_targets_validation_total": "Enabled targets must total exactly 100.0%",
   "allocation_targets_error_invalid": "The complete expense target set is required and must total 100.0%.",
   "allocation_targets_error_unexpected": "Allocation targets could not be saved. Try again.",
-  "categories_error_non_zero_target": "Reallocate this category's allocation target before deleting it"
+  "categories_error_non_zero_target": "Reallocate this category's allocation target before deleting it",
+  "budgets_create_use_default_allocation_targets": "Use default allocation targets",
+  "allocation_targets_budget_title": "Budget allocation targets",
+  "allocation_targets_budget_description": "Set targets for this budget only. Default changes do not affect it.",
+  "allocation_targets_budget_toggle": "Use allocation targets for this budget",
+  "allocation_targets_budget_disable_title": "Disable budget allocation targets?",
+  "allocation_targets_budget_disable_description": "This clears every allocation target from this budget.",
+  "allocation_targets_use_current_defaults": "Use current defaults"
 }

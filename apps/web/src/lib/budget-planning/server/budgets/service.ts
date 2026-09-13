@@ -1,3 +1,5 @@
+import { areDefaultAllocationTargetsEnabled } from '$lib/budget-planning/allocation-targets/rules'
+import type { AllocationTargetsInput } from '$lib/budget-planning/allocation-targets/schema'
 import { BudgetType } from '$lib/budget-planning/budgets/types'
 import type {
   AvailableCategory,
@@ -6,7 +8,7 @@ import type {
 import {
   findCategoriesByUserTx,
   findCategoriesNotInBudget,
-  findCategoryById,
+  findCategoryByIdTx,
 } from '$lib/budget-planning/server/persistence/category-repository'
 import {
   database as db,
@@ -23,6 +25,7 @@ import {
   deleteTransactionById,
   findBudgetById,
   findBudgetOwner,
+  findBudgetWithCategoriesTx,
   findMonthlyBudget,
   findOwnedBudgetCategory,
   findOwnedTransaction,
@@ -33,7 +36,8 @@ import {
   insertTransactions,
   listBudgetsByUser,
   listTransactionIds,
-  lockBudgetTransactions,
+  lockBudget,
+  updateBudgetCategoryAllocationTargetTx,
   updateBudgetCategorySortOrders,
   updateTransactionById,
   updateTransactionPaidById,
@@ -55,6 +59,15 @@ export class DuplicateScenarioBudgetError extends Error {
   }
 }
 
+export class InvalidBudgetAllocationTargetsError extends Error {
+  constructor() {
+    super(
+      'Allocation targets must include every expense BudgetCategory and total 100.0%',
+    )
+    this.name = 'InvalidBudgetAllocationTargetsError'
+  }
+}
+
 function checkOwnership(
   found: { userId: string } | null | undefined,
   userId: string,
@@ -68,10 +81,14 @@ async function linkUserCategoriesToBudget(
   tx: DbTransaction,
   userId: string,
   budgetId: string,
+  useDefaultAllocationTargets: boolean,
 ) {
   const categories = await findCategoriesByUserTx(tx, userId)
 
   if (categories.length === 0) return
+
+  const expenseCategories = categories.filter(({ type }) => type === 'expense')
+  const defaultsComplete = areDefaultAllocationTargetsEnabled(expenseCategories)
 
   await insertBudgetCategories(
     tx,
@@ -79,13 +96,27 @@ async function linkUserCategoriesToBudget(
       budgetId,
       categoryId: cat.id,
       sortOrder: index,
+      allocationTarget:
+        useDefaultAllocationTargets &&
+        defaultsComplete &&
+        cat.type === 'expense'
+          ? cat.defaultAllocationTarget
+          : null,
     })),
   )
 }
 
 export async function createMonthlyBudget(
   userId: string,
-  { month, year }: { month: number; year: number },
+  {
+    month,
+    year,
+    useDefaultAllocationTargets,
+  }: {
+    month: number
+    year: number
+    useDefaultAllocationTargets: boolean
+  },
 ) {
   return db.transaction(async (tx) => {
     const existing = await findMonthlyBudget(userId, month, year, tx)
@@ -98,14 +129,22 @@ export async function createMonthlyBudget(
       month,
       year,
     })
-    await linkUserCategoriesToBudget(tx, userId, inserted.id)
+    await linkUserCategoriesToBudget(
+      tx,
+      userId,
+      inserted.id,
+      useDefaultAllocationTargets,
+    )
     return { id: inserted.id }
   })
 }
 
 export async function createScenarioBudget(
   userId: string,
-  { name }: { name: string },
+  {
+    name,
+    useDefaultAllocationTargets,
+  }: { name: string; useDefaultAllocationTargets: boolean },
 ) {
   return db.transaction(async (tx) => {
     const existing = await findScenarioBudget(userId, name, tx)
@@ -118,7 +157,12 @@ export async function createScenarioBudget(
       month: null,
       year: null,
     })
-    await linkUserCategoriesToBudget(tx, userId, inserted.id)
+    await linkUserCategoriesToBudget(
+      tx,
+      userId,
+      inserted.id,
+      useDefaultAllocationTargets,
+    )
     return { id: inserted.id }
   })
 }
@@ -210,6 +254,7 @@ export async function duplicateBudget(
           budgetId: inserted.id,
           categoryId: bc.categoryId,
           sortOrder: bc.sortOrder,
+          allocationTarget: bc.allocationTarget,
         })),
       )
 
@@ -240,21 +285,94 @@ export async function addBudgetCategory(
   userId: string,
   categoryId: string,
 ): Promise<{ error?: 'not_found' | 'access_denied' | 'category_not_found' }> {
-  const foundBudget = await findBudgetOwner(budgetId)
-  const ownershipError = checkOwnership(foundBudget, userId)
-  if (ownershipError) return { error: ownershipError }
+  return db.transaction(async (tx) => {
+    await lockBudget(tx, budgetId)
 
-  const foundCategory = await findCategoryById(categoryId, userId)
-  if (!foundCategory) return { error: 'category_not_found' }
+    const foundBudget = await findBudgetWithCategoriesTx(tx, budgetId)
+    const ownershipError = checkOwnership(foundBudget, userId)
+    if (ownershipError) return { error: ownershipError }
 
-  const currentBudget = await findBudgetById(budgetId)
-  const sortOrder = currentBudget?.budgetCategories.length ?? 0
+    const foundCategory = await findCategoryByIdTx(tx, categoryId, userId)
+    if (!foundCategory) return { error: 'category_not_found' as const }
 
-  await db.transaction((tx) =>
-    insertBudgetCategories(tx, [{ budgetId, categoryId, sortOrder }]),
-  )
+    const budgetCategories = ensureDefined(foundBudget).budgetCategories
+    const expenseCategories = budgetCategories.filter(
+      ({ category }) => category.type === 'expense',
+    )
+    const targetsEnabled =
+      expenseCategories.length > 0 &&
+      expenseCategories.every(
+        ({ allocationTarget }) => allocationTarget !== null,
+      )
 
-  return {}
+    await insertBudgetCategories(tx, [
+      {
+        budgetId,
+        categoryId,
+        sortOrder: budgetCategories.length,
+        allocationTarget:
+          foundCategory.type === 'expense' && targetsEnabled ? '0.0' : null,
+      },
+    ])
+
+    return {}
+  })
+}
+
+export async function saveBudgetAllocationTargets(
+  budgetId: string,
+  userId: string,
+  data: AllocationTargetsInput,
+): Promise<{ error?: 'not_found' | 'access_denied' }> {
+  return db.transaction(async (tx) => {
+    await lockBudget(tx, budgetId)
+    const found = await findBudgetWithCategoriesTx(tx, budgetId)
+    const ownershipError = checkOwnership(found, userId)
+    if (ownershipError) return { error: ownershipError }
+
+    const expenseCategories = ensureDefined(found).budgetCategories.filter(
+      ({ category }) => category.type === 'expense',
+    )
+    if (!data.enabled) {
+      await Promise.all(
+        expenseCategories.map(({ id }) =>
+          updateBudgetCategoryAllocationTargetTx(tx, id, null),
+        ),
+      )
+      return {}
+    }
+
+    const ownedIds = new Set(expenseCategories.map(({ id }) => id))
+    const submittedIds = new Set(
+      data.targets.map(({ categoryId }) => categoryId),
+    )
+    const valuesValid = data.targets.every(
+      ({ value }) => value >= 0 && value <= 100 && Number.isInteger(value * 10),
+    )
+    const totalTenths = data.targets.reduce(
+      (total, target) => total + Math.round(target.value * 10),
+      0,
+    )
+    const isComplete =
+      submittedIds.size === ownedIds.size &&
+      data.targets.length === ownedIds.size &&
+      data.targets.every(({ categoryId }) => ownedIds.has(categoryId))
+
+    if (!valuesValid || !isComplete || totalTenths !== 1000) {
+      throw new InvalidBudgetAllocationTargetsError()
+    }
+
+    await Promise.all(
+      data.targets.map(({ categoryId, value }) =>
+        updateBudgetCategoryAllocationTargetTx(
+          tx,
+          categoryId,
+          value.toFixed(1),
+        ),
+      ),
+    )
+    return {}
+  })
 }
 
 type GetBudgetDetailResult =
@@ -382,7 +500,7 @@ export async function positionTransaction({
   targetIndex,
 }: PositionTransactionCommand) {
   return db.transaction(async (tx) => {
-    await lockBudgetTransactions(tx, budgetId)
+    await lockBudget(tx, budgetId)
 
     const sourceTransaction = await findOwnedTransaction(
       tx,

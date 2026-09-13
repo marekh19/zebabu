@@ -71,6 +71,13 @@
       "when": 1789169364067,
       "tag": "0009_blushing_jetstream",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789170019104,
+      "tag": "0010_tricky_inertia",
+      "breakpoints": true
     }
   ]
 }

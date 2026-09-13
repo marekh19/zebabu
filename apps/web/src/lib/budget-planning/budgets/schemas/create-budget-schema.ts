@@ -5,6 +5,7 @@ export function createCreateBudgetSchema() {
   return z
     .object({
       type: z.enum(['monthly', 'scenario']),
+      useDefaultAllocationTargets: z.boolean().default(false),
       month: z.coerce.number().min(1).max(12).optional(),
       year: z.coerce.number().min(2000).max(2100).optional(),
       name: z

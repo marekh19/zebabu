@@ -3,17 +3,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   deleteTransactionById: vi.fn(),
   findBudgetById: vi.fn(),
+  findBudgetOwner: vi.fn(),
+  findBudgetWithCategoriesTx: vi.fn(),
+  findCategoriesByUserTx: vi.fn(),
   findCategoriesNotInBudget: vi.fn(),
+  findCategoryByIdTx: vi.fn(),
+  findMonthlyBudget: vi.fn(),
   findOwnedBudgetCategory: vi.fn(),
   findOwnedTransaction: vi.fn(),
+  findScenarioBudget: vi.fn(),
+  insertBudget: vi.fn(),
+  insertBudgetCategories: vi.fn(),
+  insertTransactions: vi.fn(),
   insertTransactionAtEnd: vi.fn(),
   listTransactionIds: vi.fn(),
   listBudgetsByUser: vi.fn(),
-  lockBudgetTransactions: vi.fn(),
+  lockBudget: vi.fn(),
   transaction: vi.fn(),
   updateTransactionById: vi.fn(),
   updateTransactionPaidById: vi.fn(),
   updateTransactionPositions: vi.fn(),
+  updateBudgetCategoryAllocationTargetTx: vi.fn(),
 }))
 
 vi.mock('$lib/server/persistence/database', () => ({
@@ -22,41 +32,56 @@ vi.mock('$lib/server/persistence/database', () => ({
 
 vi.mock('$lib/budget-planning/server/persistence/category-repository', () => ({
   findCategoriesNotInBudget: mocks.findCategoriesNotInBudget,
-  findCategoriesByUserTx: vi.fn(),
-  findCategoryById: vi.fn(),
+  findCategoriesByUserTx: mocks.findCategoriesByUserTx,
+  findCategoryByIdTx: mocks.findCategoryByIdTx,
 }))
 
 vi.mock('../persistence/budget-repository', () => ({
   deleteTransactionById: mocks.deleteTransactionById,
   deleteBudgetById: vi.fn(),
   findBudgetById: mocks.findBudgetById,
-  findBudgetOwner: vi.fn(),
-  findMonthlyBudget: vi.fn(),
+  findBudgetOwner: mocks.findBudgetOwner,
+  findBudgetWithCategoriesTx: mocks.findBudgetWithCategoriesTx,
+  findMonthlyBudget: mocks.findMonthlyBudget,
   findOwnedBudgetCategory: mocks.findOwnedBudgetCategory,
   findOwnedTransaction: mocks.findOwnedTransaction,
-  findScenarioBudget: vi.fn(),
-  insertBudget: vi.fn(),
-  insertBudgetCategories: vi.fn(),
+  findScenarioBudget: mocks.findScenarioBudget,
+  insertBudget: mocks.insertBudget,
+  insertBudgetCategories: mocks.insertBudgetCategories,
   insertTransactionAtEnd: mocks.insertTransactionAtEnd,
-  insertTransactions: vi.fn(),
+  insertTransactions: mocks.insertTransactions,
   listTransactionIds: mocks.listTransactionIds,
   listBudgetsByUser: mocks.listBudgetsByUser,
-  lockBudgetTransactions: mocks.lockBudgetTransactions,
+  lockBudget: mocks.lockBudget,
   updateBudgetCategorySortOrders: vi.fn(),
+  updateBudgetCategoryAllocationTargetTx:
+    mocks.updateBudgetCategoryAllocationTargetTx,
   updateTransactionById: mocks.updateTransactionById,
   updateTransactionPaidById: mocks.updateTransactionPaidById,
   updateTransactionPositions: mocks.updateTransactionPositions,
 }))
 
 import {
+  addBudgetCategory,
+  createMonthlyBudget,
+  createScenarioBudget,
   createTransaction,
   deleteTransaction,
+  duplicateBudget,
   getBudgetDetail,
+  InvalidBudgetAllocationTargetsError,
   listBudgets,
   positionTransaction,
+  saveBudgetAllocationTargets,
   updateTransaction,
   updateTransactionPaid,
 } from './service'
+
+const persistedCategory = (
+  id: string,
+  type: 'income' | 'expense',
+  defaultAllocationTarget: string | null,
+) => ({ id, type, defaultAllocationTarget })
 
 describe('positionTransaction', () => {
   beforeEach(() => {
@@ -87,7 +112,7 @@ describe('positionTransaction', () => {
       }),
     ).resolves.toEqual({})
 
-    expect(mocks.lockBudgetTransactions).toHaveBeenCalledWith({}, 'budget-1')
+    expect(mocks.lockBudget).toHaveBeenCalledWith({}, 'budget-1')
     expect(mocks.updateTransactionPositions).toHaveBeenCalledWith(
       {},
       'transaction-2',
@@ -297,6 +322,259 @@ describe('updateTransactionPaid', () => {
       'transaction-1',
       false,
     )
+  })
+})
+
+describe('Budget allocation target lifecycle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.transaction.mockImplementation(
+      (callback: (transaction: object) => unknown) =>
+        callback({ id: 'transaction' }),
+    )
+    mocks.findMonthlyBudget.mockResolvedValue(undefined)
+    mocks.findScenarioBudget.mockResolvedValue(undefined)
+    mocks.insertBudget.mockResolvedValue([{ id: 'new-budget' }])
+    mocks.insertBudgetCategories.mockResolvedValue([])
+  })
+
+  it('copies complete defaults when creating a monthly Budget', async () => {
+    mocks.findCategoriesByUserTx.mockResolvedValue([
+      persistedCategory('income', 'income', null),
+      persistedCategory('rent', 'expense', '60.0'),
+      persistedCategory('food', 'expense', '40.0'),
+    ])
+
+    await createMonthlyBudget('user-1', {
+      month: 9,
+      year: 2026,
+      useDefaultAllocationTargets: true,
+    })
+
+    expect(mocks.insertBudgetCategories).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      [
+        {
+          budgetId: 'new-budget',
+          categoryId: 'income',
+          sortOrder: 0,
+          allocationTarget: null,
+        },
+        {
+          budgetId: 'new-budget',
+          categoryId: 'rent',
+          sortOrder: 1,
+          allocationTarget: '60.0',
+        },
+        {
+          budgetId: 'new-budget',
+          categoryId: 'food',
+          sortOrder: 2,
+          allocationTarget: '40.0',
+        },
+      ],
+    )
+  })
+
+  it.each([
+    [false, ['60.0', '40.0']],
+    [true, [null, null]],
+  ])(
+    'creates a scenario Budget without targets when defaults are declined or incomplete',
+    async (useDefaultAllocationTargets, defaults) => {
+      mocks.findCategoriesByUserTx.mockResolvedValue([
+        persistedCategory('rent', 'expense', defaults[0]),
+        persistedCategory('food', 'expense', defaults[1]),
+      ])
+
+      await createScenarioBudget('user-1', {
+        name: 'Move',
+        useDefaultAllocationTargets,
+      })
+
+      expect(mocks.insertBudgetCategories).toHaveBeenCalledWith(
+        { id: 'transaction' },
+        expect.arrayContaining([
+          expect.objectContaining({ allocationTarget: null }),
+          expect.objectContaining({ allocationTarget: null }),
+        ]),
+      )
+    },
+  )
+
+  it('duplicates the source targets without reading current defaults', async () => {
+    mocks.findBudgetById.mockResolvedValue({
+      id: 'source',
+      userId: 'user-1',
+      budgetCategories: [
+        {
+          categoryId: 'rent',
+          sortOrder: 0,
+          allocationTarget: '75.0',
+          transactions: [],
+        },
+        {
+          categoryId: 'food',
+          sortOrder: 1,
+          allocationTarget: '25.0',
+          transactions: [],
+        },
+      ],
+    })
+
+    await duplicateBudget('source', 'user-1', {
+      type: 'scenario',
+      name: 'Copy',
+    })
+
+    expect(mocks.findCategoriesByUserTx).not.toHaveBeenCalled()
+    expect(mocks.insertBudgetCategories).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      [
+        {
+          budgetId: 'new-budget',
+          categoryId: 'rent',
+          sortOrder: 0,
+          allocationTarget: '75.0',
+        },
+        {
+          budgetId: 'new-budget',
+          categoryId: 'food',
+          sortOrder: 1,
+          allocationTarget: '25.0',
+        },
+      ],
+    )
+  })
+
+  it.each([
+    ['50.0', '0.0'],
+    [null, null],
+  ])(
+    'adds an expense Category with the Budget target state',
+    async (existingTarget, expected) => {
+      mocks.findBudgetWithCategoriesTx.mockResolvedValue({
+        id: 'budget-1',
+        userId: 'user-1',
+        budgetCategories: [
+          {
+            id: 'rent-placement',
+            allocationTarget: existingTarget,
+            category: { type: 'expense' },
+          },
+        ],
+      })
+      mocks.findCategoryByIdTx.mockResolvedValue({
+        id: 'food',
+        type: 'expense',
+      })
+
+      await addBudgetCategory('budget-1', 'user-1', 'food')
+
+      expect(mocks.lockBudget).toHaveBeenCalledWith(
+        { id: 'transaction' },
+        'budget-1',
+      )
+      expect(mocks.lockBudget.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.findBudgetWithCategoriesTx.mock.invocationCallOrder[0],
+      )
+      expect(mocks.insertBudgetCategories).toHaveBeenCalledWith(
+        { id: 'transaction' },
+        [expect.objectContaining({ allocationTarget: expected })],
+      )
+    },
+  )
+
+  it('validates ownership and the complete BudgetCategory set before writing', async () => {
+    mocks.findBudgetWithCategoriesTx.mockResolvedValue({
+      userId: 'other-user',
+      budgetCategories: [],
+    })
+
+    await expect(
+      saveBudgetAllocationTargets('budget-1', 'user-1', {
+        enabled: true,
+        targets: [{ categoryId: 'other-placement', value: 100 }],
+      }),
+    ).resolves.toEqual({ error: 'access_denied' })
+    expect(mocks.lockBudget).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      'budget-1',
+    )
+    expect(mocks.updateBudgetCategoryAllocationTargetTx).not.toHaveBeenCalled()
+
+    mocks.findBudgetWithCategoriesTx.mockResolvedValue({
+      userId: 'user-1',
+      budgetCategories: [
+        { id: 'rent', category: { type: 'expense' } },
+        { id: 'food', category: { type: 'expense' } },
+      ],
+    })
+    await expect(
+      saveBudgetAllocationTargets('budget-1', 'user-1', {
+        enabled: true,
+        targets: [{ categoryId: 'rent', value: 100 }],
+      }),
+    ).rejects.toBeInstanceOf(InvalidBudgetAllocationTargetsError)
+    expect(mocks.updateBudgetCategoryAllocationTargetTx).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [-0.1, 100.1],
+    [33.33, 66.67],
+    [40, 59.9],
+    [40, 60.1],
+  ])('rejects invalid target values and totals', async (rent, food) => {
+    mocks.findBudgetWithCategoriesTx.mockResolvedValue({
+      userId: 'user-1',
+      budgetCategories: [
+        { id: 'rent', category: { type: 'expense' } },
+        { id: 'food', category: { type: 'expense' } },
+      ],
+    })
+
+    await expect(
+      saveBudgetAllocationTargets('budget-1', 'user-1', {
+        enabled: true,
+        targets: [
+          { categoryId: 'rent', value: rent },
+          { categoryId: 'food', value: food },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(InvalidBudgetAllocationTargetsError)
+    expect(mocks.updateBudgetCategoryAllocationTargetTx).not.toHaveBeenCalled()
+  })
+
+  it('saves and disables the complete Budget target set', async () => {
+    mocks.findBudgetWithCategoriesTx.mockResolvedValue({
+      userId: 'user-1',
+      budgetCategories: [
+        { id: 'rent', category: { type: 'expense' } },
+        { id: 'food', category: { type: 'expense' } },
+      ],
+    })
+
+    await saveBudgetAllocationTargets('budget-1', 'user-1', {
+      enabled: true,
+      targets: [
+        { categoryId: 'rent', value: 60 },
+        { categoryId: 'food', value: 40 },
+      ],
+    })
+    expect(mocks.updateBudgetCategoryAllocationTargetTx.mock.calls).toEqual([
+      [{ id: 'transaction' }, 'rent', '60.0'],
+      [{ id: 'transaction' }, 'food', '40.0'],
+    ])
+
+    mocks.updateBudgetCategoryAllocationTargetTx.mockClear()
+    await saveBudgetAllocationTargets('budget-1', 'user-1', {
+      enabled: false,
+      targets: [],
+    })
+    expect(mocks.updateBudgetCategoryAllocationTargetTx.mock.calls).toEqual([
+      [{ id: 'transaction' }, 'rent', null],
+      [{ id: 'transaction' }, 'food', null],
+    ])
   })
 })
 

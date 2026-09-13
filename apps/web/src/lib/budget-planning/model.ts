@@ -39,6 +39,7 @@ export type Category = {
 export type BudgetCategory = {
   readonly id: string
   readonly category: Category
+  readonly allocationTarget: string | null
   readonly transactions: readonly PlannedTransaction[]
 }
 

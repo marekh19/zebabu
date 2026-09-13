@@ -4,7 +4,7 @@
 **Priority:** P1
 **Story Points:** 5
 **Triage:** ready-for-agent
-**Status:** ☐ Not Started
+**Status:** 🟡 In Progress
 
 ---
 
@@ -26,20 +26,20 @@ owned by BudgetCategories, not live references to Category defaults.
 
 ## Acceptance Criteria
 
-- [ ] Budget detail has a labeled **Allocation targets** action beside the title.
-- [ ] The editor reuses the global editor's layout, validation, and running-total feedback.
-- [ ] **Use allocation targets for this budget** enables or disables the complete target set.
-- [ ] Only expense BudgetCategories participate; targets accept 0–100 with at most one decimal place.
-- [ ] Save is available only when enabled targets total exactly 100.0%.
-- [ ] Enabling targets starts from current global defaults when available, otherwise 0%; a sole expense Category starts at 100%.
-- [ ] **Use current defaults** fills matching Categories without normalizing missing Categories; the user must rebalance before saving.
-- [ ] Disabling targets requires confirmation and clears the complete Budget target set.
-- [ ] Creating a Budget offers **Use default allocation targets**, checked by default, only when complete global defaults exist.
-- [ ] Creating with defaults copies their values into the new Budget; later default changes do not affect it.
-- [ ] Existing Budgets remain without targets until explicitly configured.
-- [ ] Adding an expense Category to a targeted Budget gives it a 0% target.
-- [ ] Duplicating a Budget copies the source Budget's targets, including the disabled state.
-- [ ] All reads and writes enforce Budget ownership.
+- [x] Budget detail has a labeled **Allocation targets** action beside the title.
+- [x] The editor reuses the global editor's layout, validation, and running-total feedback.
+- [x] **Use allocation targets for this budget** enables or disables the complete target set.
+- [x] Only expense BudgetCategories participate; targets accept 0–100 with at most one decimal place.
+- [x] Save is available only when enabled targets total exactly 100.0%.
+- [x] Enabling targets starts from current global defaults when available, otherwise 0%; a sole expense Category starts at 100%.
+- [x] **Use current defaults** fills matching Categories without normalizing missing Categories; the user must rebalance before saving.
+- [x] Disabling targets requires confirmation and clears the complete Budget target set.
+- [x] Creating a Budget offers **Use default allocation targets**, checked by default, only when complete global defaults exist.
+- [x] Creating with defaults copies their values into the new Budget; later default changes do not affect it.
+- [x] Existing Budgets remain without targets until explicitly configured.
+- [x] Adding an expense Category to a targeted Budget gives it a 0% target.
+- [x] Duplicating a Budget copies the source Budget's targets, including the disabled state.
+- [x] All reads and writes enforce Budget ownership.
 - [ ] Controls, validation, confirmation, and feedback are accessible and localized in English and Czech.
 
 ---
@@ -57,10 +57,10 @@ owned by BudgetCategories, not live references to Category defaults.
 
 ## Testing Checklist
 
-- [ ] Schema and service tests cover optional state, range, precision, exact total, ownership, and atomic updates.
-- [ ] Creation tests cover defaults absent, accepted, and declined.
-- [ ] Duplication tests prove source targets are copied after global defaults change.
-- [ ] Existing-Budget and added-Category tests cover unset and 0% behavior.
+- [x] Schema and service tests cover optional state, range, precision, exact total, ownership, and atomic updates.
+- [x] Creation tests cover defaults absent, accepted, and declined.
+- [x] Duplication tests prove source targets are copied after global defaults change.
+- [x] Existing-Budget and added-Category tests cover unset and 0% behavior.
 - [ ] Manual testing covers both Budget types, confirmation, focus restoration, responsive layout, and both locales.
 
 ---
