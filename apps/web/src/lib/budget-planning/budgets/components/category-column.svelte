@@ -12,6 +12,7 @@
   } from '$lib/budget-planning/model'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
+  import { getBudgetCategoryTotal } from '../totals'
   import {
     CATEGORY_DRAG_TYPE,
     getTransactionGroupId,
@@ -79,9 +80,7 @@
     register: () => !isOverlay,
   })
 
-  const total = $derived(
-    budgetCategory.transactions.reduce((sum, t) => sum + Number(t.amount), 0),
-  )
+  const total = $derived(getBudgetCategoryTotal(budgetCategory))
 
   const formattedTotal = $derived(formatDecimal(total))
 

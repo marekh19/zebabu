@@ -1,3 +1,7 @@
+import {
+  getBudgetCategoryTotal,
+  getBudgetCategoryTypeTotal,
+} from '$lib/budget-planning/budgets/totals'
 import type { BudgetCategory, Category } from '$lib/budget-planning/model'
 
 export const ALLOCATION_VARIANCE_TOLERANCE_PERCENTAGE_POINTS = 0.1
@@ -32,25 +36,18 @@ type AllocationComparisonMessages = Readonly<{
   }) => string
 }>
 
-function totalForCategory(category: BudgetCategory): number {
-  return category.transactions.reduce(
-    (total, transaction) => total + Number(transaction.amount),
-    0,
-  )
-}
-
 export function getTotalPlannedIncome(
   categories: readonly BudgetCategory[],
 ): number {
-  return categories
-    .filter(({ category }) => category.type === 'income')
-    .reduce((total, category) => total + totalForCategory(category), 0)
+  return getBudgetCategoryTypeTotal(categories, 'income')
 }
 
 export function getAllocationComparisonState(
   difference: number,
 ): AllocationComparisonState {
-  if (Math.abs(difference) < ALLOCATION_VARIANCE_TOLERANCE_PERCENTAGE_POINTS) {
+  // Ignore binary floating-point noise without rounding meaningful sub-tenth differences.
+  const absoluteDifference = Math.abs(Number(difference.toFixed(10)))
+  if (absoluteDifference < ALLOCATION_VARIANCE_TOLERANCE_PERCENTAGE_POINTS) {
     return AllocationComparisonState.OnTarget
   }
   return difference < 0
@@ -72,7 +69,7 @@ export function createAllocationComparisonRows(
       return []
     }
 
-    const budgetedShare = (totalForCategory(category) / totalIncome) * 100
+    const budgetedShare = (getBudgetCategoryTotal(category) / totalIncome) * 100
     const target = Number(category.allocationTarget)
     const difference = budgetedShare - target
     return [

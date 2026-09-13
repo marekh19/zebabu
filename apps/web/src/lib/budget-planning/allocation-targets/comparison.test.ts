@@ -71,6 +71,21 @@ describe('allocation comparison calculations', () => {
     expect(getAllocationComparisonState(difference)).toBe(state)
   })
 
+  it.each([
+    [999, '100.0', AllocationComparisonState.Under],
+    [1000, '99.9', AllocationComparisonState.Over],
+  ])(
+    'classifies calculated tolerance boundary for %s against %s',
+    (amount, target, state) => {
+      const rows = createAllocationComparisonRows([
+        category('income', 'income', 1000),
+        category('expense', 'expense', amount, target),
+      ])
+
+      expect(rows[0]?.state).toBe(state)
+    },
+  )
+
   it('preserves expense BudgetCategory order and Category presentation data', () => {
     const rows = createAllocationComparisonRows([
       category('income', 'income', 1000),

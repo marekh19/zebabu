@@ -315,6 +315,7 @@
   "allocation_target_label": "Cíl {value} %",
   "allocation_chart_title": "Porovnání cílových podílů",
   "allocation_chart_description": "Rozpočtované podíly v porovnání s cíli tohoto rozpočtu.",
+  "allocation_chart_scale_label": "{value} %",
   "allocation_chart_row_summary": "Rozpočtováno {budgeted} % · cíl {target} % · {status}",
   "allocation_chart_row_description": "{category}: rozpočtováno {budgeted} %, cíl {target} %, {status}",
   "allocation_chart_under": "o {value} p. b. méně",

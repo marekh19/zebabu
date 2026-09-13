@@ -315,6 +315,7 @@
   "allocation_target_label": "Target {value}%",
   "allocation_chart_title": "Allocation comparison",
   "allocation_chart_description": "Budgeted shares compared with this budget's targets.",
+  "allocation_chart_scale_label": "{value}%",
   "allocation_chart_row_summary": "{budgeted}% budgeted · {target}% target · {status}",
   "allocation_chart_row_description": "{category}: {budgeted}% budgeted, {target}% target, {status}",
   "allocation_chart_under": "{value} pp under",

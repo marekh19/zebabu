@@ -42,8 +42,12 @@
         class="text-muted-foreground flex justify-between text-xs tabular-nums"
         aria-hidden="true"
       >
-        <span>0%</span>
-        <span>{formatPercentage(scale)}%</span>
+        <span>
+          {m.allocation_chart_scale_label({ value: formatPercentage(0) })}
+        </span>
+        <span>
+          {m.allocation_chart_scale_label({ value: formatPercentage(scale) })}
+        </span>
       </div>
       <div class="space-y-6" role="list">
         {#each rows as row (row.id)}

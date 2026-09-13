@@ -9,6 +9,7 @@
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert'
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down'
   import type { BudgetCategory } from '$lib/budget-planning/model'
+  import { getBudgetCategoryTypeTotal } from '../totals'
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]
@@ -43,17 +44,11 @@
   const isExpanded = $derived(expanded || !isMobile.current)
 
   const totalIncome = $derived(
-    budgetCategories
-      .filter((bc) => bc.category.type === 'income')
-      .flatMap((bc) => bc.transactions)
-      .reduce((sum, t) => sum + Number(t.amount), 0),
+    getBudgetCategoryTypeTotal(budgetCategories, 'income'),
   )
 
   const totalExpenses = $derived(
-    budgetCategories
-      .filter((bc) => bc.category.type === 'expense')
-      .flatMap((bc) => bc.transactions)
-      .reduce((sum, t) => sum + Number(t.amount), 0),
+    getBudgetCategoryTypeTotal(budgetCategories, 'expense'),
   )
 
   const balance = $derived(totalIncome - totalExpenses)
