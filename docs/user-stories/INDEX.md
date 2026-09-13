@@ -35,7 +35,7 @@
 - [x] [US-5.7 Warn When Not Fully Allocated](05-7-warn-unallocated.md)
 - [x] [US-5.8 Category Totals](05-8-category-totals.md)
 - [ ] [US-5.9 Set Expense Allocation Targets for a Budget](05-9-set-budget-expense-allocations.md)
-- [ ] [US-5.10 Compare Budgeted Shares with Allocation Targets](05-10-compare-budgeted-allocation-targets.md)
+- [x] [US-5.10 Compare Budgeted Shares with Allocation Targets](05-10-compare-budgeted-allocation-targets.md)
 - [x] [US-6.1 Set Primary Currency](06-1-set-primary-currency.md)
 - [ ] [US-6.2 Multi-Currency Transactions](06-2-multi-currency-transactions.md)
 - [ ] [US-6.3 Currency Conversion](06-3-currency-conversion.md)

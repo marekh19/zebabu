@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
-  import { formatDecimal } from '$lib/utils'
+  import { formatDecimal, formatPercentage } from '$lib/utils'
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical'
   import { useSortable } from '@dnd-kit-svelte/svelte/sortable'
   import { useDroppable } from '@dnd-kit-svelte/svelte'
@@ -12,6 +12,7 @@
   } from '$lib/budget-planning/model'
   import { colorClasses } from '$lib/budget-planning/categories/colors'
   import { CategoryType } from '$lib/budget-planning/categories/types'
+  import { getBudgetCategoryTotal } from '../totals'
   import {
     CATEGORY_DRAG_TYPE,
     getTransactionGroupId,
@@ -79,9 +80,7 @@
     register: () => !isOverlay,
   })
 
-  const total = $derived(
-    budgetCategory.transactions.reduce((sum, t) => sum + Number(t.amount), 0),
-  )
+  const total = $derived(getBudgetCategoryTotal(budgetCategory))
 
   const formattedTotal = $derived(formatDecimal(total))
 
@@ -124,10 +123,23 @@
       </span>
     </div>
 
-    <div class="flex items-center justify-between border-b px-3 py-2">
-      <span class="text-muted-foreground text-xs font-medium">
-        {m.budget_detail_total()}
-      </span>
+    <div class="flex items-center justify-between gap-3 border-b px-3 py-2">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-muted-foreground text-xs font-medium">
+          {m.budget_detail_total()}
+        </span>
+        {#if budgetCategory.category.type === CategoryType.Expense && budgetCategory.allocationTarget !== null}
+          <span
+            class="text-xs font-medium {colorClasses[
+              budgetCategory.category.color
+            ].badge}"
+          >
+            {m.allocation_target_label({
+              value: formatPercentage(budgetCategory.allocationTarget),
+            })}
+          </span>
+        {/if}
+      </div>
       <span class="text-sm font-bold tabular-nums">{formattedTotal}</span>
     </div>
 

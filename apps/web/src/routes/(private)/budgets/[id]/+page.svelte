@@ -3,6 +3,7 @@
   import { Badge } from '@zebabu/ui/badge'
   import {
     AllocationTargetEditor,
+    AllocationComparisonChart,
     allocationTargetsErrorMessages,
     addBudgetCategoryErrorMessages,
     BudgetActions,
@@ -15,6 +16,7 @@
   } from '$lib/budget-planning'
 
   let { data, form: actionData } = $props()
+  let comparisonCategories = $derived(data.budget.budgetCategories)
 
   const addCategoryError = $derived(
     getActionError(actionData, 'error', addBudgetCategoryErrorMessages),
@@ -102,5 +104,9 @@
     {updateTransactionError}
     initialEditTransactionId={actionData?.updateTransactionForm?.data
       .transactionId}
+    onBudgetCategoriesChange={(categories) =>
+      (comparisonCategories = categories)}
   />
+
+  <AllocationComparisonChart budgetCategories={comparisonCategories} />
 </div>

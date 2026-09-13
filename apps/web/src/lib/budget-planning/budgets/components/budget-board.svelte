@@ -70,6 +70,7 @@
     >
     updateTransactionError: UpdateTransactionError | undefined
     initialEditTransactionId: string | undefined
+    onBudgetCategoriesChange?: (categories: readonly BudgetCategory[]) => void
   }
 
   let {
@@ -83,6 +84,7 @@
     updateTransactionForm,
     updateTransactionError,
     initialEditTransactionId,
+    onBudgetCategoriesChange,
   }: Props = $props()
 
   let items = $derived(budgetCategories.map((bc) => ({ ...bc })))
@@ -90,10 +92,15 @@
   let paidBusyTransactionIds = $state<readonly string[]>([])
   let categoryDragStartItems = $state<readonly BudgetCategory[]>([])
 
+  function setItems(nextItems: BudgetCategory[]) {
+    items = nextItems
+    onBudgetCategoriesChange?.(nextItems)
+  }
+
   const transactionDrag = createTransactionDrag({
     getBudgetId: () => ensureDefined(page.params.id),
     getItems: () => items,
-    setItems: (nextItems) => (items = nextItems),
+    setItems,
   })
 
   const sensors = [PointerSensor, TransactionKeyboardSensor]
@@ -205,14 +212,16 @@
   }
 
   function updatePaidState(transactionId: string, isPaid: boolean) {
-    items = items.map((budgetCategory) => ({
-      ...budgetCategory,
-      transactions: budgetCategory.transactions.map((transaction) =>
-        transaction.id === transactionId
-          ? { ...transaction, isPaid }
-          : transaction,
-      ),
-    }))
+    setItems(
+      items.map((budgetCategory) => ({
+        ...budgetCategory,
+        transactions: budgetCategory.transactions.map((transaction) =>
+          transaction.id === transactionId
+            ? { ...transaction, isPaid }
+            : transaction,
+        ),
+      })),
+    )
 
     if (selectedTransaction?.id === transactionId) {
       selectedTransaction = { ...selectedTransaction, isPaid }
@@ -295,7 +304,7 @@
     if (!source) return
 
     if (source.type === CATEGORY_DRAG_TYPE) {
-      items = move(items, event)
+      setItems(move(items, event))
       return
     }
 
@@ -304,7 +313,7 @@
 
   async function handleCategoryDragEnd(event: DragEndEvent) {
     if (event.canceled || !event.operation.target) {
-      items = [...categoryDragStartItems]
+      setItems([...categoryDragStartItems])
       return
     }
 
@@ -332,7 +341,7 @@
       }
     } catch {
       lastPersistedIds = previousIds
-      items = budgetCategories.map((bc) => ({ ...bc }))
+      setItems(budgetCategories.map((bc) => ({ ...bc })))
       toast.error(m.budget_detail_reorder_error())
     }
   }

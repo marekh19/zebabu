@@ -24,7 +24,6 @@ const category = (
     name: id,
     type: 'expense',
     color: 'slate',
-    defaultAllocationTarget: null,
   },
   transactions: transactionIds.map(transaction),
 })

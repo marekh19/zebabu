@@ -92,7 +92,6 @@ export function toBudgetDetail(budget: PersistedBudgetDetail): BudgetDetail {
         name: placement.category.name,
         type: placement.category.type,
         color: placement.category.color,
-        defaultAllocationTarget: placement.category.defaultAllocationTarget,
       },
       transactions: placement.transactions.map((transaction) => ({
         id: transaction.id,

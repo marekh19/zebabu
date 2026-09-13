@@ -1,12 +1,9 @@
-export type AllocationTargetValue = Readonly<{
-  categoryId: string
-  value: number
-}>
+import type { AllocationTarget } from './rules'
 
 export function fillMatchingAllocationTargets(
-  targets: readonly AllocationTargetValue[],
-  defaults: readonly AllocationTargetValue[],
-): AllocationTargetValue[] {
+  targets: readonly AllocationTarget[],
+  defaults: readonly AllocationTarget[],
+): AllocationTarget[] {
   const values = new Map(
     defaults.map(({ categoryId, value }) => [categoryId, value]),
   )

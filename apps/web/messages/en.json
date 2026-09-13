@@ -311,5 +311,14 @@
   "allocation_targets_budget_toggle": "Use allocation targets for this budget",
   "allocation_targets_budget_disable_title": "Disable budget allocation targets?",
   "allocation_targets_budget_disable_description": "This clears every allocation target from this budget.",
-  "allocation_targets_use_current_defaults": "Use current defaults"
+  "allocation_targets_use_current_defaults": "Use current defaults",
+  "allocation_target_label": "Target {value}%",
+  "allocation_chart_title": "Allocation comparison",
+  "allocation_chart_description": "Budgeted shares compared with this budget's targets.",
+  "allocation_chart_scale_label": "{value}%",
+  "allocation_chart_row_summary": "{budgeted}% budgeted · {target}% target · {status}",
+  "allocation_chart_row_description": "{category}: {budgeted}% budgeted, {target}% target, {status}",
+  "allocation_chart_under": "{value} pp under",
+  "allocation_chart_on_target": "{value} pp on target",
+  "allocation_chart_over": "{value} pp over"
 }

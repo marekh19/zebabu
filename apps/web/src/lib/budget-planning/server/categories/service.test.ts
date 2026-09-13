@@ -166,6 +166,27 @@ describe('category allocation target service', () => {
     expect(mocks.updateCategoryDefaultAllocationTargetTx).not.toHaveBeenCalled()
   })
 
+  it.each([
+    [-0.1, 100.1],
+    [33.33, 66.67],
+  ])('rejects invalid target values before writing', async (rent, food) => {
+    mocks.findCategoriesByUserTx.mockResolvedValue([
+      expense('rent', null),
+      expense('food', null),
+    ])
+
+    await expect(
+      saveDefaultAllocationTargets('user-1', {
+        enabled: true,
+        targets: [
+          { categoryId: 'rent', value: rent },
+          { categoryId: 'food', value: food },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(InvalidAllocationTargetsError)
+    expect(mocks.updateCategoryDefaultAllocationTargetTx).not.toHaveBeenCalled()
+  })
+
   it('clears the complete target set when disabled', async () => {
     mocks.findCategoriesByUserTx.mockResolvedValue([
       expense('rent', '60.0'),

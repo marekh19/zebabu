@@ -7,6 +7,13 @@ export function formatDecimal(value: number | string): string {
   }).format(Number(value))
 }
 
+export function formatPercentage(value: number | string): string {
+  return new Intl.NumberFormat(getFormattingLocale(), {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(Number(value))
+}
+
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat(getFormattingLocale(), {
     dateStyle: 'medium',

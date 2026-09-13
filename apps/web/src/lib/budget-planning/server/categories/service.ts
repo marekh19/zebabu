@@ -1,15 +1,15 @@
 import {
-  type CategoryColor,
   CategoryType,
+  type CategoryColor,
 } from '$lib/budget-planning/categories/types'
 import * as m from '$lib/paraglide/messages'
 import { database as db } from '$lib/server/persistence/database'
 import { ensureDefined } from 'narrowland'
 import {
   areDefaultAllocationTargetsEnabled,
-  totalAllocationTargetTenths,
+  isCompleteAllocationTargetSet,
+  type AllocationTargetsInput,
 } from '../../allocation-targets/rules'
-import type { AllocationTargetsInput } from '../../allocation-targets/schema'
 import { toCategoryListItem } from '../model-mappers'
 import {
   countCategoriesByTypeTx,
@@ -180,16 +180,12 @@ export async function saveDefaultAllocationTargets(
       return
     }
 
-    const ownedIds = new Set(expenseCategories.map(({ id }) => id))
-    const submittedIds = new Set(
-      data.targets.map(({ categoryId }) => categoryId),
-    )
-    const isComplete =
-      submittedIds.size === ownedIds.size &&
-      data.targets.length === ownedIds.size &&
-      data.targets.every(({ categoryId }) => ownedIds.has(categoryId))
-
-    if (!isComplete || totalAllocationTargetTenths(data.targets) !== 1000) {
+    if (
+      !isCompleteAllocationTargetSet(
+        data.targets,
+        expenseCategories.map(({ id }) => id),
+      )
+    ) {
       throw new InvalidAllocationTargetsError()
     }
 

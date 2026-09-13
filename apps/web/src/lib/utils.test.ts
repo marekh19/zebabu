@@ -5,7 +5,12 @@ vi.mock('$lib/paraglide/runtime', () => ({
 }))
 
 import * as runtime from '$lib/paraglide/runtime'
-import { formatDate, formatDecimal, formatMonthAbbrev } from './utils'
+import {
+  formatDate,
+  formatDecimal,
+  formatMonthAbbrev,
+  formatPercentage,
+} from './utils'
 
 const mockGetLocale = vi.mocked(runtime.getLocale)
 
@@ -73,5 +78,15 @@ describe('locale-aware dates', () => {
 
     expect(formatMonthAbbrev(3)).toBe('bře')
     expect(formatDate(date)).toBe('4. 3. 2026')
+  })
+})
+
+describe('formatPercentage', () => {
+  it.each([
+    ['en', '32.0'],
+    ['cs', '32,0'],
+  ] as const)('formats one decimal place for %s', (locale, expected) => {
+    mockGetLocale.mockReturnValue(locale)
+    expect(formatPercentage(32)).toBe(expected)
   })
 })

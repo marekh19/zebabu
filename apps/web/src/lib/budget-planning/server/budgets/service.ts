@@ -1,5 +1,8 @@
-import { areDefaultAllocationTargetsEnabled } from '$lib/budget-planning/allocation-targets/rules'
-import type { AllocationTargetsInput } from '$lib/budget-planning/allocation-targets/schema'
+import {
+  areDefaultAllocationTargetsEnabled,
+  isCompleteAllocationTargetSet,
+  type AllocationTargetsInput,
+} from '$lib/budget-planning/allocation-targets/rules'
 import { BudgetType } from '$lib/budget-planning/budgets/types'
 import type {
   AvailableCategory,
@@ -342,23 +345,12 @@ export async function saveBudgetAllocationTargets(
       return {}
     }
 
-    const ownedIds = new Set(expenseCategories.map(({ id }) => id))
-    const submittedIds = new Set(
-      data.targets.map(({ categoryId }) => categoryId),
-    )
-    const valuesValid = data.targets.every(
-      ({ value }) => value >= 0 && value <= 100 && Number.isInteger(value * 10),
-    )
-    const totalTenths = data.targets.reduce(
-      (total, target) => total + Math.round(target.value * 10),
-      0,
-    )
-    const isComplete =
-      submittedIds.size === ownedIds.size &&
-      data.targets.length === ownedIds.size &&
-      data.targets.every(({ categoryId }) => ownedIds.has(categoryId))
-
-    if (!valuesValid || !isComplete || totalTenths !== 1000) {
+    if (
+      !isCompleteAllocationTargetSet(
+        data.targets,
+        expenseCategories.map(({ id }) => id),
+      )
+    ) {
       throw new InvalidBudgetAllocationTargetsError()
     }
 

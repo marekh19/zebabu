@@ -311,5 +311,14 @@
   "allocation_targets_budget_toggle": "Používat cílové podíly pro tento rozpočet",
   "allocation_targets_budget_disable_title": "Vypnout cílové podíly rozpočtu?",
   "allocation_targets_budget_disable_description": "Tímto vymažete všechny cílové podíly z tohoto rozpočtu.",
-  "allocation_targets_use_current_defaults": "Použít aktuální výchozí hodnoty"
+  "allocation_targets_use_current_defaults": "Použít aktuální výchozí hodnoty",
+  "allocation_target_label": "Cíl {value} %",
+  "allocation_chart_title": "Porovnání cílových podílů",
+  "allocation_chart_description": "Rozpočtované podíly v porovnání s cíli tohoto rozpočtu.",
+  "allocation_chart_scale_label": "{value} %",
+  "allocation_chart_row_summary": "Rozpočtováno {budgeted} % · cíl {target} % · {status}",
+  "allocation_chart_row_description": "{category}: rozpočtováno {budgeted} %, cíl {target} %, {status}",
+  "allocation_chart_under": "o {value} p. b. méně",
+  "allocation_chart_on_target": "odchylka {value} p. b., v cíli",
+  "allocation_chart_over": "o {value} p. b. více"
 }
