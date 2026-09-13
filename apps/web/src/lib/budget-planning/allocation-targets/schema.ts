@@ -1,14 +1,19 @@
 import * as m from '$lib/paraglide/messages'
 import { z } from 'zod'
-import { totalAllocationTargetTenths } from './rules'
+import {
+  hasAllocationTargetPrecision,
+  hasCompleteAllocationTargetTotal,
+  isAllocationTargetInRange,
+} from './rules'
 
 const targetSchema = z.object({
   categoryId: z.string().min(1),
   value: z
     .number({ message: m.allocation_targets_validation_required() })
-    .min(0, { message: m.allocation_targets_validation_range() })
-    .max(100, { message: m.allocation_targets_validation_range() })
-    .multipleOf(0.1, {
+    .refine(isAllocationTargetInRange, {
+      message: m.allocation_targets_validation_range(),
+    })
+    .refine(hasAllocationTargetPrecision, {
       message: m.allocation_targets_validation_precision(),
     }),
 })
@@ -22,7 +27,7 @@ export function createAllocationTargetsSchema() {
     .superRefine(({ enabled, targets }, context) => {
       if (!enabled) return
 
-      if (totalAllocationTargetTenths(targets) === 1000) return
+      if (hasCompleteAllocationTargetTotal(targets)) return
 
       context.addIssue({
         code: 'custom',
@@ -31,7 +36,3 @@ export function createAllocationTargetsSchema() {
       })
     })
 }
-
-export type AllocationTargetsInput = z.infer<
-  ReturnType<typeof createAllocationTargetsSchema>
->

@@ -24,7 +24,6 @@ function category(
       name: id,
       type,
       color: id === 'food' ? 'amber' : 'slate',
-      defaultAllocationTarget: null,
     },
     transactions: [
       {

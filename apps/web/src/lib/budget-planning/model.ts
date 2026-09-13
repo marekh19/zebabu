@@ -33,7 +33,6 @@ export type Category = {
   readonly name: string
   readonly type: CategoryType
   readonly color: CategoryColor
-  readonly defaultAllocationTarget: string | null
 }
 
 export type BudgetCategory = {
@@ -50,5 +49,6 @@ export type BudgetDetail = BudgetReference & {
 export type AvailableCategory = Pick<Category, 'id' | 'name'>
 
 export type CategoryListItem = Category & {
+  readonly defaultAllocationTarget: string | null
   readonly budgetUsageCount: number
 }
