@@ -72,6 +72,10 @@ export function createBudgetPlanningSchema(user: UserTable) {
       name: text('name').notNull(),
       type: categoryTypeEnum('type').notNull(),
       color: categoryColorEnum('color').notNull().default('slate'),
+      defaultAllocationTarget: numeric('default_allocation_target', {
+        precision: 4,
+        scale: 1,
+      }),
       createdAt: timestamp('created_at').defaultNow().notNull(),
       updatedAt: timestamp('updated_at')
         .defaultNow()

@@ -14,4 +14,9 @@ describe('application persistence schema', () => {
     expect(userForeignKey?.reference().foreignColumns).toEqual([user.id])
     expect(userForeignKey?.onDelete).toBe('cascade')
   })
+
+  it('stores nullable Category default allocation targets at one-decimal precision', () => {
+    expect(category.defaultAllocationTarget.notNull).toBe(false)
+    expect(category.defaultAllocationTarget.getSQLType()).toBe('numeric(4, 1)')
+  })
 })

@@ -38,6 +38,8 @@
         return m.categories_error_last_of_type({ type: typeLabel })
       case 'in_use':
         return m.categories_error_in_use()
+      case 'non_zero_target':
+        return m.categories_error_non_zero_target()
       default:
         return m.categories_error_unexpected()
     }

@@ -54,6 +54,13 @@ export const createCategoryErrorMessages = {
 
 export type CreateCategoryError = keyof typeof createCategoryErrorMessages
 
+export const allocationTargetsErrorMessages = {
+  invalid: m.allocation_targets_error_invalid,
+  unexpected: m.allocation_targets_error_unexpected,
+} as const satisfies Record<string, () => string>
+
+export type AllocationTargetsError = keyof typeof allocationTargetsErrorMessages
+
 export const duplicateBudgetErrorMessages = {
   duplicate_monthly: m.budgets_error_duplicate,
   duplicate_scenario: m.budgets_error_duplicate_scenario,

@@ -18,7 +18,13 @@ const category = (
   transactionIds: readonly string[],
 ): BudgetCategory => ({
   id,
-  category: { id, name: id, type: 'expense', color: 'slate' },
+  category: {
+    id,
+    name: id,
+    type: 'expense',
+    color: 'slate',
+    defaultAllocationTarget: null,
+  },
   transactions: transactionIds.map(transaction),
 })
 

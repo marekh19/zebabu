@@ -19,7 +19,7 @@
 - [x] [US-3.3 Delete Category](03-3-delete-category.md)
 - [x] [US-3.4 Reorder Categories](03-4-reorder-categories.md)
 - [x] [US-3.5 Prevent Deleting Last Category](03-5-prevent-delete-last-category.md)
-- [ ] [US-3.6 Configure Default Expense Allocation Targets](03-6-configure-default-expense-allocations.md)
+- [x] [US-3.6 Configure Default Expense Allocation Targets](03-6-configure-default-expense-allocations.md)
 - [x] [US-4.1 Create Transaction](04-1-create-transaction.md)
 - [x] [US-4.2 Edit Transaction](04-2-edit-transaction.md)
 - [x] [US-4.3 Delete Transaction](04-3-delete-transaction.md)

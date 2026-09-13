@@ -1,0 +1,1 @@
+ALTER TABLE "category" ADD COLUMN "default_allocation_target" numeric(4, 1);

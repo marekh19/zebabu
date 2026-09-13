@@ -20,10 +20,13 @@ export {
   CategoryInUseError,
   CategoryNotFoundError,
   DuplicateCategoryError,
+  InvalidAllocationTargetsError,
   LastCategoryOfTypeError,
+  NonZeroAllocationTargetError,
   createCategory,
   deleteCategory,
   listCategories,
+  saveDefaultAllocationTargets,
   seedDefaultCategories,
   updateCategory,
 } from './categories/service'

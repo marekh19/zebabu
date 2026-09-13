@@ -4,7 +4,7 @@ import {
   type DbTransaction,
 } from '$lib/server/persistence/database'
 import { budgetPlanningSchema } from '$lib/server/persistence/schema'
-import { and, asc, count, eq, isNull, ne } from 'drizzle-orm'
+import { and, asc, count, eq, isNull, ne, sql } from 'drizzle-orm'
 
 const { budgetCategory, category } = budgetPlanningSchema
 
@@ -16,6 +16,7 @@ export async function findCategoriesWithBudgetUsageByUser(userId: string) {
       name: category.name,
       type: category.type,
       color: category.color,
+      defaultAllocationTarget: category.defaultAllocationTarget,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
       budgetUsageCount: count(budgetCategory.id),
@@ -29,6 +30,7 @@ export async function findCategoriesWithBudgetUsageByUser(userId: string) {
       category.name,
       category.type,
       category.color,
+      category.defaultAllocationTarget,
       category.createdAt,
       category.updatedAt,
     )
@@ -61,6 +63,12 @@ export function findCategoriesByUserTx(tx: DbTransaction, userId: string) {
     where: eq(category.userId, userId),
     orderBy: asc(category.name),
   })
+}
+
+export function lockUserCategorySetTx(tx: DbTransaction, userId: string) {
+  return tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${'category-set:' + userId}))`,
+  )
 }
 
 export function findCategoriesByUser(userId: string) {
@@ -131,6 +139,7 @@ export function findCategoriesNotInBudget(userId: string, budgetId: string) {
       name: category.name,
       type: category.type,
       color: category.color,
+      defaultAllocationTarget: category.defaultAllocationTarget,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
     })
@@ -160,4 +169,15 @@ export function updateCategoryTx(
     .set({ name: data.name, color: data.color })
     .where(eq(category.id, categoryId))
     .returning()
+}
+
+export function updateCategoryDefaultAllocationTargetTx(
+  tx: DbTransaction,
+  categoryId: string,
+  defaultAllocationTarget: string | null,
+) {
+  return tx
+    .update(category)
+    .set({ defaultAllocationTarget })
+    .where(eq(category.id, categoryId))
 }
