@@ -4,12 +4,9 @@ import {
 } from '$lib/server/persistence/database'
 import { budgetPlanningSchema } from '$lib/server/persistence/schema'
 import { and, asc, desc, eq, inArray, sql, type SQL } from 'drizzle-orm'
-import {
-  isOwnedBudgetCategory,
-  nextTransactionSortOrder,
-} from '../budgets/transaction-rules'
+import { nextTransactionSortOrder } from '../budgets/transaction-rules'
 
-const { budget, budgetCategory, transaction } = budgetPlanningSchema
+const { budget, budgetCategory, category, transaction } = budgetPlanningSchema
 
 export function findMonthlyBudget(
   userId: string,
@@ -43,11 +40,23 @@ export function listBudgetsByUser(userId: string) {
   })
 }
 
-export function findBudgetById(budgetId: string) {
-  return db.query.budget.findFirst({
-    where: eq(budget.id, budgetId),
+export function findBudgetById(
+  budgetId: string,
+  userId: string,
+  tx?: DbTransaction,
+) {
+  const executor = tx ?? db
+  return executor.query.budget.findFirst({
+    where: and(eq(budget.id, budgetId), eq(budget.userId, userId)),
     with: {
       budgetCategories: {
+        where: inArray(
+          budgetCategory.categoryId,
+          executor
+            .select({ id: category.id })
+            .from(category)
+            .where(eq(category.userId, userId)),
+        ),
         orderBy: asc(budgetCategory.sortOrder),
         with: {
           category: true,
@@ -63,20 +72,32 @@ export function findBudgetById(budgetId: string) {
 export function findBudgetWithCategoriesTx(
   tx: DbTransaction,
   budgetId: string,
+  userId: string,
 ) {
   return tx.query.budget.findFirst({
-    where: eq(budget.id, budgetId),
+    where: and(eq(budget.id, budgetId), eq(budget.userId, userId)),
     with: {
       budgetCategories: {
+        where: inArray(
+          budgetCategory.categoryId,
+          tx
+            .select({ id: category.id })
+            .from(category)
+            .where(eq(category.userId, userId)),
+        ),
         with: { category: true },
       },
     },
   })
 }
 
-export function findBudgetOwner(budgetId: string) {
-  return db.query.budget.findFirst({
-    where: eq(budget.id, budgetId),
+export function findOwnedBudget(
+  budgetId: string,
+  userId: string,
+  tx?: DbTransaction,
+) {
+  return (tx ?? db).query.budget.findFirst({
+    where: and(eq(budget.id, budgetId), eq(budget.userId, userId)),
     columns: { id: true, userId: true },
   })
 }
@@ -91,6 +112,7 @@ export function insertBudget(
 export async function updateBudgetCategorySortOrders(
   tx: DbTransaction,
   budgetId: string,
+  userId: string,
   items: { id: string; sortOrder: number }[],
 ) {
   if (items.length === 0) return
@@ -113,13 +135,23 @@ export async function updateBudgetCategorySortOrders(
     .where(
       and(
         eq(budgetCategory.budgetId, budgetId),
+        inArray(
+          budgetCategory.budgetId,
+          tx
+            .select({ id: budget.id })
+            .from(budget)
+            .where(eq(budget.userId, userId)),
+        ),
         inArray(budgetCategory.id, ids),
       ),
     )
 }
 
-export function deleteBudgetById(budgetId: string) {
-  return db.delete(budget).where(eq(budget.id, budgetId))
+export function deleteBudgetById(budgetId: string, userId: string) {
+  return db
+    .delete(budget)
+    .where(and(eq(budget.id, budgetId), eq(budget.userId, userId)))
+    .returning({ id: budget.id })
 }
 
 export function insertBudgetCategories(
@@ -129,15 +161,41 @@ export function insertBudgetCategories(
   return tx.insert(budgetCategory).values(values).returning()
 }
 
-export function updateBudgetCategoryAllocationTargetTx(
+export function updateBudgetCategoryAllocationTargetsTx(
   tx: DbTransaction,
-  budgetCategoryId: string,
-  allocationTarget: string | null,
+  budgetId: string,
+  userId: string,
+  targets: readonly {
+    budgetCategoryId: string
+    allocationTarget: string | null
+  }[],
 ) {
+  if (targets.length === 0) return
+
+  const ids = targets.map(({ budgetCategoryId }) => budgetCategoryId)
+  const cases = targets.map(
+    ({ budgetCategoryId, allocationTarget }) =>
+      sql`when ${budgetCategory.id} = ${budgetCategoryId} then ${allocationTarget}`,
+  )
+
   return tx
     .update(budgetCategory)
-    .set({ allocationTarget })
-    .where(eq(budgetCategory.id, budgetCategoryId))
+    .set({
+      allocationTarget: sql`(case ${sql.join(cases, sql.raw(' '))} end)::numeric(4, 1)`,
+    })
+    .where(
+      and(
+        eq(budgetCategory.budgetId, budgetId),
+        inArray(
+          budgetCategory.budgetId,
+          tx
+            .select({ id: budget.id })
+            .from(budget)
+            .where(eq(budget.userId, userId)),
+        ),
+        inArray(budgetCategory.id, ids),
+      ),
+    )
 }
 
 export function insertTransactions(
@@ -153,15 +211,23 @@ export function findOwnedBudgetCategory(
   budgetId: string,
   userId: string,
 ) {
-  return tx.query.budgetCategory
-    .findFirst({
-      where: and(
-        eq(budgetCategory.id, budgetCategoryId),
-        eq(budgetCategory.budgetId, budgetId),
-      ),
-      with: { budget: true },
+  return tx
+    .select({
+      id: budgetCategory.id,
+      budgetId: budgetCategory.budgetId,
+      categoryId: budgetCategory.categoryId,
     })
-    .then((found) => (isOwnedBudgetCategory(found, userId) ? found : undefined))
+    .from(budgetCategory)
+    .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+    .where(
+      and(
+        eq(budgetCategory.id, budgetCategoryId),
+        eq(budget.id, budgetId),
+        eq(budget.userId, userId),
+      ),
+    )
+    .limit(1)
+    .then(([found]) => found)
 }
 
 export async function findOwnedTransaction(
@@ -197,6 +263,8 @@ export async function findOwnedTransaction(
 export function updateTransactionById(
   tx: DbTransaction,
   transactionId: string,
+  budgetId: string,
+  userId: string,
   values: Pick<
     typeof transaction.$inferInsert,
     'name' | 'amount' | 'isPaid' | 'note'
@@ -205,32 +273,74 @@ export function updateTransactionById(
   return tx
     .update(transaction)
     .set(values)
-    .where(eq(transaction.id, transactionId))
+    .where(
+      and(
+        eq(transaction.id, transactionId),
+        inArray(
+          transaction.budgetCategoryId,
+          tx
+            .select({ id: budgetCategory.id })
+            .from(budgetCategory)
+            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+        ),
+      ),
+    )
     .returning()
 }
 
 export function updateTransactionPaidById(
   tx: DbTransaction,
   transactionId: string,
+  budgetId: string,
+  userId: string,
   isPaid: boolean,
 ) {
   return tx
     .update(transaction)
     .set({ isPaid })
-    .where(eq(transaction.id, transactionId))
+    .where(
+      and(
+        eq(transaction.id, transactionId),
+        inArray(
+          transaction.budgetCategoryId,
+          tx
+            .select({ id: budgetCategory.id })
+            .from(budgetCategory)
+            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+        ),
+      ),
+    )
     .returning()
 }
 
 export function deleteTransactionById(
   tx: DbTransaction,
   transactionId: string,
+  budgetId: string,
+  userId: string,
 ) {
-  return tx.delete(transaction).where(eq(transaction.id, transactionId))
+  return tx.delete(transaction).where(
+    and(
+      eq(transaction.id, transactionId),
+      inArray(
+        transaction.budgetCategoryId,
+        tx
+          .select({ id: budgetCategory.id })
+          .from(budgetCategory)
+          .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+          .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+      ),
+    ),
+  )
 }
 
 export async function insertTransactionAtEnd(
   tx: DbTransaction,
   values: Omit<typeof transaction.$inferInsert, 'sortOrder'>,
+  budgetId: string,
+  userId: string,
 ) {
   await tx.execute(
     sql`select pg_advisory_xact_lock(hashtext(${values.budgetCategoryId}))`,
@@ -239,7 +349,18 @@ export async function insertTransactionAtEnd(
   const [lastTransaction] = await tx
     .select({ sortOrder: transaction.sortOrder })
     .from(transaction)
-    .where(eq(transaction.budgetCategoryId, values.budgetCategoryId))
+    .innerJoin(
+      budgetCategory,
+      eq(transaction.budgetCategoryId, budgetCategory.id),
+    )
+    .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+    .where(
+      and(
+        eq(transaction.budgetCategoryId, values.budgetCategoryId),
+        eq(budget.id, budgetId),
+        eq(budget.userId, userId),
+      ),
+    )
     .orderBy(desc(transaction.sortOrder))
     .limit(1)
 
@@ -249,18 +370,56 @@ export async function insertTransactionAtEnd(
     .returning()
 }
 
-export function lockBudget(tx: DbTransaction, budgetId: string) {
-  return tx.execute(sql`select pg_advisory_xact_lock(hashtext(${budgetId}))`)
+export function lockBudget(
+  tx: DbTransaction,
+  budgetId: string,
+  userId: string,
+) {
+  return tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${'budget:' + userId + ':' + budgetId}))`,
+  )
+}
+
+export function lockUserBudgetSet(tx: DbTransaction, userId: string) {
+  return tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${'budget-set:' + userId}))`,
+  )
+}
+
+export async function listBudgetCategoryIds(
+  tx: DbTransaction,
+  budgetId: string,
+  userId: string,
+) {
+  return tx
+    .select({ id: budgetCategory.id })
+    .from(budgetCategory)
+    .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+    .where(and(eq(budget.id, budgetId), eq(budget.userId, userId)))
+    .orderBy(asc(budgetCategory.sortOrder), asc(budgetCategory.id))
 }
 
 export function listTransactionIds(
   tx: DbTransaction,
   budgetCategoryId: string,
+  budgetId: string,
+  userId: string,
 ) {
   return tx
     .select({ id: transaction.id })
     .from(transaction)
-    .where(eq(transaction.budgetCategoryId, budgetCategoryId))
+    .innerJoin(
+      budgetCategory,
+      eq(transaction.budgetCategoryId, budgetCategory.id),
+    )
+    .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+    .where(
+      and(
+        eq(transaction.budgetCategoryId, budgetCategoryId),
+        eq(budget.id, budgetId),
+        eq(budget.userId, userId),
+      ),
+    )
     .orderBy(asc(transaction.sortOrder), asc(transaction.id))
 }
 
@@ -268,13 +427,27 @@ export async function updateTransactionPositions(
   tx: DbTransaction,
   transactionId: string,
   targetBudgetCategoryId: string,
+  budgetId: string,
+  userId: string,
   sourceIds: readonly string[],
   targetIds: readonly string[],
 ) {
   await tx
     .update(transaction)
     .set({ budgetCategoryId: targetBudgetCategoryId })
-    .where(eq(transaction.id, transactionId))
+    .where(
+      and(
+        eq(transaction.id, transactionId),
+        inArray(
+          transaction.budgetCategoryId,
+          tx
+            .select({ id: budgetCategory.id })
+            .from(budgetCategory)
+            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+        ),
+      ),
+    )
 
   const positions = new Map([
     ...sourceIds.map((id, sortOrder) => [id, sortOrder] as const),
@@ -292,5 +465,17 @@ export async function updateTransactionPositions(
   return tx
     .update(transaction)
     .set({ sortOrder: sql.join(sqlChunks, sql.raw(' ')) })
-    .where(inArray(transaction.id, [...positions.keys()]))
+    .where(
+      and(
+        inArray(transaction.id, [...positions.keys()]),
+        inArray(
+          transaction.budgetCategoryId,
+          tx
+            .select({ id: budgetCategory.id })
+            .from(budgetCategory)
+            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+        ),
+      ),
+    )
 }

@@ -1,7 +1,9 @@
+import {
+  createTransactionRule,
+  MAX_TRANSACTION_AMOUNT,
+} from '$lib/budget-planning/validation'
 import * as m from '$lib/paraglide/messages'
 import { z } from 'zod'
-
-const MAX_AMOUNT = 9_999_999_999.99
 
 export function createTransactionFields() {
   return {
@@ -19,7 +21,7 @@ export function createTransactionFields() {
       .positive({
         message: m.budget_detail_transaction_validation_amount_positive(),
       })
-      .max(MAX_AMOUNT, {
+      .max(MAX_TRANSACTION_AMOUNT, {
         message: m.budget_detail_transaction_validation_amount_max(),
       })
       .multipleOf(0.01, {
@@ -35,8 +37,10 @@ export function createTransactionFields() {
 }
 
 export function createCreateTransactionSchema() {
-  return z.object({
-    budgetCategoryId: z.string().min(1),
-    ...createTransactionFields(),
-  })
+  return z
+    .object({
+      budgetCategoryId: z.string().min(1),
+      ...createTransactionFields(),
+    })
+    .pipe(createTransactionRule)
 }

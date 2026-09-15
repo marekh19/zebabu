@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "$lib/server/persistence/database": [
+        "./src/lib/server/persistence/database.test-runtime.ts"
+      ],
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"]
+    }
+  }
+}

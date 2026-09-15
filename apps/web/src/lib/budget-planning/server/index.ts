@@ -30,6 +30,5 @@ export {
   getCompleteDefaultAllocationTargets,
   listCategories,
   saveDefaultAllocationTargets,
-  seedDefaultCategories,
   updateCategory,
 } from './categories/service'

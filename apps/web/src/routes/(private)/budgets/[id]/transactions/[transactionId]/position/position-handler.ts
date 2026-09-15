@@ -1,4 +1,5 @@
-import { positionTransaction } from '$lib/budget-planning/server'
+import { positionTransaction } from '$lib/budget-planning/server/budgets/service'
+import { OperationErrorCode } from '$lib/operation-result'
 import { json } from '@sveltejs/kit'
 import { z } from 'zod'
 
@@ -24,7 +25,7 @@ export async function patchTransactionPosition({
   const parsed = positionSchema.safeParse(body)
 
   if (!parsed.success) {
-    return json({ error: 'Invalid request body' }, { status: 400 })
+    return json({ code: OperationErrorCode.InvalidInput }, { status: 400 })
   }
 
   const result = await positionTransaction({
@@ -35,12 +36,12 @@ export async function patchTransactionPosition({
     targetIndex: parsed.data.targetIndex,
   })
 
-  if (result.error === 'not_found') {
-    return json({ error: 'Transaction not found' }, { status: 404 })
+  if (result.error === OperationErrorCode.NotFound) {
+    return json({ code: OperationErrorCode.NotFound }, { status: 404 })
   }
 
-  if (result.error === 'invalid_position') {
-    return json({ error: 'Invalid target position' }, { status: 400 })
+  if (result.error === OperationErrorCode.InvalidPosition) {
+    return json({ code: OperationErrorCode.InvalidPosition }, { status: 400 })
   }
 
   return json({ ok: true })

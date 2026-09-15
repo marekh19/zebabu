@@ -1,8 +1,9 @@
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   type AnyPgTable,
   boolean,
+  check,
   index,
   integer,
   numeric,
@@ -57,6 +58,10 @@ export function createBudgetPlanningSchema(user: UserTable) {
         table.year,
       ),
       unique('budget_userId_name_unique').on(table.userId, table.name),
+      check(
+        'budget_shape_check',
+        sql`(${table.type} = 'monthly' and ${table.month} between 1 and 12 and ${table.year} between 2000 and 2100 and ${table.name} is null) or (${table.type} = 'scenario' and length(trim(${table.name})) > 0 and ${table.month} is null and ${table.year} is null)`,
+      ),
     ],
   )
 
@@ -85,6 +90,10 @@ export function createBudgetPlanningSchema(user: UserTable) {
     (table) => [
       index('category_userId_idx').on(table.userId),
       unique('category_userId_name_unique').on(table.userId, table.name),
+      check(
+        'category_default_allocation_target_check',
+        sql`${table.defaultAllocationTarget} is null or ${table.defaultAllocationTarget} between 0.0 and 100.0`,
+      ),
     ],
   )
 
@@ -114,6 +123,11 @@ export function createBudgetPlanningSchema(user: UserTable) {
         table.budgetId,
         table.categoryId,
       ),
+      check('budget_category_sort_order_check', sql`${table.sortOrder} >= 0`),
+      check(
+        'budget_category_allocation_target_check',
+        sql`${table.allocationTarget} is null or ${table.allocationTarget} between 0.0 and 100.0`,
+      ),
     ],
   )
 
@@ -139,6 +153,8 @@ export function createBudgetPlanningSchema(user: UserTable) {
     },
     (table) => [
       index('transaction_budgetCategoryId_idx').on(table.budgetCategoryId),
+      check('transaction_amount_check', sql`${table.amount} > 0`),
+      check('transaction_sort_order_check', sql`${table.sortOrder} >= 0`),
     ],
   )
 

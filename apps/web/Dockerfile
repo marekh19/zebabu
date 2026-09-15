@@ -24,8 +24,9 @@ RUN bun run --filter @zebabu/emails build
 RUN DATABASE_URL=postgres://build:build@localhost/build \
     REDIS_URL=redis://localhost:6379 \
     BETTER_AUTH_SECRET=build-secret \
-    BETTER_AUTH_BASE_URL=http://localhost:3000 \
-    APP_URL=http://localhost:3000 \
+    BETTER_AUTH_URL=http://localhost:3000 \
+    WEB_ORIGIN=http://localhost:3000 \
+    APP_ENV=build \
     bun run --filter @zebabu/web build
 
 # ── Runner: minimal production image ─────────────────────────────────────────
@@ -52,9 +53,8 @@ RUN bun install --production --frozen-lockfile --ignore-scripts
 
 # Compiled SvelteKit server (svelte-adapter-bun output)
 COPY --from=builder /app/apps/web/build   ./apps/web/build
-# SQL migration files read by migrate.mjs at startup
+# SQL migration files used by the one-shot deployment command
 COPY --from=builder /app/apps/web/drizzle ./apps/web/drizzle
-# Migration runner
 COPY --from=builder /app/apps/web/src/migrate.mjs ./apps/web/migrate.mjs
 
 RUN chown -R bunuser:nodejs /app
@@ -65,6 +65,6 @@ WORKDIR /app/apps/web
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -qO /dev/null http://127.0.0.1:3000/ || exit 1
+  CMD wget -qO /dev/null http://127.0.0.1:3000/health/ready || exit 1
 
-CMD ["sh", "-c", "bun migrate.mjs && bun ./build/index.js"]
+CMD ["bun", "./build/index.js"]

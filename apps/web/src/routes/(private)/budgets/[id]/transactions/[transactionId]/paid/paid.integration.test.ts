@@ -1,8 +1,5 @@
-import { getBudgetDetail } from '$lib/budget-planning/server'
-import {
-  testDatabase as database,
-  testConnection,
-} from '$lib/server/persistence/database.test-helper'
+import { getBudgetDetail } from '$lib/budget-planning/server/budgets/service'
+import { testDatabase as database } from '$lib/server/persistence/database.test-helper'
 import {
   budget,
   budgetCategory,
@@ -10,16 +7,10 @@ import {
   transaction,
   user,
 } from '$lib/server/persistence/schema'
+import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { inArray } from 'drizzle-orm'
 import { ensureDefined } from 'narrowland'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchTransactionPaid } from './paid-handler'
-
-vi.mock('$lib/server/persistence/database', async () => {
-  const { testDatabase } =
-    await import('$lib/server/persistence/database.test-helper')
-  return { database: testDatabase }
-})
 
 const testRunId = crypto.randomUUID()
 const testId = (name: string) => `paid-test-${testRunId}-${name}`
@@ -181,7 +172,6 @@ describe('PATCH transaction paid state', () => {
 
   afterAll(async () => {
     await cleanUp()
-    await testConnection.end()
   })
 
   it('persists both paid states without changing other transaction data', async () => {
@@ -244,9 +234,7 @@ describe('PATCH transaction paid state', () => {
     )
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({
-      error: 'Transaction not found',
-    })
+    await expect(response.json()).resolves.toEqual({ code: 'NOT_FOUND' })
     await expect(
       readTransaction(ids.otherBudget, ids.owner, ids.otherBudgetTransaction),
     ).resolves.toMatchObject({ isPaid: false })
@@ -261,9 +249,7 @@ describe('PATCH transaction paid state', () => {
     )
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({
-      error: 'Transaction not found',
-    })
+    await expect(response.json()).resolves.toEqual({ code: 'NOT_FOUND' })
     await expect(
       readTransaction(
         ids.otherUserBudget,
@@ -281,8 +267,6 @@ describe('PATCH transaction paid state', () => {
     )
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({
-      error: 'Transaction not found',
-    })
+    await expect(response.json()).resolves.toEqual({ code: 'NOT_FOUND' })
   })
 })

@@ -10,10 +10,9 @@ const mocks = vi.hoisted(() => ({
   findCategoryByIdTx: vi.fn(),
   findCategoryByName: vi.fn(),
   findCategoryByNameExcluding: vi.fn(),
-  insertCategories: vi.fn(),
   insertCategoryTx: vi.fn(),
   lockUserCategorySetTx: vi.fn(),
-  updateCategoryDefaultAllocationTargetTx: vi.fn(),
+  updateCategoryDefaultAllocationTargetsTx: vi.fn(),
   updateCategoryTx: vi.fn(),
 }))
 
@@ -32,6 +31,7 @@ import {
   InvalidAllocationTargetsError,
   NonZeroAllocationTargetError,
   saveDefaultAllocationTargets,
+  updateCategory,
 } from './service'
 
 const expense = (id: string, defaultAllocationTarget: string | null) => ({
@@ -142,10 +142,14 @@ describe('category allocation target service', () => {
       ],
     })
 
-    expect(mocks.updateCategoryDefaultAllocationTargetTx.mock.calls).toEqual([
-      [{ id: 'transaction' }, 'rent', '60.0'],
-      [{ id: 'transaction' }, 'food', '40.0'],
-    ])
+    expect(mocks.updateCategoryDefaultAllocationTargetsTx).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      'user-1',
+      [
+        { categoryId: 'rent', defaultAllocationTarget: '60.0' },
+        { categoryId: 'food', defaultAllocationTarget: '40.0' },
+      ],
+    )
   })
 
   it('rejects incomplete and unowned target sets before writing', async () => {
@@ -163,7 +167,9 @@ describe('category allocation target service', () => {
         ],
       }),
     ).rejects.toBeInstanceOf(InvalidAllocationTargetsError)
-    expect(mocks.updateCategoryDefaultAllocationTargetTx).not.toHaveBeenCalled()
+    expect(
+      mocks.updateCategoryDefaultAllocationTargetsTx,
+    ).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -184,7 +190,9 @@ describe('category allocation target service', () => {
         ],
       }),
     ).rejects.toBeInstanceOf(InvalidAllocationTargetsError)
-    expect(mocks.updateCategoryDefaultAllocationTargetTx).not.toHaveBeenCalled()
+    expect(
+      mocks.updateCategoryDefaultAllocationTargetsTx,
+    ).not.toHaveBeenCalled()
   })
 
   it('clears the complete target set when disabled', async () => {
@@ -198,10 +206,14 @@ describe('category allocation target service', () => {
       targets: [],
     })
 
-    expect(mocks.updateCategoryDefaultAllocationTargetTx.mock.calls).toEqual([
-      [{ id: 'transaction' }, 'rent', null],
-      [{ id: 'transaction' }, 'food', null],
-    ])
+    expect(mocks.updateCategoryDefaultAllocationTargetsTx).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      'user-1',
+      [
+        { categoryId: 'rent', defaultAllocationTarget: null },
+        { categoryId: 'food', defaultAllocationTarget: null },
+      ],
+    )
   })
 
   it('blocks deletion of a non-zero target before deleting', async () => {
@@ -213,8 +225,25 @@ describe('category allocation target service', () => {
     expect(mocks.deleteCategoryTx).not.toHaveBeenCalled()
   })
 
+  it('constrains category updates to the authenticated user', async () => {
+    mocks.findCategoryByNameExcluding.mockResolvedValue(undefined)
+    mocks.updateCategoryTx.mockResolvedValue([{ id: 'rent' }])
+
+    await updateCategory('rent', 'user-1', {
+      name: 'Housing',
+      color: 'rose',
+    })
+
+    expect(mocks.updateCategoryTx).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      'rent',
+      'user-1',
+      { name: 'Housing', color: 'rose' },
+    )
+  })
+
   it.each([
-    [[expense('rent', '100.0')], [{ categoryId: 'rent', value: 100 }]],
+    [[expense('rent', '100.0')], [{ categoryId: 'rent', value: '100.0' }]],
     [[expense('rent', null)], null],
   ])('returns only a complete default set', async (categories, expected) => {
     mocks.findCategoriesByUser.mockResolvedValue(categories)

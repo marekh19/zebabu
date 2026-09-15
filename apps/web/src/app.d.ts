@@ -1,11 +1,15 @@
+import type { OperationErrorCode } from '$lib/operation-result'
 import type { auth } from '$lib/server/application'
 
 type Session = typeof auth.$Infer.Session
 
 declare global {
   namespace App {
-    // interface Error {}
+    interface Error {
+      code?: OperationErrorCode
+    }
     interface Locals {
+      locale: string
       session: Session['session'] | null
       user: Session['user'] | null
     }

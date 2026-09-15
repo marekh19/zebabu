@@ -1,7 +1,4 @@
-import {
-  testDatabase as database,
-  testConnection,
-} from '$lib/server/persistence/database.test-helper'
+import { testDatabase as database } from '$lib/server/persistence/database.test-helper'
 import {
   budget,
   budgetCategory,
@@ -9,15 +6,9 @@ import {
   transaction,
   user,
 } from '$lib/server/persistence/schema'
+import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { asc, eq, inArray } from 'drizzle-orm'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchTransactionPosition } from './position-handler'
-
-vi.mock('$lib/server/persistence/database', async () => {
-  const { testDatabase } =
-    await import('$lib/server/persistence/database.test-helper')
-  return { database: testDatabase }
-})
 
 const testRunId = crypto.randomUUID()
 const testId = (name: string) => `position-test-${testRunId}-${name}`
@@ -170,8 +161,8 @@ function patch(
   })
 }
 
-function readTransactions() {
-  return database
+async function readTransactions() {
+  return await database
     .select({
       id: transaction.id,
       budgetCategoryId: transaction.budgetCategoryId,
@@ -194,7 +185,6 @@ describe('PATCH transaction position', () => {
 
   afterAll(async () => {
     await cleanUp()
-    await testConnection.end()
   })
 
   it('moves across category types and atomically normalizes both categories', async () => {
@@ -281,9 +271,7 @@ describe('PATCH transaction position', () => {
         userId,
       )
       expect(response.status).toBe(404)
-      await expect(response.json()).resolves.toEqual({
-        error: 'Transaction not found',
-      })
+      await expect(response.json()).resolves.toEqual({ code: 'NOT_FOUND' })
     },
   )
 

@@ -1,3 +1,4 @@
+import { allocationTargetsRule } from '$lib/budget-planning/validation'
 import * as m from '$lib/paraglide/messages'
 import { z } from 'zod'
 import {
@@ -35,4 +36,5 @@ export function createAllocationTargetsSchema() {
         path: ['targets'],
       })
     })
+    .pipe(allocationTargetsRule)
 }

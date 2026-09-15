@@ -87,7 +87,7 @@ describe('creating a transaction', () => {
   })
 
   it('does not expose an unavailable budget category', async () => {
-    mocks.createTransaction.mockResolvedValue({ error: 'not_found' })
+    mocks.createTransaction.mockResolvedValue({ error: 'NOT_FOUND' })
 
     const result = await submit()
 

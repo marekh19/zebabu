@@ -14,27 +14,36 @@ return value
 
 // Sessions + rate limiting. Replaces DB queries with fast in-memory lookups;
 // TTL is handled natively by Redis.
-export const redisSecondaryStorage: SecondaryStorage = {
-  get: async (key) => await redis.get(key),
+export function createRedisSecondaryStorage(prefix: string): SecondaryStorage {
+  const prefixed = (key: string) => `${prefix}:${key}`
 
-  set: async (key, value, ttl) => {
-    if (ttl === undefined) {
-      await redis.set(key, value)
-      return
-    }
-    // SET ... EX rather than SET + EXPIRE: a failure between two commands
-    // would leave a session key that never expires.
-    await redis.set(key, value, 'EX', ttl)
-  },
+  return {
+    get: async (key) => await redis.get(prefixed(key)),
 
-  delete: async (key) => {
-    await redis.del(key)
-  },
+    set: async (key, value, ttl) => {
+      if (ttl === undefined) {
+        await redis.set(prefixed(key), value)
+        return
+      }
+      // SET ... EX rather than SET + EXPIRE: a failure between two commands
+      // would leave a session key that never expires.
+      await redis.set(prefixed(key), value, 'EX', ttl)
+    },
 
-  getAndDelete: async (key) => await redis.getdel(key),
+    delete: async (key) => {
+      await redis.del(prefixed(key))
+    },
 
-  increment: async (key, ttl) => {
-    const value: unknown = await redis.eval(INCREMENT_WITH_TTL, 1, key, ttl)
-    return Number(value)
-  },
+    getAndDelete: async (key) => await redis.getdel(prefixed(key)),
+
+    increment: async (key, ttl) => {
+      const value: unknown = await redis.eval(
+        INCREMENT_WITH_TTL,
+        1,
+        prefixed(key),
+        ttl,
+      )
+      return Number(value)
+    },
+  }
 }

@@ -64,8 +64,8 @@ describe('Budget allocation target route', () => {
       availableCategories: [],
     })
     mocks.getCompleteDefaultAllocationTargets.mockResolvedValue([
-      { categoryId: 'rent', value: 60 },
-      { categoryId: 'food', value: 40 },
+      { categoryId: 'rent', value: '60.0' },
+      { categoryId: 'food', value: '40.0' },
       { categoryId: 'missing-from-budget', value: 0 },
     ])
     if (typeof load !== 'function') throw new Error('load is not defined')
@@ -147,12 +147,12 @@ describe('Budget allocation target route', () => {
 
   it('does not expose an unowned Budget', async () => {
     mocks.saveBudgetAllocationTargets.mockResolvedValue({
-      error: 'access_denied',
+      error: 'NOT_FOUND',
     })
 
     const result = await submit(100)
 
-    expect(result).toMatchObject({ status: 403 })
+    expect(result).toMatchObject({ status: 404 })
   })
 })
 

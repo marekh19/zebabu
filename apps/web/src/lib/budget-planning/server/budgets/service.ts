@@ -12,7 +12,9 @@ import {
   findCategoriesByUserTx,
   findCategoriesNotInBudget,
   findCategoryByIdTx,
+  lockUserCategorySetTx,
 } from '$lib/budget-planning/server/persistence/category-repository'
+import { OperationErrorCode } from '$lib/operation-result'
 import {
   database as db,
   type DbTransaction,
@@ -27,9 +29,9 @@ import {
   deleteBudgetById,
   deleteTransactionById,
   findBudgetById,
-  findBudgetOwner,
   findBudgetWithCategoriesTx,
   findMonthlyBudget,
+  findOwnedBudget,
   findOwnedBudgetCategory,
   findOwnedTransaction,
   findScenarioBudget,
@@ -37,10 +39,12 @@ import {
   insertBudgetCategories,
   insertTransactionAtEnd,
   insertTransactions,
+  listBudgetCategoryIds,
   listBudgetsByUser,
   listTransactionIds,
   lockBudget,
-  updateBudgetCategoryAllocationTargetTx,
+  lockUserBudgetSet,
+  updateBudgetCategoryAllocationTargetsTx,
   updateBudgetCategorySortOrders,
   updateTransactionById,
   updateTransactionPaidById,
@@ -71,13 +75,11 @@ export class InvalidBudgetAllocationTargetsError extends Error {
   }
 }
 
-function checkOwnership(
-  found: { userId: string } | null | undefined,
-  userId: string,
-): 'not_found' | 'access_denied' | null {
-  if (!found) return 'not_found'
-  if (found.userId !== userId) return 'access_denied'
-  return null
+function isUniqueViolation(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  if ('code' in error && error.code === '23505') return true
+  if ('errno' in error && error.errno === '23505') return true
+  return 'cause' in error && isUniqueViolation(error.cause)
 }
 
 async function linkUserCategoriesToBudget(
@@ -86,6 +88,7 @@ async function linkUserCategoriesToBudget(
   budgetId: string,
   useDefaultAllocationTargets: boolean,
 ) {
+  await lockUserCategorySetTx(tx, userId)
   const categories = await findCategoriesByUserTx(tx, userId)
 
   if (categories.length === 0) return
@@ -121,25 +124,31 @@ export async function createMonthlyBudget(
     useDefaultAllocationTargets: boolean
   },
 ) {
-  return db.transaction(async (tx) => {
-    const existing = await findMonthlyBudget(userId, month, year, tx)
-    if (existing) throw new DuplicateMonthlyBudgetError()
+  try {
+    return await db.transaction(async (tx) => {
+      await lockUserBudgetSet(tx, userId)
+      const existing = await findMonthlyBudget(userId, month, year, tx)
+      if (existing) throw new DuplicateMonthlyBudgetError()
 
-    const [inserted] = await insertBudget(tx, {
-      userId,
-      name: null,
-      type: BudgetType.Monthly,
-      month,
-      year,
+      const [inserted] = await insertBudget(tx, {
+        userId,
+        name: null,
+        type: BudgetType.Monthly,
+        month,
+        year,
+      })
+      await linkUserCategoriesToBudget(
+        tx,
+        userId,
+        inserted.id,
+        useDefaultAllocationTargets,
+      )
+      return { id: inserted.id }
     })
-    await linkUserCategoriesToBudget(
-      tx,
-      userId,
-      inserted.id,
-      useDefaultAllocationTargets,
-    )
-    return { id: inserted.id }
-  })
+  } catch (error) {
+    if (isUniqueViolation(error)) throw new DuplicateMonthlyBudgetError()
+    throw error
+  }
 }
 
 export async function createScenarioBudget(
@@ -149,54 +158,76 @@ export async function createScenarioBudget(
     useDefaultAllocationTargets,
   }: { name: string; useDefaultAllocationTargets: boolean },
 ) {
-  return db.transaction(async (tx) => {
-    const existing = await findScenarioBudget(userId, name, tx)
-    if (existing) throw new DuplicateScenarioBudgetError()
+  try {
+    return await db.transaction(async (tx) => {
+      await lockUserBudgetSet(tx, userId)
+      const existing = await findScenarioBudget(userId, name, tx)
+      if (existing) throw new DuplicateScenarioBudgetError()
 
-    const [inserted] = await insertBudget(tx, {
-      userId,
-      name,
-      type: BudgetType.Scenario,
-      month: null,
-      year: null,
+      const [inserted] = await insertBudget(tx, {
+        userId,
+        name,
+        type: BudgetType.Scenario,
+        month: null,
+        year: null,
+      })
+      await linkUserCategoriesToBudget(
+        tx,
+        userId,
+        inserted.id,
+        useDefaultAllocationTargets,
+      )
+      return { id: inserted.id }
     })
-    await linkUserCategoriesToBudget(
-      tx,
-      userId,
-      inserted.id,
-      useDefaultAllocationTargets,
-    )
-    return { id: inserted.id }
-  })
+  } catch (error) {
+    if (isUniqueViolation(error)) throw new DuplicateScenarioBudgetError()
+    throw error
+  }
 }
 
 export async function reorderBudgetCategories(
   budgetId: string,
   userId: string,
   items: { id: string; sortOrder: number }[],
-): Promise<{ error?: 'not_found' | 'access_denied' }> {
-  const found = await findBudgetOwner(budgetId)
-  const ownershipError = checkOwnership(found, userId)
-  if (ownershipError) return { error: ownershipError }
+): Promise<{
+  error?:
+    | typeof OperationErrorCode.NotFound
+    | typeof OperationErrorCode.InvalidPosition
+}> {
+  return db.transaction(async (tx) => {
+    await lockBudget(tx, budgetId, userId)
+    const found = await findOwnedBudget(budgetId, userId, tx)
+    if (!found) return { error: OperationErrorCode.NotFound }
 
-  await db.transaction((tx) =>
-    updateBudgetCategorySortOrders(tx, budgetId, items),
-  )
+    const existingIds = (await listBudgetCategoryIds(tx, budgetId, userId)).map(
+      ({ id }) => id,
+    )
+    const submittedIds = items.map(({ id }) => id)
+    const submittedPositions = items.map(({ sortOrder }) => sortOrder)
+    const completePermutation =
+      submittedIds.length === existingIds.length &&
+      new Set(submittedIds).size === existingIds.length &&
+      existingIds.every((id) => submittedIds.includes(id)) &&
+      new Set(submittedPositions).size === existingIds.length &&
+      submittedPositions.every(
+        (position) => position >= 0 && position < existingIds.length,
+      )
 
-  return {}
+    if (!completePermutation) {
+      return { error: OperationErrorCode.InvalidPosition }
+    }
+
+    await updateBudgetCategorySortOrders(tx, budgetId, userId, items)
+    return {}
+  })
 }
 
 export async function deleteBudget(
   budgetId: string,
   userId: string,
-): Promise<{ error?: 'not_found' | 'access_denied' }> {
-  const found = await findBudgetOwner(budgetId)
-  const ownershipError = checkOwnership(found, userId)
-  if (ownershipError) return { error: ownershipError }
-
-  await deleteBudgetById(budgetId)
-
-  return {}
+): Promise<{ error?: typeof OperationErrorCode.NotFound }> {
+  const [deleted] = await deleteBudgetById(budgetId, userId)
+  return deleted ? {} : { error: OperationErrorCode.NotFound }
 }
 
 export function listBudgets(userId: string) {
@@ -214,89 +245,100 @@ type DuplicateBudgetTarget = {
 
 type DuplicateBudgetResult =
   | { budget: { id: string }; error?: never }
-  | { budget?: never; error: 'not_found' | 'access_denied' }
+  | { budget?: never; error: typeof OperationErrorCode.NotFound }
 
 export async function duplicateBudget(
   sourceBudgetId: string,
   userId: string,
   target: DuplicateBudgetTarget,
 ): Promise<DuplicateBudgetResult> {
-  const found = await findBudgetById(sourceBudgetId)
-  const ownershipError = checkOwnership(found, userId)
-  if (ownershipError) return { error: ownershipError }
-  const source = ensureDefined(found)
+  try {
+    return await db.transaction(async (tx) => {
+      await lockUserBudgetSet(tx, userId)
+      await lockBudget(tx, sourceBudgetId, userId)
+      const source = await findBudgetById(sourceBudgetId, userId, tx)
+      if (!source) return { error: OperationErrorCode.NotFound }
 
-  if (target.type === BudgetType.Monthly) {
-    const existing = await findMonthlyBudget(
-      userId,
-      ensureDefined(target.month),
-      ensureDefined(target.year),
-    )
-    if (existing) throw new DuplicateMonthlyBudgetError()
-  } else {
-    const existing = await findScenarioBudget(
-      userId,
-      ensureDefined(target.name),
-    )
-    if (existing) throw new DuplicateScenarioBudgetError()
-  }
-
-  const newBudget = await db.transaction(async (tx) => {
-    const [inserted] = await insertBudget(tx, {
-      userId,
-      type: target.type,
-      month: target.type === BudgetType.Monthly ? (target.month ?? null) : null,
-      year: target.type === BudgetType.Monthly ? (target.year ?? null) : null,
-      name: target.type === BudgetType.Scenario ? (target.name ?? null) : null,
-    })
-
-    if (source.budgetCategories.length > 0) {
-      const newCategories = await insertBudgetCategories(
-        tx,
-        source.budgetCategories.map((bc) => ({
-          budgetId: inserted.id,
-          categoryId: bc.categoryId,
-          sortOrder: bc.sortOrder,
-          allocationTarget: bc.allocationTarget,
-        })),
-      )
-
-      const allTransactions = source.budgetCategories.flatMap((bc, i) =>
-        bc.transactions.map((t) => ({
-          budgetCategoryId: ensureDefined(newCategories[i]).id,
-          name: t.name,
-          note: t.note,
-          amount: t.amount,
-          isPaid: false,
-          sortOrder: t.sortOrder,
-        })),
-      )
-
-      if (allTransactions.length > 0) {
-        await insertTransactions(tx, allTransactions)
+      if (target.type === BudgetType.Monthly) {
+        const existing = await findMonthlyBudget(
+          userId,
+          ensureDefined(target.month),
+          ensureDefined(target.year),
+          tx,
+        )
+        if (existing) throw new DuplicateMonthlyBudgetError()
+      } else {
+        const existing = await findScenarioBudget(
+          userId,
+          ensureDefined(target.name),
+          tx,
+        )
+        if (existing) throw new DuplicateScenarioBudgetError()
       }
+
+      const [inserted] = await insertBudget(tx, {
+        userId,
+        type: target.type,
+        month:
+          target.type === BudgetType.Monthly ? (target.month ?? null) : null,
+        year: target.type === BudgetType.Monthly ? (target.year ?? null) : null,
+        name:
+          target.type === BudgetType.Scenario ? (target.name ?? null) : null,
+      })
+
+      if (source.budgetCategories.length > 0) {
+        const newCategories = await insertBudgetCategories(
+          tx,
+          source.budgetCategories.map((bc) => ({
+            budgetId: inserted.id,
+            categoryId: bc.categoryId,
+            sortOrder: bc.sortOrder,
+            allocationTarget: bc.allocationTarget,
+          })),
+        )
+
+        const allTransactions = source.budgetCategories.flatMap((bc, i) =>
+          bc.transactions.map((t) => ({
+            budgetCategoryId: ensureDefined(newCategories[i]).id,
+            name: t.name,
+            note: t.note,
+            amount: t.amount,
+            isPaid: false,
+            sortOrder: t.sortOrder,
+          })),
+        )
+
+        if (allTransactions.length > 0) {
+          await insertTransactions(tx, allTransactions)
+        }
+      }
+
+      return { budget: { id: inserted.id } }
+    })
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error
+    if (target.type === BudgetType.Monthly) {
+      throw new DuplicateMonthlyBudgetError()
     }
-
-    return inserted
-  })
-
-  return { budget: { id: newBudget.id } }
+    throw new DuplicateScenarioBudgetError()
+  }
 }
 
 export async function addBudgetCategory(
   budgetId: string,
   userId: string,
   categoryId: string,
-): Promise<{ error?: 'not_found' | 'access_denied' | 'category_not_found' }> {
+): Promise<{
+  error?: typeof OperationErrorCode.NotFound
+}> {
   return db.transaction(async (tx) => {
-    await lockBudget(tx, budgetId)
+    await lockBudget(tx, budgetId, userId)
 
-    const foundBudget = await findBudgetWithCategoriesTx(tx, budgetId)
-    const ownershipError = checkOwnership(foundBudget, userId)
-    if (ownershipError) return { error: ownershipError }
+    const foundBudget = await findBudgetWithCategoriesTx(tx, budgetId, userId)
+    if (!foundBudget) return { error: OperationErrorCode.NotFound }
 
     const foundCategory = await findCategoryByIdTx(tx, categoryId, userId)
-    if (!foundCategory) return { error: 'category_not_found' as const }
+    if (!foundCategory) return { error: OperationErrorCode.NotFound }
 
     const budgetCategories = ensureDefined(foundBudget).budgetCategories
     const expenseCategories = budgetCategories.filter(
@@ -326,21 +368,24 @@ export async function saveBudgetAllocationTargets(
   budgetId: string,
   userId: string,
   data: AllocationTargetsInput,
-): Promise<{ error?: 'not_found' | 'access_denied' }> {
+): Promise<{ error?: typeof OperationErrorCode.NotFound }> {
   return db.transaction(async (tx) => {
-    await lockBudget(tx, budgetId)
-    const found = await findBudgetWithCategoriesTx(tx, budgetId)
-    const ownershipError = checkOwnership(found, userId)
-    if (ownershipError) return { error: ownershipError }
+    await lockBudget(tx, budgetId, userId)
+    const found = await findBudgetWithCategoriesTx(tx, budgetId, userId)
+    if (!found) return { error: OperationErrorCode.NotFound }
 
     const expenseCategories = ensureDefined(found).budgetCategories.filter(
       ({ category }) => category.type === 'expense',
     )
     if (!data.enabled) {
-      await Promise.all(
-        expenseCategories.map(({ id }) =>
-          updateBudgetCategoryAllocationTargetTx(tx, id, null),
-        ),
+      await updateBudgetCategoryAllocationTargetsTx(
+        tx,
+        budgetId,
+        userId,
+        expenseCategories.map(({ id }) => ({
+          budgetCategoryId: id,
+          allocationTarget: null,
+        })),
       )
       return {}
     }
@@ -354,14 +399,14 @@ export async function saveBudgetAllocationTargets(
       throw new InvalidBudgetAllocationTargetsError()
     }
 
-    await Promise.all(
-      data.targets.map(({ categoryId, value }) =>
-        updateBudgetCategoryAllocationTargetTx(
-          tx,
-          categoryId,
-          value.toFixed(1),
-        ),
-      ),
+    await updateBudgetCategoryAllocationTargetsTx(
+      tx,
+      budgetId,
+      userId,
+      data.targets.map(({ categoryId, value }) => ({
+        budgetCategoryId: categoryId,
+        allocationTarget: value.toFixed(1),
+      })),
     )
     return {}
   })
@@ -376,16 +421,15 @@ type GetBudgetDetailResult =
   | {
       budget?: never
       availableCategories?: never
-      error: 'not_found' | 'access_denied'
+      error: typeof OperationErrorCode.NotFound
     }
 
 export async function getBudgetDetail(
   budgetId: string,
   userId: string,
 ): Promise<GetBudgetDetailResult> {
-  const found = await findBudgetById(budgetId)
-  const ownershipError = checkOwnership(found, userId)
-  if (ownershipError) return { error: ownershipError }
+  const found = await findBudgetById(budgetId, userId)
+  if (!found) return { error: OperationErrorCode.NotFound }
 
   const availableCategories = await findCategoriesNotInBudget(userId, budgetId)
 
@@ -415,15 +459,20 @@ export async function createTransaction(
       budgetId,
       userId,
     )
-    if (!destination) return { error: 'not_found' as const }
+    if (!destination) return { error: OperationErrorCode.NotFound }
 
-    await insertTransactionAtEnd(tx, {
-      budgetCategoryId,
-      name: data.name,
-      amount: String(data.amount),
-      isPaid: data.isPaid,
-      note: data.note || null,
-    })
+    await insertTransactionAtEnd(
+      tx,
+      {
+        budgetCategoryId,
+        name: data.name,
+        amount: String(data.amount),
+        isPaid: data.isPaid,
+        note: data.note || null,
+      },
+      budgetId,
+      userId,
+    )
 
     return {}
   })
@@ -442,9 +491,9 @@ export async function updateTransaction(
       budgetId,
       userId,
     )
-    if (!found) return { error: 'not_found' as const }
+    if (!found) return { error: OperationErrorCode.NotFound }
 
-    await updateTransactionById(tx, transactionId, {
+    await updateTransactionById(tx, transactionId, budgetId, userId, {
       name: data.name,
       amount: String(data.amount),
       isPaid: data.isPaid,
@@ -468,9 +517,9 @@ export async function updateTransactionPaid(
       budgetId,
       userId,
     )
-    if (!found) return { error: 'not_found' as const }
+    if (!found) return { error: OperationErrorCode.NotFound }
 
-    await updateTransactionPaidById(tx, transactionId, isPaid)
+    await updateTransactionPaidById(tx, transactionId, budgetId, userId, isPaid)
 
     return {}
   })
@@ -492,7 +541,7 @@ export async function positionTransaction({
   targetIndex,
 }: PositionTransactionCommand) {
   return db.transaction(async (tx) => {
-    await lockBudget(tx, budgetId)
+    await lockBudget(tx, budgetId, userId)
 
     const sourceTransaction = await findOwnedTransaction(
       tx,
@@ -500,7 +549,7 @@ export async function positionTransaction({
       budgetId,
       userId,
     )
-    if (!sourceTransaction) return { error: 'not_found' as const }
+    if (!sourceTransaction) return { error: OperationErrorCode.NotFound }
 
     const targetBudgetCategory = await findOwnedBudgetCategory(
       tx,
@@ -508,17 +557,19 @@ export async function positionTransaction({
       budgetId,
       userId,
     )
-    if (!targetBudgetCategory) return { error: 'not_found' as const }
+    if (!targetBudgetCategory) return { error: OperationErrorCode.NotFound }
 
     const sourceRows = await listTransactionIds(
       tx,
       sourceTransaction.budgetCategoryId,
+      budgetId,
+      userId,
     )
     const sameCategory =
       sourceTransaction.budgetCategoryId === targetBudgetCategoryId
     const targetRows = sameCategory
       ? sourceRows
-      : await listTransactionIds(tx, targetBudgetCategoryId)
+      : await listTransactionIds(tx, targetBudgetCategoryId, budgetId, userId)
     const positions = positionTransactionIds(
       sourceRows.map(({ id }) => id),
       targetRows.map(({ id }) => id),
@@ -526,12 +577,14 @@ export async function positionTransaction({
       targetIndex,
       sameCategory,
     )
-    if (!positions) return { error: 'invalid_position' as const }
+    if (!positions) return { error: OperationErrorCode.InvalidPosition }
 
     await updateTransactionPositions(
       tx,
       transactionId,
       targetBudgetCategoryId,
+      budgetId,
+      userId,
       positions.sourceIds,
       positions.targetIds,
     )
@@ -552,9 +605,9 @@ export async function deleteTransaction(
       budgetId,
       userId,
     )
-    if (!found) return { error: 'not_found' as const }
+    if (!found) return { error: OperationErrorCode.NotFound }
 
-    await deleteTransactionById(tx, transactionId)
+    await deleteTransactionById(tx, transactionId, budgetId, userId)
     return {}
   })
 }

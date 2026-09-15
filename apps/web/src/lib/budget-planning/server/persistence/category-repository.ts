@@ -4,7 +4,7 @@ import {
   type DbTransaction,
 } from '$lib/server/persistence/database'
 import { budgetPlanningSchema } from '$lib/server/persistence/schema'
-import { and, asc, count, eq, isNull, ne, sql } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, isNull, ne, sql } from 'drizzle-orm'
 
 const { budgetCategory, category } = budgetPlanningSchema
 
@@ -35,10 +35,6 @@ export async function findCategoriesWithBudgetUsageByUser(userId: string) {
       category.updatedAt,
     )
     .orderBy(asc(category.name))
-}
-
-export function insertCategories(values: (typeof category.$inferInsert)[]) {
-  return db.insert(category).values(values)
 }
 
 export function insertCategoryTx(
@@ -115,14 +111,23 @@ export async function countCategoriesByTypeTx(
   return row?.value ?? 0
 }
 
-export function findBudgetCategoryByCategoryIdTx(
+export async function findBudgetCategoryByCategoryIdTx(
   tx: DbTransaction,
   categoryId: string,
+  userId: string,
 ) {
-  return tx.query.budgetCategory.findFirst({
-    where: eq(budgetCategory.categoryId, categoryId),
-    columns: { id: true },
-  })
+  const [found] = await tx
+    .select({ id: budgetCategory.id })
+    .from(budgetCategory)
+    .innerJoin(category, eq(budgetCategory.categoryId, category.id))
+    .where(
+      and(
+        eq(budgetCategory.categoryId, categoryId),
+        eq(category.userId, userId),
+      ),
+    )
+    .limit(1)
+  return found
 }
 
 export function findCategoryById(categoryId: string, userId: string) {
@@ -155,29 +160,49 @@ export function findCategoriesNotInBudget(userId: string, budgetId: string) {
     .orderBy(asc(category.name))
 }
 
-export function deleteCategoryTx(tx: DbTransaction, categoryId: string) {
-  return tx.delete(category).where(eq(category.id, categoryId))
+export function deleteCategoryTx(
+  tx: DbTransaction,
+  categoryId: string,
+  userId: string,
+) {
+  return tx
+    .delete(category)
+    .where(and(eq(category.id, categoryId), eq(category.userId, userId)))
 }
 
 export function updateCategoryTx(
   tx: DbTransaction,
   categoryId: string,
+  userId: string,
   data: { name: string; color: CategoryColor },
 ) {
   return tx
     .update(category)
     .set({ name: data.name, color: data.color })
-    .where(eq(category.id, categoryId))
+    .where(and(eq(category.id, categoryId), eq(category.userId, userId)))
     .returning()
 }
 
-export function updateCategoryDefaultAllocationTargetTx(
+export function updateCategoryDefaultAllocationTargetsTx(
   tx: DbTransaction,
-  categoryId: string,
-  defaultAllocationTarget: string | null,
+  userId: string,
+  targets: readonly {
+    categoryId: string
+    defaultAllocationTarget: string | null
+  }[],
 ) {
+  if (targets.length === 0) return
+
+  const ids = targets.map(({ categoryId }) => categoryId)
+  const cases = targets.map(
+    ({ categoryId, defaultAllocationTarget }) =>
+      sql`when ${category.id} = ${categoryId} then ${defaultAllocationTarget}`,
+  )
+
   return tx
     .update(category)
-    .set({ defaultAllocationTarget })
-    .where(eq(category.id, categoryId))
+    .set({
+      defaultAllocationTarget: sql`(case ${sql.join(cases, sql.raw(' '))} end)::numeric(4, 1)`,
+    })
+    .where(and(eq(category.userId, userId), inArray(category.id, ids)))
 }
