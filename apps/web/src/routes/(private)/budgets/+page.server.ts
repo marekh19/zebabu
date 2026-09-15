@@ -85,8 +85,7 @@ export const actions: Actions = {
     const userId = getAuthenticatedUserId(locals)
     const result = await deleteBudget(budgetId, userId)
 
-    if (result.error === 'not_found') return fail(404)
-    if (result.error === 'access_denied') return fail(403)
+    if (result.error === 'NOT_FOUND') return fail(404)
 
     return { deleted: true }
   },

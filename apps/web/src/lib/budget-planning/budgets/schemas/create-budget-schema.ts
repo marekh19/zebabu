@@ -10,6 +10,7 @@ export function createCreateBudgetSchema() {
       year: z.coerce.number().min(2000).max(2100).optional(),
       name: z
         .string()
+        .trim()
         .max(200, { message: m.budgets_validation_name_max() })
         .optional(),
     })

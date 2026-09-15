@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   deleteTransactionById: vi.fn(),
+  deleteBudgetById: vi.fn(),
   findBudgetById: vi.fn(),
-  findBudgetOwner: vi.fn(),
+  findOwnedBudget: vi.fn(),
   findBudgetWithCategoriesTx: vi.fn(),
   findCategoriesByUserTx: vi.fn(),
   findCategoriesNotInBudget: vi.fn(),
@@ -17,13 +18,16 @@ const mocks = vi.hoisted(() => ({
   insertTransactions: vi.fn(),
   insertTransactionAtEnd: vi.fn(),
   listTransactionIds: vi.fn(),
+  listBudgetCategoryIds: vi.fn(),
   listBudgetsByUser: vi.fn(),
   lockBudget: vi.fn(),
+  lockUserBudgetSet: vi.fn(),
+  lockUserCategorySetTx: vi.fn(),
   transaction: vi.fn(),
   updateTransactionById: vi.fn(),
   updateTransactionPaidById: vi.fn(),
   updateTransactionPositions: vi.fn(),
-  updateBudgetCategoryAllocationTargetTx: vi.fn(),
+  updateBudgetCategoryAllocationTargetsTx: vi.fn(),
 }))
 
 vi.mock('$lib/server/persistence/database', () => ({
@@ -34,13 +38,14 @@ vi.mock('$lib/budget-planning/server/persistence/category-repository', () => ({
   findCategoriesNotInBudget: mocks.findCategoriesNotInBudget,
   findCategoriesByUserTx: mocks.findCategoriesByUserTx,
   findCategoryByIdTx: mocks.findCategoryByIdTx,
+  lockUserCategorySetTx: mocks.lockUserCategorySetTx,
 }))
 
 vi.mock('../persistence/budget-repository', () => ({
   deleteTransactionById: mocks.deleteTransactionById,
-  deleteBudgetById: vi.fn(),
+  deleteBudgetById: mocks.deleteBudgetById,
   findBudgetById: mocks.findBudgetById,
-  findBudgetOwner: mocks.findBudgetOwner,
+  findOwnedBudget: mocks.findOwnedBudget,
   findBudgetWithCategoriesTx: mocks.findBudgetWithCategoriesTx,
   findMonthlyBudget: mocks.findMonthlyBudget,
   findOwnedBudgetCategory: mocks.findOwnedBudgetCategory,
@@ -51,11 +56,13 @@ vi.mock('../persistence/budget-repository', () => ({
   insertTransactionAtEnd: mocks.insertTransactionAtEnd,
   insertTransactions: mocks.insertTransactions,
   listTransactionIds: mocks.listTransactionIds,
+  listBudgetCategoryIds: mocks.listBudgetCategoryIds,
   listBudgetsByUser: mocks.listBudgetsByUser,
   lockBudget: mocks.lockBudget,
+  lockUserBudgetSet: mocks.lockUserBudgetSet,
   updateBudgetCategorySortOrders: vi.fn(),
-  updateBudgetCategoryAllocationTargetTx:
-    mocks.updateBudgetCategoryAllocationTargetTx,
+  updateBudgetCategoryAllocationTargetsTx:
+    mocks.updateBudgetCategoryAllocationTargetsTx,
   updateTransactionById: mocks.updateTransactionById,
   updateTransactionPaidById: mocks.updateTransactionPaidById,
   updateTransactionPositions: mocks.updateTransactionPositions,
@@ -112,11 +119,13 @@ describe('positionTransaction', () => {
       }),
     ).resolves.toEqual({})
 
-    expect(mocks.lockBudget).toHaveBeenCalledWith({}, 'budget-1')
+    expect(mocks.lockBudget).toHaveBeenCalledWith({}, 'budget-1', 'user-1')
     expect(mocks.updateTransactionPositions).toHaveBeenCalledWith(
       {},
       'transaction-2',
       'target',
+      'budget-1',
+      'user-1',
       ['transaction-1'],
       ['transaction-2', 'transaction-3'],
     )
@@ -147,6 +156,8 @@ describe('positionTransaction', () => {
       {},
       'transaction-3',
       'source',
+      'budget-1',
+      'user-1',
       ['transaction-1', 'transaction-3', 'transaction-2'],
       ['transaction-1', 'transaction-3', 'transaction-2'],
     )
@@ -164,7 +175,7 @@ describe('positionTransaction', () => {
         targetBudgetCategoryId: 'target',
         targetIndex: 0,
       }),
-    ).resolves.toEqual({ error: 'not_found' })
+    ).resolves.toEqual({ error: 'NOT_FOUND' })
     expect(mocks.findOwnedBudgetCategory).not.toHaveBeenCalled()
     expect(mocks.updateTransactionPositions).not.toHaveBeenCalled()
   })
@@ -188,7 +199,7 @@ describe('positionTransaction', () => {
         targetBudgetCategoryId: 'target',
         targetIndex: 1,
       }),
-    ).resolves.toEqual({ error: 'invalid_position' })
+    ).resolves.toEqual({ error: 'INVALID_POSITION' })
     expect(mocks.updateTransactionPositions).not.toHaveBeenCalled()
   })
 })
@@ -210,6 +221,8 @@ describe('deleteTransaction', () => {
     expect(mocks.deleteTransactionById).toHaveBeenCalledWith(
       {},
       'transaction-1',
+      'budget-1',
+      'user-1',
     )
   })
 
@@ -218,7 +231,7 @@ describe('deleteTransaction', () => {
 
     await expect(
       deleteTransaction('budget-1', 'user-1', 'transaction-1'),
-    ).resolves.toEqual({ error: 'not_found' })
+    ).resolves.toEqual({ error: 'NOT_FOUND' })
     expect(mocks.deleteTransactionById).not.toHaveBeenCalled()
   })
 })
@@ -241,7 +254,7 @@ describe('createTransaction', () => {
       { name: 'Rent', amount: 1000, isPaid: false },
     )
 
-    expect(result).toEqual({ error: 'not_found' })
+    expect(result).toEqual({ error: 'NOT_FOUND' })
     expect(mocks.insertTransactionAtEnd).not.toHaveBeenCalled()
   })
 })
@@ -264,7 +277,7 @@ describe('updateTransaction', () => {
       { name: 'Rent', amount: 1000, isPaid: true, note: '' },
     )
 
-    expect(result).toEqual({ error: 'not_found' })
+    expect(result).toEqual({ error: 'NOT_FOUND' })
     expect(mocks.updateTransactionById).not.toHaveBeenCalled()
   })
 
@@ -285,6 +298,8 @@ describe('updateTransaction', () => {
     expect(mocks.updateTransactionById).toHaveBeenCalledWith(
       {},
       'transaction-1',
+      'budget-1',
+      'user-1',
       {
         name: 'Rent updated',
         amount: '1200.5',
@@ -308,7 +323,7 @@ describe('updateTransactionPaid', () => {
 
     await expect(
       updateTransactionPaid('budget-1', 'user-1', 'transaction-1', true),
-    ).resolves.toEqual({ error: 'not_found' })
+    ).resolves.toEqual({ error: 'NOT_FOUND' })
     expect(mocks.updateTransactionPaidById).not.toHaveBeenCalled()
   })
 
@@ -320,6 +335,8 @@ describe('updateTransactionPaid', () => {
     expect(mocks.updateTransactionPaidById).toHaveBeenCalledWith(
       {},
       'transaction-1',
+      'budget-1',
+      'user-1',
       false,
     )
   })
@@ -447,6 +464,26 @@ describe('Budget allocation target lifecycle', () => {
     )
   })
 
+  it('reads the source and creates the copy in one transaction', async () => {
+    mocks.findBudgetById.mockResolvedValue({
+      id: 'source',
+      userId: 'user-1',
+      budgetCategories: [],
+    })
+
+    await duplicateBudget('source', 'user-1', {
+      type: 'scenario',
+      name: 'Copy',
+    })
+
+    expect(mocks.findBudgetById).toHaveBeenCalledWith('source', 'user-1', {
+      id: 'transaction',
+    })
+    expect(mocks.findScenarioBudget).toHaveBeenCalledWith('user-1', 'Copy', {
+      id: 'transaction',
+    })
+  })
+
   it.each([
     ['50.0', '0.0'],
     [null, null],
@@ -474,6 +511,7 @@ describe('Budget allocation target lifecycle', () => {
       expect(mocks.lockBudget).toHaveBeenCalledWith(
         { id: 'transaction' },
         'budget-1',
+        'user-1',
       )
       expect(mocks.lockBudget.mock.invocationCallOrder[0]).toBeLessThan(
         mocks.findBudgetWithCategoriesTx.mock.invocationCallOrder[0],
@@ -486,22 +524,20 @@ describe('Budget allocation target lifecycle', () => {
   )
 
   it('validates ownership and the complete BudgetCategory set before writing', async () => {
-    mocks.findBudgetWithCategoriesTx.mockResolvedValue({
-      userId: 'other-user',
-      budgetCategories: [],
-    })
+    mocks.findBudgetWithCategoriesTx.mockResolvedValue(undefined)
 
     await expect(
       saveBudgetAllocationTargets('budget-1', 'user-1', {
         enabled: true,
         targets: [{ categoryId: 'other-placement', value: 100 }],
       }),
-    ).resolves.toEqual({ error: 'access_denied' })
+    ).resolves.toEqual({ error: 'NOT_FOUND' })
     expect(mocks.lockBudget).toHaveBeenCalledWith(
       { id: 'transaction' },
       'budget-1',
+      'user-1',
     )
-    expect(mocks.updateBudgetCategoryAllocationTargetTx).not.toHaveBeenCalled()
+    expect(mocks.updateBudgetCategoryAllocationTargetsTx).not.toHaveBeenCalled()
 
     mocks.findBudgetWithCategoriesTx.mockResolvedValue({
       userId: 'user-1',
@@ -516,7 +552,7 @@ describe('Budget allocation target lifecycle', () => {
         targets: [{ categoryId: 'rent', value: 100 }],
       }),
     ).rejects.toBeInstanceOf(InvalidBudgetAllocationTargetsError)
-    expect(mocks.updateBudgetCategoryAllocationTargetTx).not.toHaveBeenCalled()
+    expect(mocks.updateBudgetCategoryAllocationTargetsTx).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -542,7 +578,7 @@ describe('Budget allocation target lifecycle', () => {
         ],
       }),
     ).rejects.toBeInstanceOf(InvalidBudgetAllocationTargetsError)
-    expect(mocks.updateBudgetCategoryAllocationTargetTx).not.toHaveBeenCalled()
+    expect(mocks.updateBudgetCategoryAllocationTargetsTx).not.toHaveBeenCalled()
   })
 
   it('saves and disables the complete Budget target set', async () => {
@@ -561,20 +597,30 @@ describe('Budget allocation target lifecycle', () => {
         { categoryId: 'food', value: 40 },
       ],
     })
-    expect(mocks.updateBudgetCategoryAllocationTargetTx.mock.calls).toEqual([
-      [{ id: 'transaction' }, 'rent', '60.0'],
-      [{ id: 'transaction' }, 'food', '40.0'],
-    ])
+    expect(mocks.updateBudgetCategoryAllocationTargetsTx).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      'budget-1',
+      'user-1',
+      [
+        { budgetCategoryId: 'rent', allocationTarget: '60.0' },
+        { budgetCategoryId: 'food', allocationTarget: '40.0' },
+      ],
+    )
 
-    mocks.updateBudgetCategoryAllocationTargetTx.mockClear()
+    mocks.updateBudgetCategoryAllocationTargetsTx.mockClear()
     await saveBudgetAllocationTargets('budget-1', 'user-1', {
       enabled: false,
       targets: [],
     })
-    expect(mocks.updateBudgetCategoryAllocationTargetTx.mock.calls).toEqual([
-      [{ id: 'transaction' }, 'rent', null],
-      [{ id: 'transaction' }, 'food', null],
-    ])
+    expect(mocks.updateBudgetCategoryAllocationTargetsTx).toHaveBeenCalledWith(
+      { id: 'transaction' },
+      'budget-1',
+      'user-1',
+      [
+        { budgetCategoryId: 'rent', allocationTarget: null },
+        { budgetCategoryId: 'food', allocationTarget: null },
+      ],
+    )
   })
 })
 
@@ -605,7 +651,7 @@ describe('Budget Planning read models', () => {
         name: null,
         month: 8,
         year: 2026,
-        createdAt,
+        createdAt: createdAt.toISOString(),
       },
     ])
   })
@@ -677,6 +723,18 @@ describe('Budget Planning read models', () => {
         ],
       },
       availableCategories: [{ id: 'category-2', name: 'Rent' }],
+    })
+    expect(mocks.findBudgetById).toHaveBeenCalledWith('budget-1', 'user-1')
+  })
+
+  it('conceals both missing and foreign Budgets', async () => {
+    mocks.findBudgetById.mockResolvedValue(undefined)
+
+    await expect(getBudgetDetail('foreign', 'user-1')).resolves.toEqual({
+      error: 'NOT_FOUND',
+    })
+    await expect(getBudgetDetail('missing', 'user-1')).resolves.toEqual({
+      error: 'NOT_FOUND',
     })
   })
 })

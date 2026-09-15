@@ -1,0 +1,6 @@
+ALTER TABLE "budget" ADD CONSTRAINT "budget_shape_check" CHECK (("budget"."type" = 'monthly' and "budget"."month" between 1 and 12 and "budget"."year" between 2000 and 2100 and "budget"."name" is null) or ("budget"."type" = 'scenario' and length(trim("budget"."name")) > 0 and "budget"."month" is null and "budget"."year" is null));--> statement-breakpoint
+ALTER TABLE "budget_category" ADD CONSTRAINT "budget_category_sort_order_check" CHECK ("budget_category"."sort_order" >= 0);--> statement-breakpoint
+ALTER TABLE "budget_category" ADD CONSTRAINT "budget_category_allocation_target_check" CHECK ("budget_category"."allocation_target" is null or "budget_category"."allocation_target" between 0.0 and 100.0);--> statement-breakpoint
+ALTER TABLE "category" ADD CONSTRAINT "category_default_allocation_target_check" CHECK ("category"."default_allocation_target" is null or "category"."default_allocation_target" between 0.0 and 100.0);--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_amount_check" CHECK ("transaction"."amount" > 0);--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_sort_order_check" CHECK ("transaction"."sort_order" >= 0);

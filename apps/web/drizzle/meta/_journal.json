@@ -78,6 +78,20 @@
       "when": 1789170019104,
       "tag": "0010_tricky_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789419566157,
+      "tag": "0011_striped_moondragon",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789419865866,
+      "tag": "0012_volatile_living_lightning",
+      "breakpoints": true
     }
   ]
 }

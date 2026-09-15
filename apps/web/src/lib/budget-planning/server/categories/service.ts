@@ -2,7 +2,6 @@ import {
   CategoryType,
   type CategoryColor,
 } from '$lib/budget-planning/categories/types'
-import * as m from '$lib/paraglide/messages'
 import { database as db } from '$lib/server/persistence/database'
 import { ensureDefined } from 'narrowland'
 import {
@@ -21,10 +20,9 @@ import {
   findCategoryByIdTx,
   findCategoryByName,
   findCategoryByNameExcluding,
-  insertCategories,
   insertCategoryTx,
   lockUserCategorySetTx,
-  updateCategoryDefaultAllocationTargetTx,
+  updateCategoryDefaultAllocationTargetsTx,
   updateCategoryTx,
 } from '../persistence/category-repository'
 
@@ -70,23 +68,6 @@ export class NonZeroAllocationTargetError extends Error {
     super('A category with a non-zero allocation target cannot be deleted')
     this.name = 'NonZeroAllocationTargetError'
   }
-}
-
-export async function seedDefaultCategories(userId: string): Promise<void> {
-  await insertCategories([
-    {
-      userId,
-      name: m.category_default_income(),
-      type: CategoryType.Income,
-      color: 'emerald',
-    },
-    {
-      userId,
-      name: m.category_default_expense(),
-      type: CategoryType.Expense,
-      color: 'rose',
-    },
-  ])
 }
 
 export async function createCategory(
@@ -137,7 +118,7 @@ export async function getCompleteDefaultAllocationTargets(userId: string) {
 
   return expenseCategories.map(({ id, defaultAllocationTarget }) => ({
     categoryId: id,
-    value: Number(defaultAllocationTarget),
+    value: ensureDefined(defaultAllocationTarget),
   }))
 }
 
@@ -154,10 +135,10 @@ export async function deleteCategory(categoryId: string, userId: string) {
     const typeCount = await countCategoriesByTypeTx(tx, userId, cat.type)
     if (typeCount <= 1) throw new LastCategoryOfTypeError()
 
-    const inUse = await findBudgetCategoryByCategoryIdTx(tx, categoryId)
+    const inUse = await findBudgetCategoryByCategoryIdTx(tx, categoryId, userId)
     if (inUse) throw new CategoryInUseError()
 
-    await deleteCategoryTx(tx, categoryId)
+    await deleteCategoryTx(tx, categoryId, userId)
   })
 }
 
@@ -172,10 +153,13 @@ export async function saveDefaultAllocationTargets(
     )
 
     if (!data.enabled) {
-      await Promise.all(
-        expenseCategories.map(({ id }) =>
-          updateCategoryDefaultAllocationTargetTx(tx, id, null),
-        ),
+      await updateCategoryDefaultAllocationTargetsTx(
+        tx,
+        userId,
+        expenseCategories.map(({ id }) => ({
+          categoryId: id,
+          defaultAllocationTarget: null,
+        })),
       )
       return
     }
@@ -189,14 +173,13 @@ export async function saveDefaultAllocationTargets(
       throw new InvalidAllocationTargetsError()
     }
 
-    await Promise.all(
-      data.targets.map(({ categoryId, value }) =>
-        updateCategoryDefaultAllocationTargetTx(
-          tx,
-          categoryId,
-          value.toFixed(1),
-        ),
-      ),
+    await updateCategoryDefaultAllocationTargetsTx(
+      tx,
+      userId,
+      data.targets.map(({ categoryId, value }) => ({
+        categoryId,
+        defaultAllocationTarget: value.toFixed(1),
+      })),
     )
   })
 }
@@ -207,6 +190,7 @@ export async function updateCategory(
   data: { name: string; color: CategoryColor },
 ) {
   return db.transaction(async (tx) => {
+    await lockUserCategorySetTx(tx, userId)
     const duplicate = await findCategoryByNameExcluding(
       tx,
       userId,
@@ -215,7 +199,7 @@ export async function updateCategory(
     )
     if (duplicate) throw new DuplicateCategoryError()
 
-    const [updated] = await updateCategoryTx(tx, categoryId, data)
+    const [updated] = await updateCategoryTx(tx, categoryId, userId, data)
     if (!updated) throw new CategoryNotFoundError()
     ensureDefined(updated)
   })

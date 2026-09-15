@@ -17,7 +17,7 @@ export type BudgetReference =
     }
 
 export type BudgetListItem = BudgetReference & {
-  readonly createdAt: Date
+  readonly createdAt: string
 }
 
 export type PlannedTransaction = {

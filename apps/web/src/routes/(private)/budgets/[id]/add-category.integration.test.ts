@@ -53,7 +53,7 @@ describe('adding an existing category to a budget', () => {
     expect(success).toMatchObject({ addCategoryForm: { valid: true } })
 
     mocks.addBudgetCategory.mockResolvedValueOnce({
-      error: 'category_not_found',
+      error: 'NOT_FOUND',
     })
 
     const failure = await submit('category-2')
