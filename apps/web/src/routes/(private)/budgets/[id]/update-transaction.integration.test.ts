@@ -88,7 +88,7 @@ describe('updating a transaction', () => {
   it.each(['another budget', 'another user'])(
     'does not expose a transaction from %s',
     async () => {
-      mocks.updateTransaction.mockResolvedValue({ error: 'not_found' })
+      mocks.updateTransaction.mockResolvedValue({ error: 'NOT_FOUND' })
 
       const result = await submit()
 

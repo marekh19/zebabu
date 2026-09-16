@@ -1,18 +1,21 @@
 import { categoryColors } from '$lib/budget-planning/categories/colors'
+import { updateCategoryRule } from '$lib/budget-planning/validation'
 import * as m from '$lib/paraglide/messages'
 import { z } from 'zod'
 
 export function createUpdateCategorySchema() {
-  return z.object({
-    categoryId: z.string().min(1),
-    name: z
-      .string()
-      .min(1, { message: m.categories_validation_name_required() })
-      .max(100, { message: m.categories_validation_name_max() }),
-    color: z.enum(categoryColors, {
-      message: m.categories_validation_color_required(),
-    }),
-  })
+  return z
+    .object({
+      categoryId: z.string().min(1),
+      name: z
+        .string()
+        .min(1, { message: m.categories_validation_name_required() })
+        .max(100, { message: m.categories_validation_name_max() }),
+      color: z.enum(categoryColors, {
+        message: m.categories_validation_color_required(),
+      }),
+    })
+    .pipe(updateCategoryRule)
 }
 
 export type UpdateCategorySchema = ReturnType<typeof createUpdateCategorySchema>

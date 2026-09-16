@@ -71,6 +71,7 @@ describe('locale-aware dates', () => {
 
     expect(formatMonthAbbrev(3)).toBe('Mar')
     expect(formatDate(date)).toBe('Mar 4, 2026')
+    expect(formatDate('2026-03-04T12:00:00.000Z')).toBe('Mar 4, 2026')
   })
 
   it('formats Czech months and dates with cs-CZ', () => {

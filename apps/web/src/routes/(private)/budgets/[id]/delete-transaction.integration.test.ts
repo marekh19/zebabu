@@ -64,7 +64,7 @@ describe('deleting a transaction', () => {
   })
 
   it('conceals a missing or inaccessible transaction', async () => {
-    mocks.deleteTransaction.mockResolvedValue({ error: 'not_found' })
+    mocks.deleteTransaction.mockResolvedValue({ error: 'NOT_FOUND' })
 
     const result = await submit()
 

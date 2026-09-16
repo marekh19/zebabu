@@ -11,15 +11,23 @@ vi.mock('better-auth', () => ({ betterAuth: vi.fn() }))
 vi.mock('better-auth/adapters/drizzle', () => ({
   drizzleAdapter: vi.fn(() => ({})),
 }))
-vi.mock('./secondary-storage', () => ({ redisSecondaryStorage: {} }))
+vi.mock('./secondary-storage', () => ({
+  createRedisSecondaryStorage: vi.fn(() => ({})),
+}))
 
 import { createIdentity } from './create-identity'
 
 describe('createIdentity', () => {
   beforeEach(() => vi.clearAllMocks())
 
+  const environment = {
+    betterAuthUrl: 'https://app.example.com',
+    webOrigin: 'https://app.example.com',
+    redisKeyPrefix: 'zebabu:test:better-auth',
+  }
+
   it('configures USD as the validated primary currency default', () => {
-    createIdentity({ onUserCreated: vi.fn() })
+    createIdentity(environment)
 
     const options = vi.mocked(betterAuth).mock.calls[0]?.[0]
     const field = options?.user?.additionalFields?.primaryCurrency
@@ -33,28 +41,40 @@ describe('createIdentity', () => {
     })
   })
 
-  it('publishes the created user ID through the application callback', async () => {
-    const onUserCreated = vi.fn()
-    createIdentity({ onUserCreated })
+  it('does not provision inside the User creation transaction', () => {
+    createIdentity(environment)
 
     const options = vi.mocked(betterAuth).mock.calls[0]?.[0]
-    const afterUserCreated = options?.databaseHooks?.user?.create?.after
-    if (!afterUserCreated)
-      throw new Error('User-created hook is not configured')
+    expect(options?.databaseHooks?.user?.create?.after).toBeUndefined()
+  })
 
-    await afterUserCreated(
-      {
-        id: 'user-1',
-        name: 'User',
-        email: 'user@example.com',
-        emailVerified: true,
-        image: null,
-        createdAt: new Date('2026-08-29T00:00:00Z'),
-        updatedAt: new Date('2026-08-29T00:00:00Z'),
+  it('pins the browser Session and recovery behavior', () => {
+    createIdentity(environment)
+
+    const options = vi.mocked(betterAuth).mock.calls[0]?.[0]
+    expect(options).toMatchObject({
+      baseURL: environment.betterAuthUrl,
+      trustedOrigins: [environment.webOrigin],
+      emailAndPassword: {
+        enabled: true,
+        requireEmailVerification: true,
+        sendResetPassword: expect.any(Function),
       },
-      null,
-    )
-
-    expect(onUserCreated).toHaveBeenCalledWith('user-1')
+      emailVerification: {
+        sendOnSignUp: true,
+        autoSignInAfterVerification: false,
+        sendVerificationEmail: expect.any(Function),
+      },
+      session: {
+        expiresIn: 60 * 60 * 24 * 7,
+        updateAge: 60 * 60 * 24,
+        cookieCache: { enabled: true, maxAge: 5 * 60 },
+        storeSessionInDatabase: true,
+      },
+      rateLimit: {
+        enabled: true,
+        storage: 'secondary-storage',
+      },
+    })
   })
 })

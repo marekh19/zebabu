@@ -1,4 +1,5 @@
-import { updateTransactionPaid } from '$lib/budget-planning/server'
+import { updateTransactionPaid } from '$lib/budget-planning/server/budgets/service'
+import { OperationErrorCode } from '$lib/operation-result'
 import { json } from '@sveltejs/kit'
 import { z } from 'zod'
 
@@ -21,7 +22,7 @@ export async function patchTransactionPaid({
 
   const parsed = paidSchema.safeParse(body)
   if (!parsed.success) {
-    return json({ error: 'Invalid request body' }, { status: 400 })
+    return json({ code: OperationErrorCode.InvalidInput }, { status: 400 })
   }
 
   const result = await updateTransactionPaid(
@@ -31,8 +32,8 @@ export async function patchTransactionPaid({
     parsed.data.isPaid,
   )
 
-  if (result.error === 'not_found') {
-    return json({ error: 'Transaction not found' }, { status: 404 })
+  if (result.error === OperationErrorCode.NotFound) {
+    return json({ code: OperationErrorCode.NotFound }, { status: 404 })
   }
 
   return json({ ok: true })

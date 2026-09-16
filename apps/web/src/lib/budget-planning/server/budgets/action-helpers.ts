@@ -31,8 +31,7 @@ export async function handleDuplicateBudgetAction(
       userId,
       form.data,
     )
-    if (result.error === 'not_found') return fail(404)
-    if (result.error === 'access_denied') return fail(403)
+    if (result.error === 'NOT_FOUND') return fail(404)
     redirect(303, buildRedirectPath(ensureDefined(result.budget).id))
   } catch (err) {
     if (err instanceof DuplicateMonthlyBudgetError) {

@@ -78,7 +78,10 @@ export function toBudgetReference(budget: PersistedBudget): BudgetReference {
 export function toBudgetListItem(
   budget: PersistedBudgetListItem,
 ): BudgetListItem {
-  return { ...toBudgetReference(budget), createdAt: budget.createdAt }
+  return {
+    ...toBudgetReference(budget),
+    createdAt: budget.createdAt.toISOString(),
+  }
 }
 
 export function toBudgetDetail(budget: PersistedBudgetDetail): BudgetDetail {

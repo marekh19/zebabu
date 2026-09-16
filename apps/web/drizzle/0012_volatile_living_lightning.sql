@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "is_provisioned" boolean DEFAULT false NOT NULL;

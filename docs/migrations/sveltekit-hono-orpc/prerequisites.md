@@ -94,14 +94,14 @@ Add missing tests at the current public seam. Avoid tests that assert repository
 
 ## Exit criteria
 
-- [ ] No known cross-User read or write is possible.
-- [ ] Missing and foreign User-owned resources have indistinguishable responses.
-- [ ] Unauthenticated requests never fail as internal errors.
-- [ ] Concurrency-sensitive operations are atomic and tested against PostgreSQL.
-- [ ] Database constraints enforce domain invariants.
-- [ ] External values and error codes have one locale-free representation.
-- [ ] User provisioning is idempotent and retryable.
-- [ ] Better Auth and Redis behavior is pinned, configured, and characterized.
-- [ ] Migrations run once per release, not once per application replica.
-- [ ] The behavioral baseline passes with `bun run test`.
-- [ ] `bun run lint:check`, `bun run format:fix`, `bun run typecheck`, and `bun run build` pass.
+- [x] No known cross-User read or write is possible.
+- [x] Missing and foreign User-owned resources have indistinguishable responses.
+- [x] Unauthenticated requests never fail as internal errors.
+- [x] Concurrency-sensitive operations are atomic and tested against PostgreSQL.
+- [x] Database constraints enforce domain invariants.
+- [x] External values and error codes have one locale-free representation.
+- [x] User provisioning is idempotent and retryable.
+- [x] Better Auth and Redis behavior is pinned, configured, and characterized.
+- [x] Migrations run once per release, not once per application replica.
+- [x] The behavioral baseline passes with `bun run test`.
+- [x] `bun run lint:check`, `bun run format:fix`, `bun run typecheck`, and `bun run build` pass.

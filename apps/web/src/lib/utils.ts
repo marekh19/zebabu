@@ -14,10 +14,10 @@ export function formatPercentage(value: number | string): string {
   }).format(Number(value))
 }
 
-export function formatDate(date: Date): string {
+export function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat(getFormattingLocale(), {
     dateStyle: 'medium',
-  }).format(date)
+  }).format(typeof date === 'string' ? new Date(date) : date)
 }
 
 export function formatMonthAbbrev(month: number): string {

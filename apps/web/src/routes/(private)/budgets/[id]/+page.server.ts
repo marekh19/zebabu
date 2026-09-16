@@ -26,9 +26,8 @@ import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
 const ERROR_STATUS = {
-  not_found: 404,
-  access_denied: 403,
-} as const satisfies Record<'not_found' | 'access_denied', number>
+  NOT_FOUND: 404,
+} as const satisfies Record<'NOT_FOUND', number>
 
 export const load: PageServerLoad = async ({ params, locals, url }) => {
   const userId = getAuthenticatedUserId(locals)
@@ -43,7 +42,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
   const defaultTargetsByCategoryId = new Map(
     defaultAllocationTargets?.map(({ categoryId, value }) => [
       categoryId,
-      value,
+      Number(value),
     ]),
   )
   const expenseCategories = result.budget.budgetCategories.filter(
@@ -134,13 +133,8 @@ export const actions: Actions = {
     if (!result)
       return fail(500, { addCategoryForm: form, error: 'unexpected' as const })
 
-    if (result.error === 'not_found' || result.error === 'access_denied')
+    if (result.error)
       return fail(ERROR_STATUS[result.error], {
-        addCategoryForm: form,
-        error: 'unexpected' as const,
-      })
-    if (result.error === 'category_not_found')
-      return fail(404, {
         addCategoryForm: form,
         error: 'not_found' as const,
       })
@@ -204,7 +198,7 @@ export const actions: Actions = {
         createTransactionError: 'unexpected' as const,
       })
 
-    if (result.error === 'not_found')
+    if (result.error === 'NOT_FOUND')
       return fail(404, {
         createTransactionForm: form,
         createTransactionError: 'not_found' as const,
@@ -241,7 +235,7 @@ export const actions: Actions = {
         updateTransactionError: 'unexpected' as const,
       })
 
-    if (result.error === 'not_found')
+    if (result.error === 'NOT_FOUND')
       return fail(404, {
         updateTransactionForm: form,
         updateTransactionError: 'not_found' as const,
@@ -271,7 +265,7 @@ export const actions: Actions = {
     if (!result)
       return fail(500, { deleteTransactionError: 'unexpected' as const })
 
-    if (result.error === 'not_found')
+    if (result.error === 'NOT_FOUND')
       return fail(404, { deleteTransactionError: 'not_found' as const })
 
     if (!request.headers.has('x-sveltekit-action'))

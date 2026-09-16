@@ -4,15 +4,12 @@ import { sendPasswordResetEmail, sendVerificationEmail } from '@zebabu/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { primaryCurrencySchema } from '../currencies'
-import { redisSecondaryStorage } from './secondary-storage'
+import type { IdentityEnvironment } from './environment'
+import { createRedisSecondaryStorage } from './secondary-storage'
 
-type IdentityDependencies = {
-  onUserCreated: (userId: string) => Promise<void>
-}
-
-export function createIdentity({ onUserCreated }: IdentityDependencies) {
+export function createIdentity(environment: IdentityEnvironment) {
   return betterAuth({
-    baseURL: env.BETTER_AUTH_BASE_URL ?? 'http://localhost:3000',
+    baseURL: environment.betterAuthUrl,
 
     emailAndPassword: {
       enabled: true,
@@ -64,18 +61,8 @@ export function createIdentity({ onUserCreated }: IdentityDependencies) {
       },
     },
 
-    databaseHooks: {
-      user: {
-        create: {
-          after: async (user) => {
-            await onUserCreated(user.id)
-          },
-        },
-      },
-    },
-
     // ─── Secondary Storage (Redis) ─────────────────────────────
-    secondaryStorage: redisSecondaryStorage,
+    secondaryStorage: createRedisSecondaryStorage(environment.redisKeyPrefix),
 
     // ─── Session ───────────────────────────────────────────────
     session: {
@@ -111,6 +98,6 @@ export function createIdentity({ onUserCreated }: IdentityDependencies) {
     },
 
     // Trusted origins for CSRF protection
-    trustedOrigins: [env.APP_URL ?? 'http://localhost:3000'],
+    trustedOrigins: [environment.webOrigin],
   })
 }
