@@ -55,7 +55,7 @@ RUN bun install --production --frozen-lockfile --ignore-scripts
 COPY --from=builder /app/apps/web/build   ./apps/web/build
 # SQL migration files used by the one-shot deployment command
 COPY --from=builder /app/apps/web/drizzle ./apps/web/drizzle
-COPY --from=builder /app/apps/web/src/migrate.mjs ./apps/web/migrate.mjs
+COPY --from=builder /app/apps/web/src/migrate.mjs ./apps/web/src/migrate.mjs
 
 RUN chown -R bunuser:nodejs /app
 USER bunuser
