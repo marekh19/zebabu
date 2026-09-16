@@ -8,10 +8,9 @@ import { categoryColors } from './categories/colors'
 
 export const MAX_TRANSACTION_AMOUNT = 9_999_999_999.99
 
-export const budgetInputRule = z
+const budgetRule = z
   .object({
     type: z.enum(['monthly', 'scenario']),
-    useDefaultAllocationTargets: z.boolean().default(false),
     month: z.number().int().min(1).max(12).optional(),
     year: z.number().int().min(2000).max(2100).optional(),
     name: z.string().trim().max(200).optional(),
@@ -25,22 +24,13 @@ export const budgetInputRule = z
       type !== 'scenario' || (name !== undefined && name.length > 0),
   )
 
-export const duplicateBudgetRule = z
-  .object({
-    sourceBudgetId: z.string().min(1),
-    type: z.enum(['monthly', 'scenario']),
-    month: z.number().int().min(1).max(12).optional(),
-    year: z.number().int().min(2000).max(2100).optional(),
-    name: z.string().trim().max(200).optional(),
-  })
-  .refine(
-    ({ type, month, year }) =>
-      type !== 'monthly' || (month !== undefined && year !== undefined),
-  )
-  .refine(
-    ({ type, name }) =>
-      type !== 'scenario' || (name !== undefined && name.length > 0),
-  )
+export const budgetInputRule = budgetRule.safeExtend({
+  useDefaultAllocationTargets: z.boolean().default(false),
+})
+
+export const duplicateBudgetRule = budgetRule.safeExtend({
+  sourceBudgetId: z.string().min(1),
+})
 
 export const createCategoryRule = z.object({
   name: z.string().min(1).max(100),

@@ -260,6 +260,18 @@ export async function findOwnedTransaction(
   return found
 }
 
+function ownedBudgetCategoryIds(
+  tx: DbTransaction,
+  budgetId: string,
+  userId: string,
+) {
+  return tx
+    .select({ id: budgetCategory.id })
+    .from(budgetCategory)
+    .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
+    .where(and(eq(budget.id, budgetId), eq(budget.userId, userId)))
+}
+
 export function updateTransactionById(
   tx: DbTransaction,
   transactionId: string,
@@ -278,11 +290,7 @@ export function updateTransactionById(
         eq(transaction.id, transactionId),
         inArray(
           transaction.budgetCategoryId,
-          tx
-            .select({ id: budgetCategory.id })
-            .from(budgetCategory)
-            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
-            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+          ownedBudgetCategoryIds(tx, budgetId, userId),
         ),
       ),
     )
@@ -304,11 +312,7 @@ export function updateTransactionPaidById(
         eq(transaction.id, transactionId),
         inArray(
           transaction.budgetCategoryId,
-          tx
-            .select({ id: budgetCategory.id })
-            .from(budgetCategory)
-            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
-            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+          ownedBudgetCategoryIds(tx, budgetId, userId),
         ),
       ),
     )
@@ -321,19 +325,17 @@ export function deleteTransactionById(
   budgetId: string,
   userId: string,
 ) {
-  return tx.delete(transaction).where(
-    and(
-      eq(transaction.id, transactionId),
-      inArray(
-        transaction.budgetCategoryId,
-        tx
-          .select({ id: budgetCategory.id })
-          .from(budgetCategory)
-          .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
-          .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+  return tx
+    .delete(transaction)
+    .where(
+      and(
+        eq(transaction.id, transactionId),
+        inArray(
+          transaction.budgetCategoryId,
+          ownedBudgetCategoryIds(tx, budgetId, userId),
+        ),
       ),
-    ),
-  )
+    )
 }
 
 export async function insertTransactionAtEnd(
@@ -440,11 +442,7 @@ export async function updateTransactionPositions(
         eq(transaction.id, transactionId),
         inArray(
           transaction.budgetCategoryId,
-          tx
-            .select({ id: budgetCategory.id })
-            .from(budgetCategory)
-            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
-            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+          ownedBudgetCategoryIds(tx, budgetId, userId),
         ),
       ),
     )
@@ -470,11 +468,7 @@ export async function updateTransactionPositions(
         inArray(transaction.id, [...positions.keys()]),
         inArray(
           transaction.budgetCategoryId,
-          tx
-            .select({ id: budgetCategory.id })
-            .from(budgetCategory)
-            .innerJoin(budget, eq(budgetCategory.budgetId, budget.id))
-            .where(and(eq(budget.id, budgetId), eq(budget.userId, userId))),
+          ownedBudgetCategoryIds(tx, budgetId, userId),
         ),
       ),
     )
