@@ -29,8 +29,8 @@ RUN DATABASE_URL=postgres://build:build@localhost/build \
     APP_ENV=build \
     bun run --filter @zebabu/web build
 
-# ── Runner: minimal production image ─────────────────────────────────────────
-FROM base AS runner
+# ── Runtime: shared production files ─────────────────────────────────────────
+FROM base AS runtime
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs \
@@ -55,13 +55,20 @@ RUN bun install --production --frozen-lockfile --ignore-scripts
 COPY --from=builder /app/apps/web/build   ./apps/web/build
 # SQL migration files used by the one-shot deployment command
 COPY --from=builder /app/apps/web/drizzle ./apps/web/drizzle
-COPY --from=builder /app/apps/web/src/migrate.mjs ./apps/web/migrate.mjs
+COPY --from=builder /app/apps/web/src/migrate.mjs ./apps/web/src/migrate.mjs
 
 RUN chown -R bunuser:nodejs /app
 USER bunuser
 
 # Bun workspace resolution requires running from the workspace member directory
 WORKDIR /app/apps/web
+
+FROM runtime AS migration
+HEALTHCHECK --interval=5s --timeout=2s --start-period=5m --retries=3 \
+  CMD test -f /tmp/zebabu-migration-complete
+CMD ["sh", "-c", "bun src/migrate.mjs && touch /tmp/zebabu-migration-complete && exec tail -f /dev/null"]
+
+FROM runtime AS runner
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

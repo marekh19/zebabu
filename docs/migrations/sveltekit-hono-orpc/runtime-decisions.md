@@ -20,6 +20,12 @@ Compare it with `src/lib/identity/server/persistence/schema.ts` before generatin
 
 ## Database rollout
 
-Run `bun run --filter @zebabu/web db:migrate` once in a CI or deployment job before rolling out web replicas. The web image contains the migration runner and ordered Drizzle journal, but application startup never runs it.
+The release workflow builds web and migration images from the same commit in the public `zebabu-web` package. The web image uses the commit SHA tag; the migration image uses `migration-` followed by that SHA. A dedicated Coolify Docker Image application runs the migration image on the same destination network as PostgreSQL. Its Docker health check passes only after `bun src/migrate.mjs` succeeds. The workflow waits for that result and confirms the migration application has exited before deploying the web image. On migration failure or timeout, it attempts to stop the migration application and blocks web deployment. A later release cannot start while a previous migration image is still running. Application startup never runs migrations.
+
+Configure the migration application without a domain or host port mapping. Coolify requires an internal port, so use `3000`; the migration container does not serve traffic. Give it the PostgreSQL Internal URL as `DATABASE_URL`. Store its UUID as the GitHub secret `COOLIFY_MIGRATION_APP_UUID`. Store a Coolify token with `read` and `write` permissions as `COOLIFY_CONFIG_API_TOKEN`; the existing `COOLIFY_API_TOKEN` handles deploy and stop operations. Add these before enabling the release workflow. A failed migration must leave the current web container in service.
+
+Main-branch workflows must not cancel an in-progress release because that could interrupt a running migration. Keep schema changes compatible with the currently running web image until the new image is healthy.
+
+Coolify's application pre-deployment command runs inside the old container, which may not contain new migration files. Its post-deployment command runs after the new application starts and does not gate the deployment. Neither is used for schema changes. See [Coolify's deployment command behavior](https://coolify.io/docs/applications/builds/dockerfile).
 
 The Bun SQL pool is configured by `DB_POOL_SIZE`, `DB_CONNECTION_TIMEOUT_SECONDS`, `DB_IDLE_TIMEOUT_SECONDS`, and `DB_QUERY_TIMEOUT_MS`. SIGINT and SIGTERM close it cleanly.
