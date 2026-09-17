@@ -107,17 +107,17 @@ run_case() {
 
   if [[ "$scenario" == success ]]; then
     local stop_line exited_line web_line
-    stop_line=$(rg -n 'POST http://coolify/api/v1/applications/migration/stop' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
-    exited_line=$(rg -n 'STATE exited:unhealthy' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
-    web_line=$(rg -n 'POST http://coolify/api/v1/deploy\?uuid=web' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
+    stop_line=$(grep -nE 'POST http://coolify/api/v1/applications/migration/stop' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
+    exited_line=$(grep -nE 'STATE exited:unhealthy' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
+    web_line=$(grep -nE 'POST http://coolify/api/v1/deploy\?uuid=web' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
     [[ -n "$stop_line" && -n "$exited_line" && -n "$web_line" && "$stop_line" -lt "$exited_line" && "$exited_line" -lt "$web_line" ]]
     [[ $(cat "$fixture_dir/state/stop-polls") -ge 2 ]]
-    rg -q 'GET https://dev.zebabu.com/health/ready' "$fixture_dir/state/calls"
+    grep -qE 'GET https://dev.zebabu.com/health/ready' "$fixture_dir/state/calls"
   elif [[ "$scenario" == orphan ]]; then
-    ! rg -q 'POST http://coolify/api/v1/deploy\?' "$fixture_dir/state/calls"
+    ! grep -qE 'POST http://coolify/api/v1/deploy\?' "$fixture_dir/state/calls"
   else
-    ! rg -q 'POST http://coolify/api/v1/deploy\?uuid=web' "$fixture_dir/state/calls"
-    rg -q 'POST http://coolify/api/v1/applications/migration/stop' "$fixture_dir/state/calls"
+    ! grep -qE 'POST http://coolify/api/v1/deploy\?uuid=web' "$fixture_dir/state/calls"
+    grep -qE 'POST http://coolify/api/v1/applications/migration/stop' "$fixture_dir/state/calls"
   fi
   printf '%s: passed\n' "$scenario"
 }
