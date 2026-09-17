@@ -16,7 +16,8 @@ fi
 
 api_url="${COOLIFY_API_URL%/}/api/v1"
 web_image='ghcr.io/marekh19/zebabu-web'
-migration_image='ghcr.io/marekh19/zebabu-migration'
+migration_image='ghcr.io/marekh19/zebabu-web'
+migration_tag="migration-$GITHUB_SHA"
 
 get_resource() {
   curl --fail --silent --show-error --max-time 30 \
@@ -96,7 +97,7 @@ if [[ -n $(jq -r '.fqdn // empty' <<<"$migration") ]]; then
 fi
 
 printf 'Deploying migration image for %s\n' "$GITHUB_SHA"
-set_image_tag "$COOLIFY_MIGRATION_APP_UUID" "$GITHUB_SHA"
+set_image_tag "$COOLIFY_MIGRATION_APP_UUID" "$migration_tag"
 migration_deployment=$(trigger_deployment "$COOLIFY_MIGRATION_APP_UUID")
 wait_for_deployment "$migration_deployment"
 wait_for_healthy_application "$COOLIFY_MIGRATION_APP_UUID"
