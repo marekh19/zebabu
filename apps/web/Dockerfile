@@ -29,8 +29,8 @@ RUN DATABASE_URL=postgres://build:build@localhost/build \
     APP_ENV=build \
     bun run --filter @zebabu/web build
 
-# ── Runner: minimal production image ─────────────────────────────────────────
-FROM base AS runner
+# ── Runtime: shared production files ─────────────────────────────────────────
+FROM base AS runtime
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs \
@@ -62,6 +62,13 @@ USER bunuser
 
 # Bun workspace resolution requires running from the workspace member directory
 WORKDIR /app/apps/web
+
+FROM runtime AS migration
+HEALTHCHECK --interval=5s --timeout=2s --start-period=5m --retries=3 \
+  CMD test -f /tmp/zebabu-migration-complete
+CMD ["sh", "-c", "bun src/migrate.mjs && touch /tmp/zebabu-migration-complete && exec tail -f /dev/null"]
+
+FROM runtime AS runner
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
