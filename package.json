@@ -10,6 +10,7 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "test": "turbo test",
+    "test:deploy": "bash scripts/deploy-coolify.test.sh",
     "lint:check": "turbo lint:check",
     "lint:fix": "turbo lint:fix",
     "format:check": "prettier --check .",

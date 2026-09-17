@@ -75,6 +75,37 @@ wait_for_healthy_application() {
   return 1
 }
 
+stop_migration() {
+  local status
+  curl --fail --silent --show-error --max-time 30 \
+    --request POST \
+    --header "Authorization: Bearer $COOLIFY_API_TOKEN" \
+    "$api_url/applications/$COOLIFY_MIGRATION_APP_UUID/stop?docker_cleanup=false" >/dev/null || return 1
+
+  for ((attempt = 0; attempt < 60; attempt++)); do
+    status=$(get_resource "/applications/$COOLIFY_MIGRATION_APP_UUID" | jq -r '.status') || return 1
+    case "$status" in
+      exited*) return 0 ;;
+    esac
+    sleep 5
+  done
+  printf 'Timed out waiting for migration application to stop\n' >&2
+  return 1
+}
+
+cleanup_on_exit() {
+  local result=$?
+  if ((result != 0)) && [[ "$migration_started" == true && "$migration_stopped" != true ]]; then
+    if ! stop_migration; then
+      printf 'Migration application may still be running; resolve it before another release\n' >&2
+    fi
+  fi
+}
+
+migration_started=false
+migration_stopped=false
+trap cleanup_on_exit EXIT
+
 web=$(get_resource "/applications/$COOLIFY_APP_UUID")
 migration=$(get_resource "/applications/$COOLIFY_MIGRATION_APP_UUID")
 
@@ -84,8 +115,8 @@ if [[ $(jq -r '.docker_registry_image_name' <<<"$web") != "$web_image" ]] ||
   exit 1
 fi
 
-web_destination=$(jq -r '.destination.uuid // empty' <<<"$web")
-migration_destination=$(jq -r '.destination.uuid // empty' <<<"$migration")
+web_destination=$(jq -r '.destination_id // empty' <<<"$web")
+migration_destination=$(jq -r '.destination_id // empty' <<<"$migration")
 if [[ -z "$web_destination" || "$web_destination" != "$migration_destination" ]]; then
   printf 'Web and migration applications must share a Coolify destination\n' >&2
   exit 1
@@ -96,18 +127,21 @@ if [[ -n $(jq -r '.fqdn // empty' <<<"$migration") ]]; then
   exit 1
 fi
 
+if [[ $(jq -r '.status' <<<"$migration") == running:* ]] &&
+  [[ $(jq -r '.docker_registry_image_tag // empty' <<<"$migration") == migration-* ]]; then
+  printf 'A previous migration application is still running\n' >&2
+  exit 1
+fi
+
 printf 'Deploying migration image for %s\n' "$GITHUB_SHA"
 set_image_tag "$COOLIFY_MIGRATION_APP_UUID" "$migration_tag"
+migration_started=true
 migration_deployment=$(trigger_deployment "$COOLIFY_MIGRATION_APP_UUID")
 wait_for_deployment "$migration_deployment"
 wait_for_healthy_application "$COOLIFY_MIGRATION_APP_UUID"
 printf 'Migrations completed\n'
-if ! curl --fail --silent --show-error --max-time 30 \
-  --request POST \
-  --header "Authorization: Bearer $COOLIFY_API_TOKEN" \
-  "$api_url/applications/$COOLIFY_MIGRATION_APP_UUID/stop?docker_cleanup=false" >/dev/null; then
-  printf 'Could not stop the migration application; continuing web rollout\n' >&2
-fi
+stop_migration
+migration_stopped=true
 
 printf 'Deploying web image for %s\n' "$GITHUB_SHA"
 set_image_tag "$COOLIFY_APP_UUID" "$GITHUB_SHA"
