@@ -4,14 +4,12 @@ const mocks = vi.hoisted(() => ({
   deleteTransaction: vi.fn(),
 }))
 
-vi.mock('$lib/budget-planning/server', () => ({
-  addBudgetCategory: vi.fn(),
-  createTransaction: vi.fn(),
-  deleteBudget: vi.fn(),
-  deleteTransaction: mocks.deleteTransaction,
-  getBudgetDetail: vi.fn(),
-  handleDuplicateBudgetAction: vi.fn(),
-  updateTransaction: vi.fn(),
+vi.mock('$lib/api/server-client', () => ({
+  apiErrorCode: (error: unknown) =>
+    error instanceof Error ? error.message : null,
+  createServerApiClient: () => ({
+    budgets: { deleteTransaction: mocks.deleteTransaction },
+  }),
 }))
 
 import { actions } from './+page.server'
@@ -49,11 +47,10 @@ describe('deleting a transaction', () => {
     mocks.deleteTransaction.mockResolvedValue({})
 
     await expect(submit()).resolves.toEqual({})
-    expect(mocks.deleteTransaction).toHaveBeenCalledWith(
-      'budget-1',
-      'user-1',
-      'transaction-1',
-    )
+    expect(mocks.deleteTransaction).toHaveBeenCalledWith({
+      budgetId: 'budget-1',
+      transactionId: 'transaction-1',
+    })
   })
 
   it('rejects an empty transaction identifier', async () => {
@@ -64,7 +61,7 @@ describe('deleting a transaction', () => {
   })
 
   it('conceals a missing or inaccessible transaction', async () => {
-    mocks.deleteTransaction.mockResolvedValue({ error: 'NOT_FOUND' })
+    mocks.deleteTransaction.mockRejectedValue(new Error('NOT_FOUND'))
 
     const result = await submit()
 

@@ -1,23 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  getBudgetDetail: vi.fn(),
-  getCompleteDefaultAllocationTargets: vi.fn(),
-  saveBudgetAllocationTargets: vi.fn(),
+  getBudget: vi.fn(),
+  listCategories: vi.fn(),
+  replaceAllocationTargets: vi.fn(),
 }))
 
-vi.mock('$lib/budget-planning/server', () => ({
-  addBudgetCategory: vi.fn(),
-  createTransaction: vi.fn(),
-  deleteBudget: vi.fn(),
-  deleteTransaction: vi.fn(),
-  getBudgetDetail: mocks.getBudgetDetail,
-  getCompleteDefaultAllocationTargets:
-    mocks.getCompleteDefaultAllocationTargets,
-  handleDuplicateBudgetAction: vi.fn(),
-  InvalidBudgetAllocationTargetsError: class extends Error {},
-  saveBudgetAllocationTargets: mocks.saveBudgetAllocationTargets,
-  updateTransaction: vi.fn(),
+vi.mock('$lib/api/server-client', () => ({
+  apiErrorCode: (error: unknown) =>
+    error instanceof Error ? error.message : null,
+  createServerApiClient: () => ({
+    budgets: {
+      get: mocks.getBudget,
+      replaceAllocationTargets: mocks.replaceAllocationTargets,
+    },
+    categories: { list: mocks.listCategories },
+  }),
 }))
 
 import { actions, load } from './+page.server'
@@ -49,24 +47,29 @@ async function submit(value: number) {
 
 describe('Budget allocation target route', () => {
   beforeEach(() => {
-    mocks.getBudgetDetail.mockReset()
-    mocks.getCompleteDefaultAllocationTargets.mockReset()
-    mocks.saveBudgetAllocationTargets.mockReset()
-    mocks.saveBudgetAllocationTargets.mockResolvedValue({})
+    mocks.getBudget.mockReset()
+    mocks.listCategories.mockReset()
+    mocks.replaceAllocationTargets.mockReset()
+    mocks.replaceAllocationTargets.mockResolvedValue({})
+    mocks.listCategories.mockResolvedValue([])
   })
 
   it('initializes an unset Budget from matching current defaults', async () => {
-    mocks.getBudgetDetail.mockResolvedValue({
+    mocks.getBudget.mockResolvedValue({
       budget: budget([
         placement('rent-placement', 'rent', null),
         placement('food-placement', 'food', null),
       ]),
       availableCategories: [],
     })
-    mocks.getCompleteDefaultAllocationTargets.mockResolvedValue([
-      { categoryId: 'rent', value: '60.0' },
-      { categoryId: 'food', value: '40.0' },
-      { categoryId: 'missing-from-budget', value: 0 },
+    mocks.listCategories.mockResolvedValue([
+      { id: 'rent', type: 'expense', defaultAllocationTarget: '60.0' },
+      { id: 'food', type: 'expense', defaultAllocationTarget: '40.0' },
+      {
+        id: 'missing-from-budget',
+        type: 'expense',
+        defaultAllocationTarget: '0.0',
+      },
     ])
     if (typeof load !== 'function') throw new Error('load is not defined')
 
@@ -96,11 +99,10 @@ describe('Budget allocation target route', () => {
   })
 
   it('initializes a sole unset expense Category at 100%', async () => {
-    mocks.getBudgetDetail.mockResolvedValue({
+    mocks.getBudget.mockResolvedValue({
       budget: budget([placement('rent-placement', 'rent', null)]),
       availableCategories: [],
     })
-    mocks.getCompleteDefaultAllocationTargets.mockResolvedValue(null)
     if (typeof load !== 'function') throw new Error('load is not defined')
 
     const result = await Reflect.apply(load, undefined, [
@@ -124,21 +126,18 @@ describe('Budget allocation target route', () => {
   it('saves a valid complete set for the owned Budget', async () => {
     const result = await submit(100)
 
-    expect(mocks.saveBudgetAllocationTargets).toHaveBeenCalledWith(
-      'budget-1',
-      'user-1',
-      {
-        enabled: true,
-        targets: [{ categoryId: 'placement-1', value: 100 }],
-      },
-    )
+    expect(mocks.replaceAllocationTargets).toHaveBeenCalledWith({
+      budgetId: 'budget-1',
+      enabled: true,
+      targets: [{ budgetCategoryId: 'placement-1', value: '100.0' }],
+    })
     expect(result).toMatchObject({ allocationForm: { valid: true } })
   })
 
   it('rejects an invalid total before calling the service', async () => {
     const result = await submit(90)
 
-    expect(mocks.saveBudgetAllocationTargets).not.toHaveBeenCalled()
+    expect(mocks.replaceAllocationTargets).not.toHaveBeenCalled()
     expect(result).toMatchObject({
       status: 400,
       data: { allocationForm: { valid: false } },
@@ -146,9 +145,7 @@ describe('Budget allocation target route', () => {
   })
 
   it('does not expose an unowned Budget', async () => {
-    mocks.saveBudgetAllocationTargets.mockResolvedValue({
-      error: 'NOT_FOUND',
-    })
+    mocks.replaceAllocationTargets.mockRejectedValue(new Error('NOT_FOUND'))
 
     const result = await submit(100)
 

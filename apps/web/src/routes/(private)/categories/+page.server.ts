@@ -1,30 +1,17 @@
+import { apiErrorCode, createServerApiClient } from '$lib/api/server-client'
 import {
   areDefaultAllocationTargetsEnabled,
   createAllocationTargetsSchema,
   createCreateCategorySchema,
   createUpdateCategorySchema,
 } from '$lib/budget-planning'
-import {
-  CategoryInUseError,
-  CategoryNotFoundError,
-  createCategory,
-  deleteCategory,
-  DuplicateCategoryError,
-  InvalidAllocationTargetsError,
-  LastCategoryOfTypeError,
-  listCategories,
-  NonZeroAllocationTargetError,
-  saveDefaultAllocationTargets,
-  updateCategory,
-} from '$lib/budget-planning/server'
-import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ locals }) => {
-  const categories = await listCategories(getAuthenticatedUserId(locals))
+export const load: PageServerLoad = async (event) => {
+  const categories = await createServerApiClient(event).categories.list()
   const form = await superValidate(zod4(createCreateCategorySchema()))
   const editForm = await superValidate(zod4(createUpdateCategorySchema()))
   const expenseCategories = categories.filter(({ type }) => type === 'expense')
@@ -48,7 +35,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 }
 
 export const actions: Actions = {
-  create: async ({ request, locals }) => {
+  create: async (event) => {
+    const { request } = event
     const form = await superValidate(
       request,
       zod4(createCreateCategorySchema()),
@@ -58,12 +46,10 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    const userId = getAuthenticatedUserId(locals)
-
     try {
-      await createCategory(userId, form.data)
+      await createServerApiClient(event).categories.create(form.data)
     } catch (error) {
-      if (error instanceof DuplicateCategoryError) {
+      if (apiErrorCode(error) === 'CONFLICT') {
         return fail(409, { form, error: 'duplicate' as const })
       }
       console.error('Category creation failed:', error)
@@ -73,7 +59,8 @@ export const actions: Actions = {
     return { form }
   },
 
-  update: async ({ request, locals }) => {
+  update: async (event) => {
+    const { request } = event
     const editForm = await superValidate(
       request,
       zod4(createUpdateCategorySchema()),
@@ -83,16 +70,19 @@ export const actions: Actions = {
       return fail(400, { editForm })
     }
 
-    const userId = getAuthenticatedUserId(locals)
     const { categoryId, name, color } = editForm.data
 
     try {
-      await updateCategory(categoryId, userId, { name, color })
+      await createServerApiClient(event).categories.update({
+        categoryId,
+        name,
+        color,
+      })
     } catch (error) {
-      if (error instanceof DuplicateCategoryError) {
+      if (apiErrorCode(error) === 'CONFLICT') {
         return fail(409, { editForm, error: 'duplicate' as const })
       }
-      if (error instanceof CategoryNotFoundError) {
+      if (apiErrorCode(error) === 'NOT_FOUND') {
         return fail(404, { editForm, error: 'not_found' as const })
       }
       console.error('Category update failed:', error)
@@ -102,7 +92,8 @@ export const actions: Actions = {
     return { editForm }
   },
 
-  delete: async ({ request, locals }) => {
+  delete: async (event) => {
+    const { request } = event
     const data = await request.formData()
     const categoryId = data.get('categoryId')
 
@@ -110,21 +101,19 @@ export const actions: Actions = {
       return fail(400, { error: 'invalid' as const })
     }
 
-    const userId = getAuthenticatedUserId(locals)
-
     try {
-      await deleteCategory(categoryId, userId)
+      await createServerApiClient(event).categories.delete({ categoryId })
     } catch (error) {
-      if (error instanceof LastCategoryOfTypeError) {
+      if (apiErrorCode(error) === 'LAST_CATEGORY_OF_TYPE') {
         return fail(409, { error: 'last_of_type' as const })
       }
-      if (error instanceof CategoryInUseError) {
+      if (apiErrorCode(error) === 'CATEGORY_IN_USE') {
         return fail(409, { error: 'in_use' as const })
       }
-      if (error instanceof NonZeroAllocationTargetError) {
+      if (apiErrorCode(error) === 'NON_ZERO_ALLOCATION_TARGET') {
         return fail(409, { error: 'non_zero_target' as const })
       }
-      if (error instanceof CategoryNotFoundError) {
+      if (apiErrorCode(error) === 'NOT_FOUND') {
         return fail(404, { error: 'not_found' as const })
       }
       console.error('Category deletion failed:', error)
@@ -134,7 +123,8 @@ export const actions: Actions = {
     return {}
   },
 
-  saveAllocationTargets: async ({ request, locals }) => {
+  saveAllocationTargets: async (event) => {
+    const { request } = event
     const allocationForm = await superValidate(
       request,
       zod4(createAllocationTargetsSchema()),
@@ -143,12 +133,15 @@ export const actions: Actions = {
     if (!allocationForm.valid) return fail(400, { allocationForm })
 
     try {
-      await saveDefaultAllocationTargets(
-        getAuthenticatedUserId(locals),
-        allocationForm.data,
-      )
+      await createServerApiClient(event).categories.replaceAllocationTargets({
+        enabled: allocationForm.data.enabled,
+        targets: allocationForm.data.targets.map(({ categoryId, value }) => ({
+          categoryId,
+          value: value.toFixed(1),
+        })),
+      })
     } catch (error) {
-      if (error instanceof InvalidAllocationTargetsError) {
+      if (apiErrorCode(error) === 'INVALID_ALLOCATION_TARGETS') {
         return fail(400, {
           allocationForm,
           allocationError: 'invalid' as const,

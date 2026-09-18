@@ -1,21 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  createMonthlyBudget: vi.fn(),
-  getCompleteDefaultAllocationTargets: vi.fn(),
+  createBudget: vi.fn(),
+  listCategories: vi.fn(),
   listBudgets: vi.fn(),
 }))
 
-vi.mock('$lib/budget-planning/server', () => ({
-  createMonthlyBudget: mocks.createMonthlyBudget,
-  createScenarioBudget: vi.fn(),
-  deleteBudget: vi.fn(),
-  DuplicateMonthlyBudgetError: class extends Error {},
-  DuplicateScenarioBudgetError: class extends Error {},
-  getCompleteDefaultAllocationTargets:
-    mocks.getCompleteDefaultAllocationTargets,
-  handleDuplicateBudgetAction: vi.fn(),
-  listBudgets: mocks.listBudgets,
+vi.mock('$lib/api/server-client', () => ({
+  apiErrorCode: () => null,
+  createServerApiClient: () => ({
+    budgets: { create: mocks.createBudget, list: mocks.listBudgets },
+    categories: { list: mocks.listCategories },
+  }),
 }))
 
 import { actions, load } from './+page.server'
@@ -51,8 +47,9 @@ async function submit(useDefaultAllocationTargets: boolean) {
 describe('Budget creation allocation defaults', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.createMonthlyBudget.mockResolvedValue({ id: 'budget-1' })
+    mocks.createBudget.mockResolvedValue({ id: 'budget-1' })
     mocks.listBudgets.mockResolvedValue([])
+    mocks.listCategories.mockResolvedValue([])
   })
 
   it.each([true, false])(
@@ -63,7 +60,8 @@ describe('Budget creation allocation defaults', () => {
         location: '/budgets/budget-1',
       })
 
-      expect(mocks.createMonthlyBudget).toHaveBeenCalledWith('user-1', {
+      expect(mocks.createBudget).toHaveBeenCalledWith({
+        type: 'monthly',
         month: 9,
         year: 2026,
         useDefaultAllocationTargets,
@@ -72,12 +70,12 @@ describe('Budget creation allocation defaults', () => {
   )
 
   it.each([
-    [null, false],
-    [[{ categoryId: 'rent', value: 100 }], true],
+    [[], false],
+    [[{ id: 'rent', type: 'expense', defaultAllocationTarget: '100.0' }], true],
   ])(
     'offers defaults only when a complete set exists',
     async (targets, expected) => {
-      mocks.getCompleteDefaultAllocationTargets.mockResolvedValue(targets)
+      mocks.listCategories.mockResolvedValue(targets)
       if (typeof load !== 'function') throw new Error('load is not defined')
 
       const result = await Reflect.apply(load, undefined, [

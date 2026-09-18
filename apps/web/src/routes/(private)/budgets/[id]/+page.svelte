@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages'
+  import type { BudgetCategory } from '$lib/budget-planning/model'
   import { Badge } from '@zebabu/ui/badge'
   import {
     AllocationTargetEditor,
@@ -16,7 +17,9 @@
   } from '$lib/budget-planning'
 
   let { data, form: actionData } = $props()
-  let comparisonCategories = $derived(data.budget.budgetCategories)
+  let comparisonCategories: readonly BudgetCategory[] = $derived(
+    data.budget.budgetCategories,
+  )
 
   const addCategoryError = $derived(
     getActionError(actionData, 'error', addBudgetCategoryErrorMessages),

@@ -14,4 +14,4 @@ This replaces app-local persistence because a stable HTTP interface enables head
 - The web application has no database or Redis access and receives only the secrets needed to call the API internally.
 - Browser Session cookies remain host-only and same-origin. Headless clients use scoped API keys after browser auth parity is complete.
 - Better Auth routes remain separate from the versioned application contract and may publish a separate generated document.
-- `apps/web/docs/adr/0002-compose-cross-context-persistence.md` is superseded.
+- `apps/api/docs/adr/0002-compose-cross-context-persistence.md` is superseded.

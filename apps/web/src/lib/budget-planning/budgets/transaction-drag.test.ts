@@ -6,7 +6,6 @@ describe('commitTransactionPosition', () => {
     const onBusyChange = vi.fn()
     const persist = vi.fn(async () => {
       expect(onBusyChange).toHaveBeenLastCalledWith(true)
-      return new Response(null, { status: 200 })
     })
     const refresh = vi.fn(async () => {
       expect(onBusyChange).toHaveBeenLastCalledWith(true)
@@ -34,7 +33,9 @@ describe('commitTransactionPosition', () => {
 
     await expect(
       commitTransactionPosition({
-        persist: async () => new Response(null, { status: 500 }),
+        persist: async () => {
+          throw new Error('Save failed')
+        },
         refresh: vi.fn(),
         onBusyChange,
         onRollback,
@@ -52,7 +53,7 @@ describe('commitTransactionPosition', () => {
 
     await expect(
       commitTransactionPosition({
-        persist: async () => new Response(null, { status: 200 }),
+        persist: async () => {},
         refresh: async () => {
           throw new Error('Refresh failed')
         },

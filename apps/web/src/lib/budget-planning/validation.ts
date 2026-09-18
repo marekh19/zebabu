@@ -28,10 +28,6 @@ export const budgetInputRule = budgetRule.safeExtend({
   useDefaultAllocationTargets: z.boolean().default(false),
 })
 
-export const duplicateBudgetRule = budgetRule.safeExtend({
-  sourceBudgetId: z.string().min(1),
-})
-
 export const createCategoryRule = z.object({
   name: z.string().min(1).max(100),
   type: z.enum(['income', 'expense']),
@@ -42,7 +38,7 @@ export const updateCategoryRule = createCategoryRule
   .omit({ type: true })
   .extend({ categoryId: z.string().min(1) })
 
-export const transactionFieldsRule = z.object({
+const transactionFieldsRule = z.object({
   name: z.string().trim().min(1).max(200),
   amount: z.number().positive().max(MAX_TRANSACTION_AMOUNT).multipleOf(0.01),
   isPaid: z.boolean(),
