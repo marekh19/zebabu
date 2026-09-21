@@ -1,4 +1,3 @@
-import { apikey, user } from '$lib/server/persistence/schema'
 import {
   budgetPageSchema,
   budgetReferenceSchema,
@@ -12,8 +11,9 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { afterAll, expect, test } from 'bun:test'
 import { eq } from 'drizzle-orm'
 import { createApp } from './app'
-import { createIdentity } from './lib/identity/server/create-identity'
-import { testDatabase } from './lib/server/persistence/database.test-helper'
+import { testDatabase } from './infrastructure/database/database.test-helper'
+import { apikey, user } from './infrastructure/database/schema'
+import { createIdentity } from './modules/identity/auth/better-auth'
 
 const runId = crypto.randomUUID()
 const email = `api-${runId}@example.com`

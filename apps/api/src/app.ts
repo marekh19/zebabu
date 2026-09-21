@@ -2,10 +2,10 @@ import { errorCodeSchema } from '@zebabu/api-contract'
 import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { secureHeaders } from 'hono/secure-headers'
-import type { createIdentity } from './lib/identity/server/create-identity'
-import { getReadiness } from './lib/server/readiness'
+import { requestLocale, resolveApiKey } from './http/principal'
+import { getReadiness } from './infrastructure/readiness'
+import type { createIdentity } from './modules/identity/auth/better-auth'
 import { generateOpenApi } from './openapi'
-import { requestLocale, resolveApiKey } from './principal'
 import { apiHandler } from './router'
 
 async function apiErrorResponse(response: Response, requestId: string) {

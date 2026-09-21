@@ -2,7 +2,7 @@
 
 Hono serves Better Auth at `/api/auth/*`, the oRPC application API at `/api/v1/*`, the OpenAPI document at `/api/openapi`, and its reference at `/api/docs`.
 
-Copy `.env.example` to `.env` and fill in the API secrets. From the workspace root, run `bun run db:start`, `bun run db:migrate`, then `bun run --filter @zebabu/api dev`. The API listens on port 3101 by default. The web development server proxies `/api/*` to this port.
+Copy `apps/api/.env.example` to `apps/api/.env` and fill in the API secrets. From the workspace root, run `bun run db:start`, `bun run db:migrate`, then `bun run --filter @zebabu/api dev`. The API listens on port 3101 by default. The web development server proxies `/api/*` to this port.
 
 The API owns PostgreSQL, Redis, identity email, and migrations. The migration image runs `src/migrate.mjs` once before the API runtime image is deployed. Runtime replicas do not migrate on startup.
 

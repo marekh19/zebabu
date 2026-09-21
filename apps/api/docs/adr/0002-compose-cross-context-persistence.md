@@ -1,5 +1,6 @@
 ---
-status: superseded by system ADR 0002
+status: superseded
+superseded-by: ../../../../docs/adr/0002-separate-web-and-api-applications.md
 ---
 
 # Compose Cross-context Persistence at the Application Root

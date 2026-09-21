@@ -1,6 +1,12 @@
+---
+status: completed
+---
+
 # API domain-module refactor specification
 
-Implement [API ADR 0004](../../../apps/api/docs/adr/0004-organize-api-by-domain-modules.md) as a structural refactor of `apps/api`. The observable HTTP interface and database behavior must stay the same. Read `CONTEXT-MAP.md`, both API context glossaries, the accepted API and system ADRs, and the existing API tests before editing.
+This specification records the completed implementation of API ADR 0004. Keep it as the structural reference for module ownership.
+
+The implementation followed [API ADR 0004](../../../apps/api/docs/adr/0004-organize-api-by-domain-modules.md) as a structural refactor of `apps/api`. It preserved the observable HTTP interface and database behavior.
 
 ## Target shape
 

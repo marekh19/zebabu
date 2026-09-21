@@ -1,8 +1,8 @@
 import { OpenAPIHandler } from '@orpc/openapi/fetch'
-import { budgetsRouter } from './routes/budgets'
-import { categoriesRouter } from './routes/categories'
-import { keysRouter } from './routes/keys'
-import { profileRouter } from './routes/profile'
+import { budgetsRouter } from './modules/budget-planning/budgets/procedures'
+import { categoriesRouter } from './modules/budget-planning/categories/procedures'
+import { keysRouter } from './modules/identity/api-keys/procedures'
+import { profileRouter } from './modules/identity/users/procedures'
 
 export const router = {
   profile: profileRouter,

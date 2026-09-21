@@ -1,3 +1,7 @@
+---
+status: accepted
+---
+
 # Snapshot Default Allocation Targets in Budgets
 
 Category default allocation targets are templates, not live fallbacks. When a

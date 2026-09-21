@@ -9,7 +9,7 @@
     "build": "bun build ./src/index.ts --outdir dist --target bun",
     "typecheck": "tsc --noEmit",
     "lint:check": "eslint .",
-    "test": "bun test --tsconfig-override ./tsconfig.bun-test.json src/app.integration.test.ts src/openapi.test.ts src/lib/server/persistence/ownership.postgres.test.ts src/lib/server/persistence/constraints.integration.test.ts src/lib/server/persistence/concurrency.postgres.test.ts src/lib/server/persistence/auth-sessions.postgres.test.ts",
+    "test": "bun test --tsconfig-override ./tsconfig.bun-test.json src/app.integration.test.ts src/openapi.test.ts src/modules/budget-planning/budgets/mapping.test.ts src/modules/budget-planning/ownership.postgres.test.ts src/infrastructure/database/constraints.integration.test.ts src/modules/budget-planning/concurrency.postgres.test.ts src/modules/identity/auth/auth-sessions.postgres.test.ts",
     "db:migrate": "bun src/migrate.mjs",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",

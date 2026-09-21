@@ -1,9 +1,9 @@
+import { closeDatabase } from '#api-database'
 import { createApp } from './app'
 import { readEnvironment } from './environment'
-import { createIdentity } from './lib/identity/server/create-identity'
-import { readIdentityEnvironment } from './lib/identity/server/environment'
-import { redis } from './lib/server/cache'
-import { closeDatabase } from './lib/server/persistence/database'
+import { redis } from './infrastructure/redis'
+import { createIdentity } from './modules/identity/auth/better-auth'
+import { readIdentityEnvironment } from './modules/identity/auth/environment'
 
 const environment = readEnvironment(process.env)
 const auth = createIdentity(readIdentityEnvironment(process.env))

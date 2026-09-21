@@ -1,3 +1,7 @@
+---
+status: accepted
+---
+
 # Runtime decisions
 
 ## Better Auth and Redis
@@ -8,7 +12,7 @@ Redis keys use `zebabu:<APP_ENV>:better-auth:`. Local Compose deliberately disab
 
 Better Auth's API Key plugin is pinned to 1.7.2. Migration `0013_chemical_skullbuster.sql` adds its User-owned `apikey` table after the pre-split migration head. Keys are hashed in PostgreSQL, expire after at most 365 days, and have independent per-key rate limits. `read` permits safe application requests; `write` also permits mutations. API keys never create browser Sessions. Creating, listing, and revoking keys requires a Session.
 
-After an explicit Better Auth version change, generate its expected schema from the API identity configuration and compare it with `apps/api/src/lib/identity/server/persistence/schema.ts` before creating a Drizzle migration. Application-owned User columns are expected additions.
+After an explicit Better Auth version change, generate its expected schema from the API identity configuration and compare it with `apps/api/src/modules/identity/schema.ts` before creating a Drizzle migration. Application-owned User columns are expected additions.
 
 ## Database rollout
 

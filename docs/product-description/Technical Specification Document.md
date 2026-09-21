@@ -1,6 +1,7 @@
 ---
 up: '[[Budget Planner]]'
 date: 2026-01-20
+status: historical
 ---
 
 # Budget Planner - Technical Specification Document
@@ -10,7 +11,7 @@ date: 2026-01-20
 **Author:** Technical Team  
 **Status:** Historical plan; superseded by current user stories, domain docs, and ADRs
 
-> The original Category ownership model in this document is obsolete. Categories belong to a User and are reusable across Budgets through BudgetCategory, as recorded in `apps/web/docs/adr/0001-reuse-categories-across-budgets.md`.
+> The original Category ownership model in this document is obsolete. Categories belong to a User and are reusable across Budgets through BudgetCategory, as recorded in `apps/api/docs/adr/0001-reuse-categories-across-budgets.md`. Treat the remaining architecture, schema, and delivery sections as historical input rather than implementation guidance.
 
 ---
 
@@ -812,10 +813,9 @@ zebabu/
 ├── apps/
 │   ├── api/
 │   │   ├── src/app.ts                 # Hono routes and HTTP policy
-│   │   ├── src/routes/                # oRPC application handlers
-│   │   ├── src/lib/identity/server/   # Better Auth and provisioning
-│   │   ├── src/lib/budget-planning/   # Domain services and repositories
-│   │   ├── src/lib/server/            # PostgreSQL, Redis, readiness
+│   │   ├── src/modules/               # Domain procedures and operations
+│   │   ├── src/workflows/             # Cross-domain provisioning
+│   │   ├── src/infrastructure/        # PostgreSQL, Redis, readiness
 │   │   └── drizzle/                   # Release migrations
 │   └── web/
 │       ├── src/routes/                # Pages, loads, and form actions
@@ -835,13 +835,13 @@ zebabu/
 
 ### 7.1 Budget Planning
 
-`apps/api/src/lib/budget-planning/server/` owns Budget, Category, BudgetCategory, Transaction, and Allocation Target operations. Its repositories use Drizzle and enforce User ownership. `apps/api/src/routes/` exposes these operations through the versioned contract.
+`apps/api/src/modules/budget-planning/` owns Budget, Category, BudgetCategory, Transaction, and Allocation Target operations. Its repositories use Drizzle and enforce User ownership. Module procedures expose these operations through the versioned contract.
 
 `apps/web/src/routes/(private)/` owns Budget and Category pages. Its load functions and form actions call the API through `apps/web/src/lib/api/`. UI components and local form validation remain in `apps/web/src/lib/budget-planning/`.
 
 ### 7.2 Identity
 
-`apps/api/src/lib/identity/server/` configures Better Auth, Redis-backed secondary storage, email verification, password reset, API keys, and User provisioning. The API serves Better Auth at `/api/auth/*` and the application profile at `/api/v1/profile`.
+`apps/api/src/modules/identity/` configures Better Auth, Redis-backed secondary storage, email verification, password reset, and API keys. `apps/api/src/workflows/provision-user.ts` coordinates User provisioning with initial Categories. The API serves Better Auth at `/api/auth/*` and the application profile at `/api/v1/profile`.
 
 `apps/web/src/hooks.server.ts` reads the Session through the API and places the User projection in `event.locals.user`. Login and registration pages remain in the web application.
 

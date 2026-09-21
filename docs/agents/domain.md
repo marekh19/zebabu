@@ -2,9 +2,9 @@
 
 ## Before exploring
 
-Read `CONTEXT-MAP.md` at the repo root, then read each linked `CONTEXT.md` relevant to the work.
+Read `CONTEXT-MAP.md` at the repository root, then read each linked `CONTEXT.md` relevant to the work.
 
-Read relevant system-wide ADRs under `docs/adr/` and context-specific ADRs under the owning workspace's `docs/adr/`.
+Read relevant system-wide ADRs under `docs/adr/` and API ADRs under `apps/api/docs/adr/`.
 
 If these files do not exist, proceed silently. The domain-modeling workflow creates them when terms or decisions are resolved.
 
@@ -14,17 +14,14 @@ If these files do not exist, proceed silently. The domain-modeling workflow crea
 /
 ├── CONTEXT-MAP.md
 ├── docs/adr/
-├── apps/
-│   └── web/
-│       ├── CONTEXT.md
-│       └── docs/adr/
-└── packages/
-    └── emails/
-        ├── CONTEXT.md
-        └── docs/adr/
+└── apps/api/
+    ├── docs/adr/
+    └── src/modules/
+        ├── budget-planning/CONTEXT.md
+        └── identity/CONTEXT.md
 ```
 
-`CONTEXT-MAP.md` identifies each domain context and links to its `CONTEXT.md`. Root ADRs cover system-wide decisions. Workspace ADRs cover decisions scoped to that context.
+`CONTEXT-MAP.md` identifies each domain context and links to its glossary. Root ADRs cover system-wide decisions. API ADRs cover API architecture and decisions scoped to its domain contexts.
 
 ## Vocabulary
 

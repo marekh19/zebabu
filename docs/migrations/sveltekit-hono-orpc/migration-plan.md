@@ -1,6 +1,12 @@
+---
+status: completed
+---
+
 # SvelteKit, Hono, and oRPC Migration Plan
 
-This plan starts after the [prerequisites](prerequisites.md) pass. It implements the decision in [ADR 0002](../../adr/0002-separate-web-and-api-applications.md). Use the [verification plan](verification-plan.md) as the acceptance test for every vertical slice and the final cutover.
+This plan records the completed split from the SvelteKit monolith to separate web and API applications.
+
+The plan started after the [prerequisites](prerequisites.md) passed. It implemented the decision in [ADR 0002](../../adr/0002-separate-web-and-api-applications.md). The [verification plan](verification-plan.md) served as the acceptance test for each vertical slice and the final cutover.
 
 ## Target architecture
 

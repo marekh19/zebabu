@@ -15,10 +15,10 @@ The browser uses one origin. The ingress routes `/api/*` to the API and all othe
 1. Run `bun install` and `bun run db:start`.
 2. Copy `.env.example` to `.env`, `apps/api/.env.example` to `apps/api/.env`, and `apps/web/.env.example` to `apps/web/.env`. Set database credentials and secrets.
 3. Run `bun run db:migrate`.
-4. Run `bun run --filter @zebabu/api dev` and `bun run --filter @zebabu/web dev` in separate terminals.
+4. Run `bun run dev`. Turbo starts the API, web application, and email preview server.
 
 ## Checks
 
-Run `bun run lint:check`, `bun run format:check`, `bun run typecheck`, `bun run test`, `bun run build`, and `bun run knip` from the workspace root. PostgreSQL and Redis are required for the API integration tests.
+Run `bun run lint:check`, `bun run format:fix`, and `bun run typecheck` from the workspace root after changes. Run `bun --env-file=apps/api/.env run test`, `bun run build`, and `bun run knip` when the affected behavior requires them. PostgreSQL and Redis are required for the API integration tests.
 
-See the [migration verification plan](docs/migrations/sveltekit-hono-orpc/verification-plan.md) for release checks.
+The completed application split's [verification plan](docs/migrations/sveltekit-hono-orpc/verification-plan.md) remains a regression checklist for architecture, security, and deployment changes.
