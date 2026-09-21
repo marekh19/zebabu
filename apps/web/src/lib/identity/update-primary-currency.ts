@@ -10,8 +10,8 @@ export async function updatePrimaryCurrency(
   primaryCurrency: CurrencyCode,
 ): Promise<boolean> {
   try {
-    const response = await fetcher('/api/auth/update-user', {
-      method: 'POST',
+    const response = await fetcher('/api/v1/profile', {
+      method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ primaryCurrency }),
     })

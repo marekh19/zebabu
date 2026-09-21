@@ -1,6 +1,12 @@
+---
+status: reference
+---
+
 # SvelteKit, Hono, and oRPC Migration Verification Plan
 
-Run this plan after each vertical slice and in full before cutover. A migration is complete only when observable behavior, security, data integrity, and operations pass through the public deployment shape.
+This was the cutover acceptance plan. Use the applicable sections as regression checks for architecture, security, data, or deployment changes.
+
+During migration, the team ran this plan after each vertical slice and in full before cutover. For later changes, run the sections that cover the affected observable behavior, security, data integrity, or operations.
 
 ## Test fixtures
 

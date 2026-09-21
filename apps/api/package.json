@@ -1,0 +1,43 @@
+{
+  "name": "@zebabu/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build ./src/index.ts --outdir dist --target bun",
+    "typecheck": "tsc --noEmit",
+    "lint:check": "eslint .",
+    "test": "bun test --tsconfig-override ./tsconfig.bun-test.json src/app.integration.test.ts src/openapi.test.ts src/modules/budget-planning/budgets/mapping.test.ts src/modules/budget-planning/ownership.postgres.test.ts src/infrastructure/database/constraints.integration.test.ts src/modules/budget-planning/concurrency.postgres.test.ts src/modules/identity/auth/auth-sessions.postgres.test.ts",
+    "db:migrate": "bun src/migrate.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "redis:studio": "redis-commander --redis-host localhost --redis-port 6379"
+  },
+  "dependencies": {
+    "@better-auth/api-key": "1.7.2",
+    "@orpc/openapi": "1.15.1",
+    "@orpc/server": "1.15.1",
+    "@orpc/zod": "1.15.1",
+    "@zebabu/api-contract": "workspace:*",
+    "@zebabu/emails": "workspace:*",
+    "better-auth": "1.7.2",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.0.0",
+    "nanoid": "^6.0.1",
+    "narrowland": "^1.9.0",
+    "zod": "~4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/bun": "1.4.0",
+    "@zebabu/tooling": "workspace:*",
+    "drizzle-kit": "^0.31.9",
+    "eslint": "^10.8.1",
+    "globals": "^17.0.0",
+    "redis-commander": "^0.9.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.0.0"
+  }
+}

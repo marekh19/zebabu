@@ -1,0 +1,22 @@
+# API module structure: source notes
+
+Research date: 18 September 2026. Scope: Hono, Express, oRPC 1.x, and small-scale domain/CQRS organization. These sources describe useful mechanisms and trade-offs; none prescribes a universal folder tree.
+
+## Documented guidance
+
+- **Hono:** Group related routes in separate files and mount them with `app.route()`. Hono advises against extracting Rails-style controllers when possible because route parameter type inference becomes harder. If separate handlers are needed, `factory.createHandlers()` preserves inference. [Hono best practices](https://hono.dev/docs/guides/best-practices)
+- **Express:** `express.Router` is a modular, mountable routing system. Router-specific middleware and handlers can live together and be mounted under a path. Express does not prescribe how business logic or persistence files should be arranged. [Express routing guide](https://expressjs.com/en/guide/routing/)
+- **oRPC 1.x:** Routers are nestable objects of procedures. A contract-first implementation can attach handlers to individual contract procedures, then assemble the root router with `.router()` for full contract enforcement. Router-level middleware can apply shared behavior, but repeated router and procedure middleware can execute more than once. [oRPC v1 router](https://v1.orpc.dev/docs/router), [oRPC v1 implement contract](https://v1.orpc.dev/docs/contract-first/implement-contract)
+- **oRPC 1.x OpenAPI:** `.route()` defines HTTP method and path; otherwise OpenAPI routing defaults to POST and a path derived from router keys. In v1, `.prefix()` applies only to procedures with explicit paths. These rules mean moving or renaming router keys can change externally visible routes where paths are implicit. Zebabu currently declares explicit paths for its contract procedures, so an internal file move can preserve their HTTP paths. [oRPC v1 OpenAPI routing](https://v1.orpc.dev/docs/openapi/routing)
+- **Layering:** Separating HTTP presentation, domain logic, and data access can reduce the amount of code a developer must understand at once and can make domain logic easier to test. Fowler recommends domain-oriented top-level modules once application-wide technical layers become large, with layers inside each domain module. He notes that data-source substitution is often cited as a reason for a repository abstraction but rarely happens in practice. [Fowler, Presentation Domain Data Layering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html)
+- **CQRS:** Microsoft describes a minimal form that separates read and write logic while using one data store. It also warns that CQRS adds complexity and may be unsuitable for simple CRUD. Fowler recommends using CQRS only in portions of a system where its benefit justifies the cost. [Microsoft CQRS pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs), [Fowler, CQRS](https://martinfowler.com/bliki/CQRS.html)
+
+## Design inferences for Zebabu
+
+- A domain-first folder layout with local procedure, application-rule, and persistence files is compatible with Hono and oRPC. This follows from their route and router composition mechanisms; neither framework requires a global `handlers/`, `services/`, `repositories/` tree. [Hono best practices](https://hono.dev/docs/guides/best-practices), [oRPC v1 router](https://v1.orpc.dev/docs/router)
+- A three-step handler, application operation, persistence flow is useful where an operation coordinates validation, authorization, transactions, or several queries. A pass-through layer for each CRUD call is unlikely to improve locality. This is an architectural judgment based on the layering trade-offs above. [Fowler, Presentation Domain Data Layering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html)
+- Read/write separation can start as naming and file organization for complex operations using the same database. Separate stores, event buses, and eventual consistency are additional choices, not prerequisites. [Microsoft CQRS pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs)
+
+## Repository constraint
+
+The workspace pins `@orpc/server`, `@orpc/openapi`, and `@orpc/contract` to 1.15.1, so implementation advice should use the v1 documentation. The accepted [web/API separation ADR](../adr/0002-separate-web-and-api-applications.md) assigns domain operations and data stores to the API and the shared HTTP contract to a separate package.

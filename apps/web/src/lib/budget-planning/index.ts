@@ -1,7 +1,6 @@
 export { default as AllocationComparisonChart } from './allocation-targets/allocation-comparison-chart.svelte'
 export { default as AllocationTargetEditor } from './allocation-targets/allocation-target-editor.svelte'
 export { areDefaultAllocationTargetsEnabled } from './allocation-targets/rules'
-export type { AllocationTargetsInput } from './allocation-targets/rules'
 export { createAllocationTargetsSchema } from './allocation-targets/schema'
 export { default as BudgetActions } from './budgets/components/budget-actions.svelte'
 export { default as BudgetBoard } from './budgets/components/budget-board.svelte'
@@ -27,13 +26,3 @@ export {
   getActionError,
   updateTransactionErrorMessages,
 } from './errors'
-export type {
-  AvailableCategory,
-  BudgetCategory,
-  BudgetDetail,
-  BudgetListItem,
-  BudgetReference,
-  Category,
-  CategoryListItem,
-  PlannedTransaction,
-} from './model'

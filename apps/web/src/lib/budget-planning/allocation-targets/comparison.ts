@@ -4,7 +4,7 @@ import {
 } from '$lib/budget-planning/budgets/totals'
 import type { BudgetCategory, Category } from '$lib/budget-planning/model'
 
-export const ALLOCATION_VARIANCE_TOLERANCE_PERCENTAGE_POINTS = 0.1
+const ALLOCATION_VARIANCE_TOLERANCE_PERCENTAGE_POINTS = 0.1
 
 export const AllocationComparisonState = {
   Under: 'under',

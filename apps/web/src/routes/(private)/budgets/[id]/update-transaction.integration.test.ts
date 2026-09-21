@@ -4,13 +4,12 @@ const mocks = vi.hoisted(() => ({
   updateTransaction: vi.fn(),
 }))
 
-vi.mock('$lib/budget-planning/server', () => ({
-  addBudgetCategory: vi.fn(),
-  createTransaction: vi.fn(),
-  deleteBudget: vi.fn(),
-  getBudgetDetail: vi.fn(),
-  handleDuplicateBudgetAction: vi.fn(),
-  updateTransaction: mocks.updateTransaction,
+vi.mock('$lib/api/server-client', () => ({
+  apiErrorCode: (error: unknown) =>
+    error instanceof Error ? error.message : null,
+  createServerApiClient: () => ({
+    budgets: { updateTransaction: mocks.updateTransaction },
+  }),
 }))
 
 import { actions } from './+page.server'
@@ -57,12 +56,11 @@ describe('updating a transaction', () => {
     const result = await submit()
 
     expect(mocks.updateTransaction).toHaveBeenCalledWith(
-      'budget-1',
-      'user-1',
-      'transaction-1',
       expect.objectContaining({
+        budgetId: 'budget-1',
+        transactionId: 'transaction-1',
         name: 'Updated rent',
-        amount: 1300.5,
+        amount: '1300.50',
         isPaid: true,
         note: 'Paid by transfer',
       }),
@@ -88,7 +86,7 @@ describe('updating a transaction', () => {
   it.each(['another budget', 'another user'])(
     'does not expose a transaction from %s',
     async () => {
-      mocks.updateTransaction.mockResolvedValue({ error: 'NOT_FOUND' })
+      mocks.updateTransaction.mockRejectedValue(new Error('NOT_FOUND'))
 
       const result = await submit()
 

@@ -1,9 +1,12 @@
 ---
 up: '[[Budget Planner]]'
 date: 2026-01-20
+status: historical
 ---
 
 # Discovery Questions for Your Budgeting App
+
+This document records initial product discovery. Current domain glossaries, ADRs, and implementation take precedence where the product changed.
 
 Let me dig deep so we can model this properly!
 

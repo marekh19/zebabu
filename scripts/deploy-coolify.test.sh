@@ -25,6 +25,9 @@ case "$method $url" in
   "GET http://coolify/api/v1/applications/web")
     printf '{"docker_registry_image_name":"ghcr.io/marekh19/zebabu-web","destination_id":7,"fqdn":"https://dev.zebabu.com","status":"running:healthy"}\n'
     ;;
+  "GET http://coolify/api/v1/applications/api")
+    printf '{"docker_registry_image_name":"ghcr.io/marekh19/zebabu-api","destination_id":7,"fqdn":"","status":"running:healthy"}\n'
+    ;;
   "GET http://coolify/api/v1/applications/migration")
     if [[ -f "$MOCK_STATE/stop" ]]; then
       polls=$(cat "$MOCK_STATE/stop-polls" 2>/dev/null || printf 0)
@@ -45,7 +48,7 @@ case "$method $url" in
       tag=placeholder
     fi
     printf 'STATE %s\n' "$status" >>"$MOCK_STATE/calls"
-    printf '{"docker_registry_image_name":"ghcr.io/marekh19/zebabu-web","docker_registry_image_tag":"%s","destination_id":7,"fqdn":"","status":"%s"}\n' "$tag" "$status"
+    printf '{"docker_registry_image_name":"ghcr.io/marekh19/zebabu-api","docker_registry_image_tag":"%s","destination_id":7,"fqdn":"","status":"%s"}\n' "$tag" "$status"
     ;;
   "PATCH http://coolify/api/v1/applications/"*) ;;
   "POST http://coolify/api/v1/deploy?uuid=migration&force=false")
@@ -53,6 +56,9 @@ case "$method $url" in
     ;;
   "POST http://coolify/api/v1/deploy?uuid=web&force=false")
     printf '{"deployments":[{"deployment_uuid":"web-deploy"}]}\n'
+    ;;
+  "POST http://coolify/api/v1/deploy?uuid=api&force=false")
+    printf '{"deployments":[{"deployment_uuid":"api-deploy"}]}\n'
     ;;
   "GET http://coolify/api/v1/deployments/migration-deploy")
     if [[ "$MOCK_SCENARIO" == deployment_timeout ]]; then
@@ -66,6 +72,13 @@ case "$method $url" in
   "GET http://coolify/api/v1/deployments/web-deploy")
     printf '{"status":"finished"}\n'
     ;;
+  "GET http://coolify/api/v1/deployments/api-deploy")
+    if [[ "$MOCK_SCENARIO" == api_failure ]]; then
+      printf '{"status":"failed"}\n'
+    else
+      printf '{"status":"finished"}\n'
+    fi
+    ;;
   "POST http://coolify/api/v1/applications/migration/stop?docker_cleanup=false")
     if [[ "$MOCK_SCENARIO" == stop_failure ]]; then
       exit 22
@@ -73,6 +86,7 @@ case "$method $url" in
     touch "$MOCK_STATE/stop"
     ;;
   "GET https://dev.zebabu.com/health/ready") ;;
+  "GET https://dev.zebabu.com/api/health/ready") ;;
   *)
     printf 'Unexpected request: %s %s\n' "$method" "$url" >&2
     exit 1
@@ -91,7 +105,7 @@ run_case() {
   rm -f "$fixture_dir/state/"*
   if env PATH="$fixture_dir/bin:$PATH" MOCK_STATE="$fixture_dir/state" MOCK_SCENARIO="$scenario" \
     COOLIFY_API_URL=http://coolify COOLIFY_API_TOKEN=test COOLIFY_CONFIG_API_TOKEN=test \
-    COOLIFY_APP_UUID=web COOLIFY_MIGRATION_APP_UUID=migration \
+    COOLIFY_APP_UUID=web COOLIFY_API_APP_UUID=api COOLIFY_MIGRATION_APP_UUID=migration \
     GITHUB_SHA=1111111111111111111111111111111111111111 \
     bash "$repo_root/scripts/deploy-coolify.sh" >"$fixture_dir/output" 2>&1; then
     result=success
@@ -106,11 +120,13 @@ run_case() {
   fi
 
   if [[ "$scenario" == success ]]; then
-    local stop_line exited_line web_line
+    local stop_line exited_line api_line api_ready_line web_line
     stop_line=$(grep -nE 'POST http://coolify/api/v1/applications/migration/stop' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
     exited_line=$(grep -nE 'STATE exited:unhealthy' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
+    api_line=$(grep -nE 'POST http://coolify/api/v1/deploy\?uuid=api' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
+    api_ready_line=$(grep -nE 'GET https://dev.zebabu.com/api/health/ready' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
     web_line=$(grep -nE 'POST http://coolify/api/v1/deploy\?uuid=web' "$fixture_dir/state/calls" | head -1 | cut -d: -f1)
-    [[ -n "$stop_line" && -n "$exited_line" && -n "$web_line" && "$stop_line" -lt "$exited_line" && "$exited_line" -lt "$web_line" ]]
+    [[ -n "$stop_line" && -n "$exited_line" && -n "$api_line" && -n "$api_ready_line" && -n "$web_line" && "$stop_line" -lt "$exited_line" && "$exited_line" -lt "$api_line" && "$api_line" -lt "$api_ready_line" && "$api_ready_line" -lt "$web_line" ]]
     [[ $(cat "$fixture_dir/state/stop-polls") -ge 2 ]]
     grep -qE 'GET https://dev.zebabu.com/health/ready' "$fixture_dir/state/calls"
   elif [[ "$scenario" == orphan ]]; then
@@ -126,6 +142,7 @@ run_case success success
 run_case stop_failure failure
 run_case stop_timeout failure
 run_case migration_failure failure
+run_case api_failure failure
 run_case health_timeout failure
 run_case deployment_timeout failure
 run_case orphan failure

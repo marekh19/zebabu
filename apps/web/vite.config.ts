@@ -5,6 +5,11 @@ import { defineConfig } from 'vite'
 import devtoolsJson from 'vite-plugin-devtools-json'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3101',
+    },
+  },
   plugins: [
     tailwindcss(),
     sveltekit(),

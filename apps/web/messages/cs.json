@@ -119,6 +119,8 @@
   "budget_detail_access_denied_description": "Nemáte oprávnění zobrazit tento rozpočet.",
   "budget_detail_not_found_title": "Rozpočet nenalezen",
   "budget_detail_not_found_description": "Rozpočet, který hledáte, neexistuje.",
+  "budget_detail_unexpected_title": "Rozpočet se nepodařilo načíst",
+  "budget_detail_unexpected_description": "Při načítání rozpočtu došlo k chybě. Zkuste to znovu.",
   "budget_detail_type_income": "Příjmy",
   "budget_detail_type_expense": "Výdaje",
   "category_default_income": "Příjmy",

@@ -1,6 +1,7 @@
 ---
 up: '[[Budget Planner]]'
 date: 2026-01-20
+status: historical
 ---
 
 # Budget Planner - Technical Specification Document
@@ -10,7 +11,7 @@ date: 2026-01-20
 **Author:** Technical Team  
 **Status:** Historical plan; superseded by current user stories, domain docs, and ADRs
 
-> The original Category ownership model in this document is obsolete. Categories belong to a User and are reusable across Budgets through BudgetCategory, as recorded in `apps/web/docs/adr/0001-reuse-categories-across-budgets.md`.
+> The original Category ownership model in this document is obsolete. Categories belong to a User and are reusable across Budgets through BudgetCategory, as recorded in `apps/api/docs/adr/0001-reuse-categories-across-budgets.md`. Treat the remaining architecture, schema, and delivery sections as historical input rather than implementation guidance.
 
 ---
 
@@ -753,14 +754,14 @@ CREATE INDEX idx_exchange_rates_date ON exchange_rates(date DESC);
 
 ### 6.1 Technology Stack
 
-**Full-Stack Framework:**
+**Application runtimes:**
 
-- **Framework**: SvelteKit (full-stack with server-side routes)
-- **Runtime**: Node.js (via @sveltejs/adapter-node)
+- **Web**: SvelteKit on Bun (`apps/web`), with page loads and form actions
+- **API**: Hono and oRPC on Bun (`apps/api`)
 - **Database**: PostgreSQL
 - **ORM**: Drizzle ORM
 - **Validation**: Zod
-- **Authentication**: Better Auth
+- **Authentication**: Better Auth in the API
 
 **Frontend:**
 
@@ -773,268 +774,82 @@ CREATE INDEX idx_exchange_rates_date ON exchange_rates(date DESC);
 
 **Infrastructure:**
 
-- **Hosting**: TBD (VPS, Railway, or Render)
+- **Hosting**: Separate web, API, and migration workloads in Coolify
 - **Database**: PostgreSQL (hosted via platform provider or managed service like Neon/Supabase)
 - **Cache**: Redis (for exchange rates and sessions)
 - **Storage**: Not needed for MVP
 
 **Shared Packages:**
 
-- **@packages/ui**: Shared UI components
-- **@packages/tailwind-config**: Shared Tailwind configuration
+- **@zebabu/ui**: Shared UI components
+- **@zebabu/api-contract**: Zod and oRPC HTTP contracts
 - **@zebabu/tooling**: Shared ESLint, lint-staged, Svelte, and TypeScript configuration
 
 **External Services:**
 
 - **Exchange Rates**: exchangerate-api.com (free tier)
-- **Email**: TBD (Resend, SendGrid, or platform-provided email service)
+- **Email**: Resend, called only by the API
 
 ---
 
 ### 6.2 Architecture Pattern
 
-**Pattern:** SvelteKit Full-Stack with Server-Side Functions (Simplified DDD)
+**Pattern:** One public origin with separate web and API applications.
 
 ```
-┌─────────────────────────────────────────┐
-│      SvelteKit Frontend (Pages)         │
-│  - Svelte components                    │
-│  - Client-side state (stores)           │
-│  - Form handling (Superforms)           │
-│  - Progressive enhancement              │
-└──────────────────┬──────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────┐
-│   Server Layer (+page.server.ts)        │
-│  - Load functions (data fetching)       │
-│  - Form actions (mutations)             │
-│  - Request validation (Zod)             │
-│  - Error handling                       │
-└──────────────────┬──────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────┐
-│   Application Layer ($lib/server)       │
-│  - Business logic (services)            │
-│  - Use case implementation              │
-│  - Domain rule enforcement              │
-└──────────────────┬──────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────┐
-│   Infrastructure Layer (Repositories)   │
-│  - Database queries (Drizzle)           │
-│  - External API calls                   │
-│  - Data persistence                     │
-└─────────────────────────────────────────┘
+Browser → one public origin → SvelteKit (`/*`) or Hono (`/api/*`)
+SvelteKit form actions → private API URL → oRPC handlers → domain services → PostgreSQL
+Hono Better Auth → PostgreSQL, Redis, and identity email
 ```
 
-**Why This Pattern:**
-
-- ✅ No traditional REST API needed (load functions + actions)
-- ✅ Type-safe server functions (TypeScript end-to-end)
-- ✅ Progressive enhancement built-in
-- ✅ Clear separation of concerns
-- ✅ Testable (each layer can be tested independently)
-- ✅ Not over-engineered (no unnecessary abstractions)
-- ✅ Easy to understand and maintain
-- ✅ Full-stack in single codebase (faster development)
-- ✅ Room to grow (can add domain layer if complexity increases)
+The web uses a typed client from `@zebabu/api-contract`. Browser mutations that need no web processing call `/api/v1/*` directly. Native and enhanced forms use SvelteKit actions that parse form data and forward the operation to the API. See [ADR 0002](../adr/0002-separate-web-and-api-applications.md).
 
 ---
 
 ### 6.3 Project Structure
 
-```
+```text
 zebabu/
-├── src/
-│   ├── routes/                 # SvelteKit routes (pages with server logic)
-│   │   ├── (app)/              # Authenticated app routes
-│   │   │   ├── budgets/        # Budget pages
-│   │   │   │   ├── +page.svelte
-│   │   │   │   ├── +page.server.ts      # Load budgets + actions (create, delete)
-│   │   │   │   ├── [id]/                # Single budget view
-│   │   │   │   │   ├── +page.svelte
-│   │   │   │   │   ├── +page.server.ts  # Load budget + actions (update, duplicate)
-│   │   │   │   │   └── export/
-│   │   │   │   │       └── +server.ts   # CSV export endpoint
-│   │   │   │   └── import/
-│   │   │   │       ├── +page.svelte
-│   │   │   │       └── +page.server.ts  # CSV import action
-│   │   │   └── +layout.svelte
-│   │   │   └── +layout.server.ts        # Load user session
-│   │   ├── auth/                        # Auth pages (login, register)
-│   │   │   ├── login/
-│   │   │   │   ├── +page.svelte
-│   │   │   │   └── +page.server.ts      # Login action
-│   │   │   └── register/
-│   │   │       ├── +page.svelte
-│   │   │       └── +page.server.ts      # Register action
-│   │   └── +page.svelte                 # Homepage
-│   │
-│   ├── lib/
-│   │   ├── components/                  # Svelte components
-│   │   │   ├── budget/
-│   │   │   ├── category/
-│   │   │   └── transaction/
-│   │   ├── stores/                      # Svelte stores
-│   │   ├── server/                      # Server-only code ($lib/server)
-│   │   │   ├── modules/
-│   │   │   │   ├── auth/                # Auth module
-│   │   │   │   │   ├── service.ts
-│   │   │   │   │   └── repository.ts
-│   │   │   │   ├── budget/              # Budget module (core)
-│   │   │   │   │   ├── service.ts
-│   │   │   │   │   └── repository.ts
-│   │   │   │   ├── category/
-│   │   │   │   │   ├── service.ts
-│   │   │   │   │   └── repository.ts
-│   │   │   │   ├── transaction/
-│   │   │   │   │   ├── service.ts
-│   │   │   │   │   └── repository.ts
-│   │   │   │   ├── exchange-rates/
-│   │   │   │   │   ├── service.ts
-│   │   │   │   │   └── repository.ts
-│   │   │   │   └── import-export/
-│   │   │   │       ├── export.service.ts
-│   │   │   │       └── import.service.ts
-│   │   │   ├── db/                      # Drizzle schema & instance
-│   │   │   │   ├── schema/
-│   │   │   │   │   ├── users.ts
-│   │   │   │   │   ├── budgets.ts
-│   │   │   │   │   ├── categories.ts
-│   │   │   │   │   ├── transactions.ts
-│   │   │   │   │   └── exchange-rates.ts
-│   │   │   │   └── index.ts
-│   │   │   └── auth.ts                  # Better Auth config
-│   │   └── utils/                       # Shared utilities
-│   │
-│   ├── hooks.server.ts                  # SvelteKit server hooks (auth)
-│   ├── app.html
-│   └── app.d.ts
-│
+├── apps/
+│   ├── api/
+│   │   ├── src/app.ts                 # Hono routes and HTTP policy
+│   │   ├── src/modules/               # Domain procedures and operations
+│   │   ├── src/workflows/             # Cross-domain provisioning
+│   │   ├── src/infrastructure/        # PostgreSQL, Redis, readiness
+│   │   └── drizzle/                   # Release migrations
+│   └── web/
+│       ├── src/routes/                # Pages, loads, and form actions
+│       ├── src/lib/api/               # Typed browser and server API clients
+│       └── src/lib/budget-planning/   # UI models and components
 ├── packages/
-│   ├── ui/                              # Shared UI components
-│   │   ├── src/
-│   │   │   └── components/
-│   │   └── package.json
-│   │
-│   ├── tailwind-config/                 # Shared Tailwind config
-│   │   ├── index.ts
-│   │   └── package.json
-│   │
-│   └── tsconfig/                        # Shared TypeScript config
-│       ├── base.json
-│       └── package.json
-│
-├── drizzle.config.ts
-├── svelte.config.js
-├── package.json
-├── bun.lock
-└── vite.config.ts
+│   ├── api-contract/                  # Zod schemas and oRPC contracts
+│   ├── emails/                        # Identity email templates and sender
+│   ├── ui/                            # Shared UI components
+│   └── tooling/                       # Shared build and lint configuration
+└── scripts/deploy-coolify.sh          # Migration, API, then web release
 ```
 
 ---
 
 ## 7. Module Structure
 
-### 7.1 Budget Module (Core)
+### 7.1 Budget Planning
 
-**Server-Side Logic:** `src/lib/server/modules/budget/`
+`apps/api/src/modules/budget-planning/` owns Budget, Category, BudgetCategory, Transaction, and Allocation Target operations. Its repositories use Drizzle and enforce User ownership. Module procedures expose these operations through the versioned contract.
 
-```
-budget/
-├── service.ts                 # Budget CRUD, duplication, business logic
-├── repository.ts              # Database queries (Drizzle)
-└── validators.ts              # Zod schemas for validation
-```
+`apps/web/src/routes/(private)/` owns Budget and Category pages. Its load functions and form actions call the API through `apps/web/src/lib/api/`. UI components and local form validation remain in `apps/web/src/lib/budget-planning/`.
 
-**Page Routes:** `src/routes/(app)/budgets/`
+### 7.2 Identity
 
-```
-budgets/
-├── +page.svelte               # Budget list page
-├── +page.server.ts            # Load function + actions
-│                              # - load: fetch all budgets
-│                              # - actions: { create, delete }
-│
-├── [id]/
-│   ├── +page.svelte           # Single budget page (Trello-like board)
-│   ├── +page.server.ts        # Load function + actions
-│   │                          # - load: fetch budget with categories & transactions
-│   │                          # - actions: {
-│   │                          #     updateBudget,
-│   │                          #     duplicate,
-│   │                          #     createCategory,
-│   │                          #     updateCategory,
-│   │                          #     deleteCategory,
-│   │                          #     reorderCategories,
-│   │                          #     createTransaction,
-│   │                          #     updateTransaction,
-│   │                          #     deleteTransaction,
-│   │                          #     moveTransaction,
-│   │                          #     reorderTransactions
-│   │                          #   }
-│   └── export/
-│       └── +server.ts         # GET endpoint for CSV download
-│
-└── import/
-    ├── +page.svelte           # CSV import page
-    └── +page.server.ts        # Import action
-```
+`apps/api/src/modules/identity/` configures Better Auth, Redis-backed secondary storage, email verification, password reset, and API keys. `apps/api/src/workflows/provision-user.ts` coordinates User provisioning with initial Categories. The API serves Better Auth at `/api/auth/*` and the application profile at `/api/v1/profile`.
 
-**Responsibilities:**
-
-- Budget lifecycle (create, read, update, delete, duplicate)
-- Category management (CRUD, reordering)
-- Transaction management (CRUD, moving between categories)
-- Business rule enforcement
-- Data validation
-
----
-
-### 7.2 Auth Module
-
-**Server-Side Logic:** `src/lib/server/modules/auth/`
-
-```
-auth/
-├── service.ts                 # User management
-└── repository.ts              # User queries
-```
-
-**Auth Pages:** `src/routes/auth/`
-
-```
-auth/
-├── login/
-│   ├── +page.svelte
-│   └── +page.server.ts        # Login action (Better Auth integration)
-│
-└── register/
-    ├── +page.svelte
-    └── +page.server.ts        # Register action (Better Auth integration)
-```
-
-**SvelteKit Hooks:** `src/hooks.server.ts`
-
-- Session validation (Better Auth)
-- Protected route guards
-- User context injection via `event.locals`
-
-**Responsibilities:**
-
-- User registration and login (Better Auth)
-- Session management
-- Password reset
-- User profile CRUD
+`apps/web/src/hooks.server.ts` reads the Session through the API and places the User projection in `event.locals.user`. Login and registration pages remain in the web application.
 
 ---
 
 ### 7.3 Exchange Rates Module
 
-**Server-Side Logic:** `src/lib/server/modules/exchange-rates/`
+**Planned:** Exchange rate fetching, caching, and persistence belong in `apps/api`. The web will consume them through a versioned API operation.
 
 ```
 exchange-rates/
@@ -1046,7 +861,7 @@ exchange-rates/
 
 **Usage:**
 
-- Called directly from load functions and actions
+- Called by API handlers
 - No separate page routes needed (used as utility)
 - Rates fetched on-demand and cached automatically
 
@@ -1061,7 +876,7 @@ exchange-rates/
 
 ### 7.4 Import/Export Module
 
-**Server-Side Logic:** `src/lib/server/modules/import-export/`
+**Planned:** CSV import and export domain work belongs in `apps/api`. SvelteKit may retain form parsing and downloads as web adapters.
 
 ```
 import-export/
@@ -1086,21 +901,7 @@ import-export/
 
 ### 8.1 Overview
 
-**Modern SvelteKit Approach:**
-
-Instead of traditional REST API endpoints, this application uses:
-
-1. **Load Functions** (`+page.server.ts`) - Server-side data fetching
-2. **Form Actions** (`+page.server.ts`) - Server-side mutations
-3. **Server Endpoints** (`+server.ts`) - Only for file downloads/uploads
-
-**Benefits:**
-
-- Type-safe end-to-end (TypeScript from client to server)
-- No manual fetch calls needed (SvelteKit handles it)
-- Progressive enhancement built-in
-- Automatic data revalidation
-- Direct function calls on server (no HTTP overhead)
+SvelteKit load functions and form actions call the typed API client. Hono serves Better Auth at `/api/auth/*`, the application contract at `/api/v1/*`, and its OpenAPI document at `/api/openapi`. The API owns authorization and persistence.
 
 ### 8.2 Authentication
 
@@ -1108,8 +909,8 @@ Instead of traditional REST API endpoints, this application uses:
 
 **Session Management:**
 
-- Handled via `hooks.server.ts`
-- Session data available in `event.locals.session`
+- Better Auth runs in `apps/api`; the web hook reads its Session through the API.
+- The authenticated User projection is available in `event.locals.user`.
 - Protected routes checked in load functions
 
 **Example Protected Load Function:**
@@ -1117,10 +918,10 @@ Instead of traditional REST API endpoints, this application uses:
 ```typescript
 // +page.server.ts
 export async function load({ locals }) {
-  if (!locals.session?.user) {
+  if (!locals.user) {
     redirect(302, '/auth/login')
   }
-  return { user: locals.session.user }
+  return { user: locals.user }
 }
 ```
 
@@ -2445,31 +2246,7 @@ async function checkRateLimit(userId: string, limit: number, window: number) {
 
 ### 12.5 CORS Configuration
 
-**Policy:** With SvelteKit full-stack, CORS is typically not needed for same-origin requests. For external API access (if required), handle via `hooks.server.ts`:
-
-```typescript
-// src/hooks.server.ts
-export async function handle({ event, resolve }) {
-  const response = await resolve(event)
-
-  // Only set CORS headers for API routes if needed
-  if (event.url.pathname.startsWith('/api/')) {
-    response.headers.set('Access-Control-Allow-Credentials', 'true')
-    response.headers.set(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PATCH, DELETE',
-    )
-    response.headers.set(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization',
-    )
-  }
-
-  return response
-}
-```
-
-**Note:** Since frontend and API are in the same SvelteKit app, most CORS issues are avoided by default.
+**Policy:** The ingress routes web and API requests through one public origin. Browser requests use same-origin cookies. Hono checks the exact `Origin` on state-changing application requests. The web uses `API_INTERNAL_URL` for server-side calls and forwards the original cookie and request ID.
 
 ---
 

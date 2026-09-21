@@ -1,6 +1,6 @@
 import { getLocale } from '$lib/paraglide/runtime'
 
-export const formattingLocales = {
+const formattingLocales = {
   en: 'en-US',
   cs: 'cs-CZ',
 } as const satisfies Record<ReturnType<typeof getLocale>, string>

@@ -7,11 +7,6 @@ export type AllocationTarget = Readonly<{
   value: number
 }>
 
-export type AllocationTargetsInput = Readonly<{
-  enabled: boolean
-  targets: readonly AllocationTarget[]
-}>
-
 type DefaultAllocationTarget = {
   readonly defaultAllocationTarget: string | null
 }
