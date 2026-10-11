@@ -27,16 +27,16 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.2.2",
-    "@commitlint/config-conventional": "^21.2.2",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "husky": "^9.1.7",
-    "knip": "^6.12.1",
-    "lint-staged": "^17.3.0",
-    "prettier": "^3.9.6",
+    "knip": "^6.40.0",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.9",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-svelte": "^4.1.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "turbo": "^2.10.11"
+    "turbo": "^2.11.7"
   },
   "engines": {
     "bun": ">=1.4.0"
