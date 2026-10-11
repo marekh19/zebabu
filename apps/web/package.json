@@ -37,7 +37,7 @@
     "@inlang/paraglide-js": "^2.24.1",
     "@internationalized/date": "^3.12.3",
     "@lucide/svelte": "^1.33.0",
-    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/kit": "^3.0.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/bun": "1.4.0",
