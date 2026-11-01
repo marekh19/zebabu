@@ -16,19 +16,19 @@
   },
   "dependencies": {
     "@react-email/components": "^1.0.8",
-    "@react-email/render": "^2.1.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "resend": "^6.20.0"
+    "@react-email/render": "^2.2.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "resend": "^6.35.0"
   },
   "devDependencies": {
     "@react-email/preview-server": "5.2.10",
-    "@react-email/ui": "6.9.3",
-    "@types/node": "^26.2.0",
+    "@react-email/ui": "6.11.5",
+    "@types/node": "^26.6.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@zebabu/tooling": "workspace:*",
-    "react-email": "^6.9.2",
+    "react-email": "^6.11.5",
     "typescript": "^6.0.3"
   }
 }

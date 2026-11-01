@@ -11,12 +11,12 @@
     "./tsconfig/library.json": "./tsconfig/library.json"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.1.0",
+    "@eslint/compat": "^2.1.1",
     "@eslint/js": "^10.0.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-svelte": "^3.23.0",
-    "globals": "^17.11.0",
-    "typescript-eslint": "^8.67.0"
+    "eslint-plugin-svelte": "^3.23.1",
+    "globals": "^17.13.0",
+    "typescript-eslint": "^8.72.1"
   },
   "peerDependencies": {
     "eslint": "^10.8.1"
