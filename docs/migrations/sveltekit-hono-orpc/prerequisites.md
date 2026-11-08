@@ -1,6 +1,12 @@
+---
+status: completed
+---
+
 # SvelteKit, Hono, and oRPC Migration Prerequisites
 
-Complete this work in the current SvelteKit application before following the [migration plan](migration-plan.md). These changes make existing behavior safe and explicit so the migration only changes ownership and transport.
+These prerequisites record the safety work completed before the application split.
+
+The team completed this work in the former SvelteKit monolith before following the [migration plan](migration-plan.md). These changes made existing behavior safe and explicit so the migration only changed ownership and transport.
 
 ## 1. Lock down ownership
 

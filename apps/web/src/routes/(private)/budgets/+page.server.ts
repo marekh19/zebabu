@@ -1,67 +1,67 @@
 import { resolve } from '$app/paths'
+import { handleDuplicateBudgetAction } from '$lib/api/duplicate-budget-action'
+import { apiErrorCode, createServerApiClient } from '$lib/api/server-client'
 import { createCreateBudgetSchema } from '$lib/budget-planning'
-import {
-  createMonthlyBudget,
-  createScenarioBudget,
-  deleteBudget,
-  DuplicateMonthlyBudgetError,
-  DuplicateScenarioBudgetError,
-  getCompleteDefaultAllocationTargets,
-  handleDuplicateBudgetAction,
-  listBudgets,
-} from '$lib/budget-planning/server'
-import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { fail, redirect } from '@sveltejs/kit'
 import { ensureDefined } from 'narrowland'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ locals }) => {
-  const userId = getAuthenticatedUserId(locals)
-  const [budgets, defaultAllocationTargets] = await Promise.all([
-    listBudgets(userId),
-    getCompleteDefaultAllocationTargets(userId),
+export const load: PageServerLoad = async (event) => {
+  const client = createServerApiClient(event)
+  const [budgets, categories] = await Promise.all([
+    client.budgets.list(),
+    client.categories.list(),
   ])
   const form = await superValidate(zod4(createCreateBudgetSchema()))
 
   return {
     budgets,
     form,
-    hasDefaultAllocationTargets: defaultAllocationTargets !== null,
+    hasDefaultAllocationTargets:
+      categories.some(({ type }) => type === 'expense') &&
+      categories
+        .filter(({ type }) => type === 'expense')
+        .every(
+          ({ defaultAllocationTarget }) => defaultAllocationTarget !== null,
+        ),
   }
 }
 
 export const actions: Actions = {
-  create: async ({ request, locals }) => {
+  create: async (event) => {
+    const { request } = event
     const form = await superValidate(request, zod4(createCreateBudgetSchema()))
 
     if (!form.valid) {
       return fail(400, { form })
     }
 
-    const userId = getAuthenticatedUserId(locals)
     const { type, month, year, name, useDefaultAllocationTargets } = form.data
 
     let budgetId: string
     try {
-      const budget =
+      const budget = await createServerApiClient(event).budgets.create(
         type === 'monthly'
-          ? await createMonthlyBudget(userId, {
+          ? {
+              type: 'monthly',
               month: ensureDefined(month),
               year: ensureDefined(year),
               useDefaultAllocationTargets,
-            })
-          : await createScenarioBudget(userId, {
+            }
+          : {
+              type: 'scenario',
               name: ensureDefined(name),
               useDefaultAllocationTargets,
-            })
+            },
+      )
       budgetId = budget.id
     } catch (error) {
-      if (error instanceof DuplicateMonthlyBudgetError) {
+      if (apiErrorCode(error) === 'CONFLICT' && type === 'monthly') {
         return fail(409, { form, error: 'duplicate_monthly' as const })
       }
-      if (error instanceof DuplicateScenarioBudgetError) {
+      if (apiErrorCode(error) === 'CONFLICT' && type === 'scenario') {
         return fail(409, { form, error: 'duplicate_scenario' as const })
       }
       console.error('Budget creation failed:', error)
@@ -74,7 +74,8 @@ export const actions: Actions = {
   duplicate: (event) =>
     handleDuplicateBudgetAction(event, (id) => resolve(`/budgets/${id}`)),
 
-  delete: async ({ request, locals }) => {
+  delete: async (event) => {
+    const { request } = event
     const data = await request.formData()
     const budgetId = data.get('budgetId')
 
@@ -82,10 +83,12 @@ export const actions: Actions = {
       return fail(400)
     }
 
-    const userId = getAuthenticatedUserId(locals)
-    const result = await deleteBudget(budgetId, userId)
-
-    if (result.error === 'NOT_FOUND') return fail(404)
+    try {
+      await createServerApiClient(event).budgets.delete({ budgetId })
+    } catch (error) {
+      if (apiErrorCode(error) === 'NOT_FOUND') return fail(404)
+      throw error
+    }
 
     return { deleted: true }
   },

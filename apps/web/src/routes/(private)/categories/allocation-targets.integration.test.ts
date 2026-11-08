@@ -2,21 +2,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   listCategories: vi.fn(),
-  saveDefaultAllocationTargets: vi.fn(),
+  replaceAllocationTargets: vi.fn(),
 }))
 
-vi.mock('$lib/budget-planning/server', () => ({
-  CategoryInUseError: class extends Error {},
-  CategoryNotFoundError: class extends Error {},
-  createCategory: vi.fn(),
-  deleteCategory: vi.fn(),
-  DuplicateCategoryError: class extends Error {},
-  InvalidAllocationTargetsError: class extends Error {},
-  LastCategoryOfTypeError: class extends Error {},
-  listCategories: mocks.listCategories,
-  NonZeroAllocationTargetError: class extends Error {},
-  saveDefaultAllocationTargets: mocks.saveDefaultAllocationTargets,
-  updateCategory: vi.fn(),
+vi.mock('$lib/api/server-client', () => ({
+  apiErrorCode: () => null,
+  createServerApiClient: () => ({
+    categories: {
+      list: mocks.listCategories,
+      replaceAllocationTargets: mocks.replaceAllocationTargets,
+    },
+  }),
 }))
 
 import { actions, load } from './+page.server'
@@ -48,7 +44,7 @@ async function submit(values: readonly number[]) {
 describe('default allocation target route', () => {
   beforeEach(() => {
     mocks.listCategories.mockReset()
-    mocks.saveDefaultAllocationTargets.mockReset()
+    mocks.replaceAllocationTargets.mockReset()
   })
 
   it.each([
@@ -86,16 +82,16 @@ describe('default allocation target route', () => {
     const result = await submit([100])
 
     expect(result).toMatchObject({ allocationForm: { valid: true } })
-    expect(mocks.saveDefaultAllocationTargets).toHaveBeenCalledWith('user-1', {
+    expect(mocks.replaceAllocationTargets).toHaveBeenCalledWith({
       enabled: true,
-      targets: [{ categoryId: 'category-1', value: 100 }],
+      targets: [{ categoryId: 'category-1', value: '100.0' }],
     })
   })
 
   it('rejects an invalid total before calling the service', async () => {
     const result = await submit([90])
 
-    expect(mocks.saveDefaultAllocationTargets).not.toHaveBeenCalled()
+    expect(mocks.replaceAllocationTargets).not.toHaveBeenCalled()
     expect(result).toMatchObject({
       status: 400,
       data: { allocationForm: { valid: false } },

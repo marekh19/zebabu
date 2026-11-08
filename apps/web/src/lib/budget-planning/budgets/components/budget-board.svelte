@@ -2,7 +2,7 @@
   import * as m from '$lib/paraglide/messages'
   import { enhance } from '$app/forms'
   import { invalidateAll } from '$app/navigation'
-  import { resolve } from '$app/paths'
+  import { createBrowserApiClient } from '$lib/api/client'
   import { page } from '$app/state'
   import { tick } from 'svelte'
   import { toast } from 'svelte-sonner'
@@ -236,22 +236,20 @@
 
   const paidToggleQueue = createPaidToggleQueue({
     persist: async (transactionId, isPaid) => {
-      const response = await fetch(
-        resolve(
-          `/budgets/${page.params.id}/transactions/${transactionId}/paid`,
-        ),
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isPaid }),
-        },
-      )
-
-      if (!response.ok) throw new Error('Paid state update failed')
+      await createBrowserApiClient().budgets.setTransactionPaid({
+        budgetId: ensureDefined(page.params.id),
+        transactionId,
+        isPaid,
+      })
     },
     onChange: updatePaidState,
     onBusyChange: updatePaidBusyState,
     onError: () => toast.error(m.budget_detail_transaction_paid_error()),
+    onSuccess: () => {
+      void invalidateAll().catch(() =>
+        toast.error(m.budget_detail_transaction_paid_error()),
+      )
+    },
   })
 
   function openDeleteDialog(
@@ -325,20 +323,15 @@
     lastPersistedIds = currentIds
 
     try {
-      const response = await fetch(
-        resolve(`/budgets/${page.params.id}/reorder`),
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(
-            items.map((item, index) => ({ id: item.id, sortOrder: index })),
-          ),
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error('Reorder failed')
-      }
+      const budgetCategoryId = String(event.operation.source?.id ?? '')
+      const targetIndex = currentIds.indexOf(budgetCategoryId)
+      if (targetIndex < 0) throw new Error('Reordered Category not found')
+      await createBrowserApiClient().budgets.positionCategory({
+        budgetId: ensureDefined(page.params.id),
+        budgetCategoryId,
+        targetIndex,
+      })
+      await invalidateAll()
     } catch {
       lastPersistedIds = previousIds
       setItems(budgetCategories.map((bc) => ({ ...bc })))

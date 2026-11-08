@@ -7,8 +7,10 @@ FROM base AS builder
 COPY package.json bun.lock ./
 COPY packages/tooling/package.json packages/tooling/*.js ./packages/tooling/
 COPY packages/tooling/tsconfig/     ./packages/tooling/tsconfig/
+COPY packages/api-contract/package.json ./packages/api-contract/
 COPY packages/emails/package.json   ./packages/emails/
 COPY packages/ui/package.json       ./packages/ui/
+COPY apps/api/package.json          ./apps/api/
 COPY apps/web/package.json          ./apps/web/
 
 RUN bun install --frozen-lockfile
@@ -16,18 +18,9 @@ RUN bun install --frozen-lockfile
 COPY packages/ ./packages/
 COPY apps/      ./apps/
 
-RUN bun run --filter @zebabu/emails build
+RUN bun run --filter @zebabu/api-contract build
 
-# Dummy values required only by SvelteKit's post-build analyse phase, which
-# executes server code to detect prerendered routes. Inlined into the RUN
-# command so they never persist as image metadata.
-RUN DATABASE_URL=postgres://build:build@localhost/build \
-    REDIS_URL=redis://localhost:6379 \
-    BETTER_AUTH_SECRET=build-secret \
-    BETTER_AUTH_URL=http://localhost:3000 \
-    WEB_ORIGIN=http://localhost:3000 \
-    APP_ENV=build \
-    bun run --filter @zebabu/web build
+RUN API_INTERNAL_URL=http://localhost:3101 bun run --filter @zebabu/web build
 
 # ── Runtime: shared production files ─────────────────────────────────────────
 FROM base AS runtime
@@ -40,33 +33,25 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder /app/package.json              ./
 COPY --from=builder /app/bun.lock                  ./
 COPY --from=builder /app/packages/tooling/package.json ./packages/tooling/
+COPY --from=builder /app/packages/api-contract/package.json ./packages/api-contract/
 COPY --from=builder /app/packages/emails/package.json  ./packages/emails/
 COPY --from=builder /app/packages/ui/package.json      ./packages/ui/
 COPY --from=builder /app/packages/ui/src               ./packages/ui/src
-# @zebabu/emails compiled output — needed at runtime for email rendering
-COPY --from=builder /app/packages/emails/dist           ./packages/emails/dist
+COPY --from=builder /app/packages/api-contract/dist ./packages/api-contract/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/apps/web/package.json          ./apps/web/
 
 # Run production install so Bun properly wires up workspace resolution.
 # --ignore-scripts skips the root `prepare` script (husky, a devDep).
-RUN bun install --production --frozen-lockfile --ignore-scripts
+RUN bun install --production --frozen-lockfile --ignore-scripts --filter @zebabu/web
 
 # Compiled SvelteKit server (svelte-adapter-bun output)
 COPY --from=builder /app/apps/web/build   ./apps/web/build
-# SQL migration files used by the one-shot deployment command
-COPY --from=builder /app/apps/web/drizzle ./apps/web/drizzle
-COPY --from=builder /app/apps/web/src/migrate.mjs ./apps/web/src/migrate.mjs
 
-RUN chown -R bunuser:nodejs /app
 USER bunuser
 
 # Bun workspace resolution requires running from the workspace member directory
 WORKDIR /app/apps/web
-
-FROM runtime AS migration
-HEALTHCHECK --interval=5s --timeout=2s --start-period=5m --retries=3 \
-  CMD test -f /tmp/zebabu-migration-complete
-CMD ["sh", "-c", "bun src/migrate.mjs && touch /tmp/zebabu-migration-complete && exec tail -f /dev/null"]
 
 FROM runtime AS runner
 EXPOSE 3000

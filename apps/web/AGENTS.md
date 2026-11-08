@@ -1,11 +1,11 @@
-# Content
+# Localization
 
-Make sure to always use paraglide and store translation strings in json instead of hardcoding text into components.
+Use Paraglide for all user-facing copy. Store source messages in `apps/web/messages/*.json`; do not hardcode them in components or route files.
 
-# Database
+# API boundary
 
-Always use `bun run db:migrate` instead of `bun run db:push`
+The web application calls the API for authentication and domain operations. It does not access PostgreSQL, Redis, Drizzle schemas, or migrations directly. Run database commands from the workspace root; migrations belong to `@zebabu/api`.
 
-# Typesafety and type narrowing
+# Type safety and narrowing
 
-We have a library `narrowland` that is used to narrow types. Always use it to narrow `Resource | null` to just `Resource`. It offers utilities like `isDefined`, `ensureDefined`, `assertDefined` and many more (boolean type guard, assertion function and assertion + return the value respectively). Never use non-nullish assertion like `user!.id` if user is potentially undefined or null.
+Use `narrowland` to narrow nullable resources with utilities such as `isDefined`, `ensureDefined`, and `assertDefined`. Do not use non-null assertions for values that can be `null` or `undefined`.

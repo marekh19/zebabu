@@ -1,4 +1,6 @@
 import { resolve } from '$app/paths'
+import { handleDuplicateBudgetAction } from '$lib/api/duplicate-budget-action'
+import { apiErrorCode, createServerApiClient } from '$lib/api/server-client'
 import {
   addBudgetCategorySchema,
   createAllocationTargetsSchema,
@@ -7,40 +9,33 @@ import {
   deleteTransactionSchema,
   getBudgetDisplayName,
 } from '$lib/budget-planning'
-import {
-  addBudgetCategory,
-  createTransaction,
-  deleteBudget,
-  deleteTransaction,
-  getBudgetDetail,
-  getCompleteDefaultAllocationTargets,
-  handleDuplicateBudgetAction,
-  InvalidBudgetAllocationTargetsError,
-  saveBudgetAllocationTargets,
-  updateTransaction,
-} from '$lib/budget-planning/server'
-import { getAuthenticatedUserId } from '$lib/server/authenticated-user'
 import { error, fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
-const ERROR_STATUS = {
-  NOT_FOUND: 404,
-} as const satisfies Record<'NOT_FOUND', number>
-
-export const load: PageServerLoad = async ({ params, locals, url }) => {
-  const userId = getAuthenticatedUserId(locals)
-  const result = await getBudgetDetail(params.id, userId)
-
-  if (result.error) {
-    error(ERROR_STATUS[result.error])
+export const load: PageServerLoad = async (event) => {
+  const { params, url } = event
+  const client = createServerApiClient(event)
+  let result: Awaited<ReturnType<typeof client.budgets.get>>
+  try {
+    result = await client.budgets.get({ budgetId: params.id })
+  } catch (caught) {
+    if (apiErrorCode(caught) === 'NOT_FOUND') error(404)
+    throw caught
   }
 
-  const defaultAllocationTargets =
-    await getCompleteDefaultAllocationTargets(userId)
+  const defaultAllocationTargets = (await client.categories.list())
+    .filter(
+      ({ type, defaultAllocationTarget }) =>
+        type === 'expense' && defaultAllocationTarget !== null,
+    )
+    .map(({ id, defaultAllocationTarget }) => ({
+      categoryId: id,
+      value: defaultAllocationTarget ?? '0.0',
+    }))
   const defaultTargetsByCategoryId = new Map(
-    defaultAllocationTargets?.map(({ categoryId, value }) => [
+    defaultAllocationTargets.map(({ categoryId, value }) => [
       categoryId,
       Number(value),
     ]),
@@ -106,43 +101,45 @@ export const actions: Actions = {
   duplicate: (event) =>
     handleDuplicateBudgetAction(event, (id) => resolve(`/budgets/${id}`)),
 
-  delete: async ({ params, locals }) => {
-    const userId = getAuthenticatedUserId(locals)
-    const result = await deleteBudget(params.id, userId)
-
-    if (result.error) return fail(ERROR_STATUS[result.error])
+  delete: async (event) => {
+    try {
+      await createServerApiClient(event).budgets.delete({
+        budgetId: event.params.id,
+      })
+    } catch (caught) {
+      if (apiErrorCode(caught) === 'NOT_FOUND') return fail(404)
+      throw caught
+    }
 
     redirect(303, resolve('/budgets'))
   },
 
-  addCategory: async ({ request, params, locals }) => {
-    const userId = getAuthenticatedUserId(locals)
+  addCategory: async (event) => {
+    const { request, params } = event
     const form = await superValidate(request, zod4(addBudgetCategorySchema))
 
     if (!form.valid) return fail(400, { addCategoryForm: form })
 
-    const result = await addBudgetCategory(
-      params.id,
-      userId,
-      form.data.categoryId,
-    ).catch((error: unknown) => {
-      console.error('Adding category to budget failed:', error)
-      return null
-    })
-
-    if (!result)
-      return fail(500, { addCategoryForm: form, error: 'unexpected' as const })
-
-    if (result.error)
-      return fail(ERROR_STATUS[result.error], {
-        addCategoryForm: form,
-        error: 'not_found' as const,
+    try {
+      await createServerApiClient(event).budgets.addCategory({
+        budgetId: params.id,
+        categoryId: form.data.categoryId,
       })
+    } catch (caught) {
+      if (apiErrorCode(caught) === 'NOT_FOUND')
+        return fail(404, {
+          addCategoryForm: form,
+          error: 'not_found' as const,
+        })
+      console.error('Adding category to budget failed:', caught)
+      return fail(500, { addCategoryForm: form, error: 'unexpected' as const })
+    }
 
     return { addCategoryForm: form }
   },
 
-  saveAllocationTargets: async ({ request, params, locals }) => {
+  saveAllocationTargets: async (event) => {
+    const { request, params } = event
     const allocationForm = await superValidate(
       request,
       zod4(createAllocationTargetsSchema()),
@@ -150,20 +147,23 @@ export const actions: Actions = {
     if (!allocationForm.valid) return fail(400, { allocationForm })
 
     try {
-      const result = await saveBudgetAllocationTargets(
-        params.id,
-        getAuthenticatedUserId(locals),
-        allocationForm.data,
-      )
-      if (result.error) return fail(ERROR_STATUS[result.error])
-    } catch (error) {
-      if (error instanceof InvalidBudgetAllocationTargetsError) {
+      await createServerApiClient(event).budgets.replaceAllocationTargets({
+        budgetId: params.id,
+        enabled: allocationForm.data.enabled,
+        targets: allocationForm.data.targets.map(({ categoryId, value }) => ({
+          budgetCategoryId: categoryId,
+          value: value.toFixed(1),
+        })),
+      })
+    } catch (caught) {
+      if (apiErrorCode(caught) === 'NOT_FOUND') return fail(404)
+      if (apiErrorCode(caught) === 'INVALID_ALLOCATION_TARGETS') {
         return fail(400, {
           allocationForm,
           allocationError: 'invalid' as const,
         })
       }
-      console.error('Budget allocation target update failed:', error)
+      console.error('Budget allocation target update failed:', caught)
       return fail(500, {
         allocationForm,
         allocationError: 'unexpected' as const,
@@ -173,8 +173,8 @@ export const actions: Actions = {
     return { allocationForm }
   },
 
-  createTransaction: async ({ request, params, locals }) => {
-    const userId = getAuthenticatedUserId(locals)
+  createTransaction: async (event) => {
+    const { request, params } = event
     const form = await superValidate(
       request,
       zod4(createCreateTransactionSchema()),
@@ -182,27 +182,27 @@ export const actions: Actions = {
 
     if (!form.valid) return fail(400, { createTransactionForm: form })
 
-    const result = await createTransaction(
-      params.id,
-      userId,
-      form.data.budgetCategoryId,
-      form.data,
-    ).catch((error: unknown) => {
-      console.error('Creating transaction failed:', error)
-      return null
-    })
-
-    if (!result)
+    try {
+      await createServerApiClient(event).budgets.createTransaction({
+        budgetId: params.id,
+        budgetCategoryId: form.data.budgetCategoryId,
+        name: form.data.name,
+        amount: form.data.amount.toFixed(2),
+        isPaid: form.data.isPaid,
+        note: form.data.note,
+      })
+    } catch (caught) {
+      if (apiErrorCode(caught) === 'NOT_FOUND')
+        return fail(404, {
+          createTransactionForm: form,
+          createTransactionError: 'not_found' as const,
+        })
+      console.error('Creating transaction failed:', caught)
       return fail(500, {
         createTransactionForm: form,
         createTransactionError: 'unexpected' as const,
       })
-
-    if (result.error === 'NOT_FOUND')
-      return fail(404, {
-        createTransactionForm: form,
-        createTransactionError: 'not_found' as const,
-      })
+    }
 
     if (!request.headers.has('x-sveltekit-action'))
       redirect(303, resolve(`/budgets/${params.id}`))
@@ -210,8 +210,8 @@ export const actions: Actions = {
     return { createTransactionForm: form }
   },
 
-  updateTransaction: async ({ request, params, locals }) => {
-    const userId = getAuthenticatedUserId(locals)
+  updateTransaction: async (event) => {
+    const { request, params } = event
     const form = await superValidate(
       request,
       zod4(createUpdateTransactionSchema()),
@@ -219,27 +219,27 @@ export const actions: Actions = {
 
     if (!form.valid) return fail(400, { updateTransactionForm: form })
 
-    const result = await updateTransaction(
-      params.id,
-      userId,
-      form.data.transactionId,
-      form.data,
-    ).catch((error: unknown) => {
-      console.error('Updating transaction failed:', error)
-      return null
-    })
-
-    if (!result)
+    try {
+      await createServerApiClient(event).budgets.updateTransaction({
+        budgetId: params.id,
+        transactionId: form.data.transactionId,
+        name: form.data.name,
+        amount: form.data.amount.toFixed(2),
+        isPaid: form.data.isPaid,
+        note: form.data.note,
+      })
+    } catch (caught) {
+      if (apiErrorCode(caught) === 'NOT_FOUND')
+        return fail(404, {
+          updateTransactionForm: form,
+          updateTransactionError: 'not_found' as const,
+        })
+      console.error('Updating transaction failed:', caught)
       return fail(500, {
         updateTransactionForm: form,
         updateTransactionError: 'unexpected' as const,
       })
-
-    if (result.error === 'NOT_FOUND')
-      return fail(404, {
-        updateTransactionForm: form,
-        updateTransactionError: 'not_found' as const,
-      })
+    }
 
     if (!request.headers.has('x-sveltekit-action'))
       redirect(303, resolve(`/budgets/${params.id}`))
@@ -247,26 +247,23 @@ export const actions: Actions = {
     return { updateTransactionForm: form }
   },
 
-  deleteTransaction: async ({ request, params, locals }) => {
-    const userId = getAuthenticatedUserId(locals)
+  deleteTransaction: async (event) => {
+    const { request, params } = event
     const form = await superValidate(request, zod4(deleteTransactionSchema))
 
     if (!form.valid) return fail(400)
 
-    const result = await deleteTransaction(
-      params.id,
-      userId,
-      form.data.transactionId,
-    ).catch((error: unknown) => {
-      console.error('Deleting transaction failed:', error)
-      return null
-    })
-
-    if (!result)
+    try {
+      await createServerApiClient(event).budgets.deleteTransaction({
+        budgetId: params.id,
+        transactionId: form.data.transactionId,
+      })
+    } catch (caught) {
+      if (apiErrorCode(caught) === 'NOT_FOUND')
+        return fail(404, { deleteTransactionError: 'not_found' as const })
+      console.error('Deleting transaction failed:', caught)
       return fail(500, { deleteTransactionError: 'unexpected' as const })
-
-    if (result.error === 'NOT_FOUND')
-      return fail(404, { deleteTransactionError: 'not_found' as const })
+    }
 
     if (!request.headers.has('x-sveltekit-action'))
       redirect(303, resolve(`/budgets/${params.id}`))

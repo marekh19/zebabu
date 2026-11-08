@@ -27,8 +27,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/zebabu_test
+      REDIS_URL: redis://localhost:6379
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,14 +109,25 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          target: runner
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/zebabu-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and push migration image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./apps/web/Dockerfile
+          file: ./apps/api/Dockerfile
           target: migration
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/zebabu-web:migration-${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/zebabu-api:migration-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -116,5 +137,6 @@ jobs:
           COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
           COOLIFY_CONFIG_API_TOKEN: ${{ secrets.COOLIFY_CONFIG_API_TOKEN }}
           COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
+          COOLIFY_API_APP_UUID: ${{ secrets.COOLIFY_API_APP_UUID }}
           COOLIFY_MIGRATION_APP_UUID: ${{ secrets.COOLIFY_MIGRATION_APP_UUID }}
         run: bash scripts/deploy-coolify.sh

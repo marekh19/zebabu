@@ -19,11 +19,10 @@
     "knip": "turbo knip",
     "clean": "turbo clean && rm -rf node_modules",
     "db:start": "docker compose up -d",
-    "db:push": "bun run --filter @zebabu/web db:push",
-    "db:generate": "bun run --filter @zebabu/web db:generate",
-    "db:migrate": "bun run --filter @zebabu/web db:migrate",
-    "db:studio": "bun run --filter @zebabu/web db:studio",
-    "redis:studio": "bun run --filter @zebabu/web redis:studio",
+    "db:generate": "bun run --filter @zebabu/api db:generate",
+    "db:migrate": "bun run --filter @zebabu/api db:migrate",
+    "db:studio": "bun run --filter @zebabu/api db:studio",
+    "redis:studio": "bun run --filter @zebabu/api redis:studio",
     "prepare": "husky"
   },
   "devDependencies": {

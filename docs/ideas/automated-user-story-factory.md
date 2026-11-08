@@ -1,6 +1,12 @@
+---
+status: proposed
+---
+
 # Automated User Story Factory
 
-Use one captain agent to move user stories through a repeatable delivery loop. The installed Matt Pocock skills provide most workers. A repository-specific `story-factory` skill must own orchestration, GitHub actions, severity gates, and recovery.
+This proposal is not implemented. Command and skill names in this document describe required capabilities and may not exist in the current environment.
+
+The proposed workflow uses one captain agent to move user stories through a repeatable delivery loop. It assumes worker skills plus a repository-specific `story-factory` skill for orchestration, GitHub actions, severity gates, and recovery.
 
 ## Workflow
 

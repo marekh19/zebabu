@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-for name in COOLIFY_API_URL COOLIFY_API_TOKEN COOLIFY_CONFIG_API_TOKEN COOLIFY_APP_UUID COOLIFY_MIGRATION_APP_UUID GITHUB_SHA; do
+for name in COOLIFY_API_URL COOLIFY_API_TOKEN COOLIFY_CONFIG_API_TOKEN COOLIFY_APP_UUID COOLIFY_API_APP_UUID COOLIFY_MIGRATION_APP_UUID GITHUB_SHA; do
   if [[ -z "${!name:-}" ]]; then
     printf '%s is required\n' "$name" >&2
     exit 1
@@ -16,7 +16,8 @@ fi
 
 api_url="${COOLIFY_API_URL%/}/api/v1"
 web_image='ghcr.io/marekh19/zebabu-web'
-migration_image='ghcr.io/marekh19/zebabu-web'
+api_image='ghcr.io/marekh19/zebabu-api'
+migration_image="$api_image"
 migration_tag="migration-$GITHUB_SHA"
 
 get_resource() {
@@ -107,18 +108,21 @@ migration_stopped=false
 trap cleanup_on_exit EXIT
 
 web=$(get_resource "/applications/$COOLIFY_APP_UUID")
+api=$(get_resource "/applications/$COOLIFY_API_APP_UUID")
 migration=$(get_resource "/applications/$COOLIFY_MIGRATION_APP_UUID")
 
 if [[ $(jq -r '.docker_registry_image_name' <<<"$web") != "$web_image" ]] ||
+  [[ $(jq -r '.docker_registry_image_name' <<<"$api") != "$api_image" ]] ||
   [[ $(jq -r '.docker_registry_image_name' <<<"$migration") != "$migration_image" ]]; then
   printf 'Coolify image names do not match the release images\n' >&2
   exit 1
 fi
 
 web_destination=$(jq -r '.destination_id // empty' <<<"$web")
+api_destination=$(jq -r '.destination_id // empty' <<<"$api")
 migration_destination=$(jq -r '.destination_id // empty' <<<"$migration")
-if [[ -z "$web_destination" || "$web_destination" != "$migration_destination" ]]; then
-  printf 'Web and migration applications must share a Coolify destination\n' >&2
+if [[ -z "$web_destination" || "$web_destination" != "$api_destination" || "$web_destination" != "$migration_destination" ]]; then
+  printf 'Web, API, and migration applications must share a Coolify destination\n' >&2
   exit 1
 fi
 
@@ -142,6 +146,14 @@ wait_for_healthy_application "$COOLIFY_MIGRATION_APP_UUID"
 printf 'Migrations completed\n'
 stop_migration
 migration_stopped=true
+
+printf 'Deploying API image for %s\n' "$GITHUB_SHA"
+set_image_tag "$COOLIFY_API_APP_UUID" "$GITHUB_SHA"
+api_deployment=$(trigger_deployment "$COOLIFY_API_APP_UUID")
+wait_for_deployment "$api_deployment"
+wait_for_healthy_application "$COOLIFY_API_APP_UUID"
+curl --fail --silent --show-error --max-time 30 \
+  https://dev.zebabu.com/api/health/ready >/dev/null
 
 printf 'Deploying web image for %s\n' "$GITHUB_SHA"
 set_image_tag "$COOLIFY_APP_UUID" "$GITHUB_SHA"

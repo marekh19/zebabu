@@ -5,6 +5,7 @@ type PaidToggleQueueOptions = {
   onChange: (transactionId: string, isPaid: boolean) => void
   onBusyChange: (transactionId: string, isBusy: boolean) => void
   onError: () => void
+  onSuccess?: () => void
 }
 
 type PaidToggleWorker = {
@@ -60,6 +61,7 @@ export function createPaidToggleQueue(options: PaidToggleQueueOptions) {
 
     setWorker(transactionId, undefined)
     options.onBusyChange(transactionId, false)
+    options.onSuccess?.()
   }
 
   async function run(transactionId: string, worker: PaidToggleWorker) {

@@ -1,5 +1,5 @@
 import { invalidateAll } from '$app/navigation'
-import { resolve } from '$app/paths'
+import { createBrowserApiClient } from '$lib/api/client'
 import type { BudgetCategory } from '$lib/budget-planning/model'
 import * as m from '$lib/paraglide/messages'
 import type { DragDropEvents } from '@dnd-kit-svelte/svelte'
@@ -29,7 +29,7 @@ const KEYBOARD_DIRECTIONS: Partial<Record<string, TransactionDragDirection>> = {
 }
 
 type CommitTransactionPositionInput = Readonly<{
-  persist: () => Promise<Response>
+  persist: () => Promise<void>
   refresh: () => Promise<void>
   onBusyChange: (busy: boolean) => void
   onRollback: () => void
@@ -49,11 +49,7 @@ export async function commitTransactionPosition({
   onBusyChange(true)
 
   try {
-    const response = await persist()
-    if (!response.ok) {
-      onRollback()
-      return 'save-failed'
-    }
+    await persist()
 
     try {
       await refresh()
@@ -221,17 +217,13 @@ export function createTransactionDrag({
 
     announcePosition(transactionId, m.budget_detail_transaction_drag_drop)
     const result = await commitTransactionPosition({
-      persist: () =>
-        fetch(
-          resolve(
-            `/budgets/${getBudgetId()}/transactions/${transactionId}/position`,
-          ),
-          {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(command),
-          },
-        ),
+      persist: async () => {
+        await createBrowserApiClient().budgets.positionTransaction({
+          budgetId: getBudgetId(),
+          transactionId,
+          ...command,
+        })
+      },
       refresh,
       onBusyChange: (nextBusy) => (busy = nextBusy),
       onRollback: () => setItems(copyItems(startItems)),

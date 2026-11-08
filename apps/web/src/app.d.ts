@@ -1,7 +1,5 @@
 import type { OperationErrorCode } from '$lib/operation-result'
-import type { auth } from '$lib/server/application'
-
-type Session = typeof auth.$Infer.Session
+import type { Profile } from '@zebabu/api-contract'
 
 declare global {
   namespace App {
@@ -10,8 +8,8 @@ declare global {
     }
     interface Locals {
       locale: string
-      session: Session['session'] | null
-      user: Session['user'] | null
+      requestId: string
+      user: Profile | null
     }
     interface PageData {
       /** Maps dynamic path segments (e.g. an ID) to display labels for breadcrumbs. */

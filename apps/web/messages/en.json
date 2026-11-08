@@ -119,6 +119,8 @@
   "budget_detail_access_denied_description": "You don't have permission to view this budget.",
   "budget_detail_not_found_title": "Budget Not Found",
   "budget_detail_not_found_description": "The budget you're looking for doesn't exist.",
+  "budget_detail_unexpected_title": "Budget Could Not Be Loaded",
+  "budget_detail_unexpected_description": "Something went wrong while loading this budget. Please try again.",
   "budget_detail_type_income": "Income",
   "budget_detail_type_expense": "Expenses",
   "category_default_income": "Income",

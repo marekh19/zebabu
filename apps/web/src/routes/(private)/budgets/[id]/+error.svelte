@@ -19,10 +19,14 @@
     {:else}
       <FileQuestionIcon class="text-muted-foreground size-12" />
       <h1 class="text-2xl font-bold">
-        {m.budget_detail_not_found_title()}
+        {$page.status === 404
+          ? m.budget_detail_not_found_title()
+          : m.budget_detail_unexpected_title()}
       </h1>
       <p class="text-muted-foreground max-w-sm">
-        {m.budget_detail_not_found_description()}
+        {$page.status === 404
+          ? m.budget_detail_not_found_description()
+          : m.budget_detail_unexpected_description()}
       </p>
     {/if}
     <a

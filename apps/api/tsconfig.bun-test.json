@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "#api-database": [
+        "./src/infrastructure/database/database.test-runtime.ts"
+      ]
+    }
+  }
+}

@@ -1,42 +1,5 @@
-# sv
+# Zebabu web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit owns UI, SSR page composition, localization, and form adapters. Browser requests use same-origin `/api/*` routes. Server loads and actions call `API_INTERNAL_URL` with the original Cookie, Origin, and request ID.
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-bunx sv create --template minimal --types ts --add prettier eslint vitest="usages:unit" tailwindcss="plugins:none" sveltekit-adapter="adapter:auto" devtools-json drizzle="database:postgresql+postgresql:postgres.js+docker:yes" paraglide="languageTags:en, es+demo:yes" --install bun ./zebabu
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `bun install`, start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `bun run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+For local development, set `API_INTERNAL_URL=http://localhost:3101` and `ORIGIN=http://localhost:3000` in `apps/web/.env`, start `@zebabu/api` on port 3101, and run `bun run --filter @zebabu/web dev`. Vite proxies `/api/*` to the API. Set `ORIGIN` to the public web origin in production so SvelteKit accepts same-origin form submissions.

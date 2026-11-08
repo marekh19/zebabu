@@ -10,8 +10,8 @@ describe('updatePrimaryCurrency', () => {
     await expect(updatePrimaryCurrency(successfulFetch, 'CZK')).resolves.toBe(
       true,
     )
-    expect(successfulFetch).toHaveBeenCalledWith('/api/auth/update-user', {
-      method: 'POST',
+    expect(successfulFetch).toHaveBeenCalledWith('/api/v1/profile', {
+      method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ primaryCurrency: 'CZK' }),
     })

@@ -42,10 +42,6 @@ export type BudgetCategory = {
   readonly transactions: readonly PlannedTransaction[]
 }
 
-export type BudgetDetail = BudgetReference & {
-  readonly budgetCategories: readonly BudgetCategory[]
-}
-
 export type AvailableCategory = Pick<Category, 'id' | 'name'>
 
 export type CategoryListItem = Category & {

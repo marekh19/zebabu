@@ -4,12 +4,12 @@ const mocks = vi.hoisted(() => ({
   addBudgetCategory: vi.fn(),
 }))
 
-vi.mock('$lib/budget-planning/server', () => ({
-  addBudgetCategory: mocks.addBudgetCategory,
-  deleteBudget: vi.fn(),
-  getBudgetDetail: vi.fn(),
-  handleDuplicateBudgetAction: vi.fn(),
-  updateTransaction: vi.fn(),
+vi.mock('$lib/api/server-client', () => ({
+  apiErrorCode: (error: unknown) =>
+    error instanceof Error ? error.message : null,
+  createServerApiClient: () => ({
+    budgets: { addCategory: mocks.addBudgetCategory },
+  }),
 }))
 
 import { actions } from './+page.server'
@@ -45,16 +45,13 @@ describe('adding an existing category to a budget', () => {
 
     const success = await submit('category-1')
 
-    expect(mocks.addBudgetCategory).toHaveBeenCalledWith(
-      'budget-1',
-      'user-1',
-      'category-1',
-    )
+    expect(mocks.addBudgetCategory).toHaveBeenCalledWith({
+      budgetId: 'budget-1',
+      categoryId: 'category-1',
+    })
     expect(success).toMatchObject({ addCategoryForm: { valid: true } })
 
-    mocks.addBudgetCategory.mockResolvedValueOnce({
-      error: 'NOT_FOUND',
-    })
+    mocks.addBudgetCategory.mockRejectedValueOnce(new Error('NOT_FOUND'))
 
     const failure = await submit('category-2')
 
