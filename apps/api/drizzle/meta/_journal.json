@@ -99,6 +99,13 @@
       "when": 1789660115833,
       "tag": "0013_chemical_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794179264986,
+      "tag": "0014_shocking_legion",
+      "breakpoints": true
     }
   ]
 }
