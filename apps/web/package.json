@@ -30,7 +30,7 @@
     "narrowland": "^1.9.0"
   },
   "devDependencies": {
-    "@inlang/paraglide-js": "^2.24.1",
+    "@inlang/paraglide-js": "^3.2.0",
     "@lucide/svelte": "^1.69.0",
     "@sveltejs/kit": "^2.70.3",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
