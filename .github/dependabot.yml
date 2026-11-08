@@ -14,7 +14,5 @@ updates:
         patterns: ['*']
         update-types: ['minor', 'patch']
     ignore:
-      - dependency-name: '@dnd-kit/helpers'
-        versions: ['>=0.3.0']
       - dependency-name: 'zod'
         versions: ['>=4.4.0']

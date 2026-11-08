@@ -67,7 +67,6 @@
     index: () => index,
     type: CATEGORY_DRAG_TYPE,
     accept: CATEGORY_DRAG_TYPE,
-    register: () => !isOverlay,
   })
 
   const transactionGroupId = $derived(getTransactionGroupId(budgetCategory.id))
@@ -77,7 +76,6 @@
     accept: TRANSACTION_DRAG_TYPE,
     collisionPriority: TRANSACTION_COLLISION_PRIORITY.group,
     disabled: () => isOverlay || transactionDragBusy,
-    register: () => !isOverlay,
   })
 
   const total = $derived(getBudgetCategoryTotal(budgetCategory))
