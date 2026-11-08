@@ -14,7 +14,9 @@
     DragDropProvider,
     DragOverlay,
     PointerSensor,
-    type DragDropEvents,
+    type DragEndEvent,
+    type DragOverEvent,
+    type DragStartEvent,
   } from '@dnd-kit-svelte/svelte'
   import { move } from '@dnd-kit/helpers'
   import {
@@ -50,10 +52,6 @@
   } from '../transaction-position'
   import { TransactionKeyboardSensor } from '../transaction-keyboard-sensor'
   import { createTransactionDrag } from '../transaction-drag.svelte'
-
-  type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
-  type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
-  type DragEndEvent = Parameters<DragDropEvents['dragend']>[0]
 
   type Props = {
     budgetCategories: readonly BudgetCategory[]

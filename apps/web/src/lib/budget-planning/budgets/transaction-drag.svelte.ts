@@ -2,7 +2,11 @@ import { invalidateAll } from '$app/navigation'
 import { createBrowserApiClient } from '$lib/api/client'
 import type { BudgetCategory } from '$lib/budget-planning/model'
 import * as m from '$lib/paraglide/messages'
-import type { DragDropEvents } from '@dnd-kit-svelte/svelte'
+import type {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from '@dnd-kit-svelte/svelte'
 import { move } from '@dnd-kit/helpers'
 import { tick } from 'svelte'
 import { toast } from 'svelte-sonner'
@@ -16,10 +20,6 @@ import {
   withTransactionGroups,
   type TransactionDragDirection,
 } from './transaction-position'
-
-type DragStartEvent = Parameters<DragDropEvents['dragstart']>[0]
-type DragOverEvent = Parameters<DragDropEvents['dragover']>[0]
-type DragEndEvent = Parameters<DragDropEvents['dragend']>[0]
 
 const KEYBOARD_DIRECTIONS: Partial<Record<string, TransactionDragDirection>> = {
   ArrowUp: 'up',

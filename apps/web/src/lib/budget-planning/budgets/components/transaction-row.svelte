@@ -55,7 +55,6 @@
     accept: TRANSACTION_DRAG_TYPE,
     collisionPriority: TRANSACTION_COLLISION_PRIORITY.item,
     disabled: () => dragDisabled || !sortableEnabled,
-    register: () => sortableEnabled,
   })
   const dragging = $derived(isDragSource.current && !isOverlay)
 </script>
