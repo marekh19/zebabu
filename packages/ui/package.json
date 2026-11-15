@@ -32,8 +32,8 @@
     "clean": "rm -rf .svelte-kit node_modules"
   },
   "dependencies": {
-    "@lucide/svelte": "^1.69.0",
-    "bits-ui": "^2.20.6",
+    "@lucide/svelte": "^1.72.0",
+    "bits-ui": "^2.21.0",
     "clsx": "^2.1.1",
     "formsnap": "^2.1.0",
     "mode-watcher": "^1.1.0",
