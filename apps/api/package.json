@@ -16,15 +16,15 @@
     "redis:studio": "redis-commander --redis-host localhost --redis-port 6379"
   },
   "dependencies": {
-    "@better-auth/api-key": "1.7.18",
-    "@orpc/openapi": "1.16.1",
-    "@orpc/server": "1.16.1",
-    "@orpc/zod": "1.16.1",
+    "@better-auth/api-key": "1.7.21",
+    "@orpc/openapi": "1.16.2",
+    "@orpc/server": "1.16.2",
+    "@orpc/zod": "1.16.2",
     "@zebabu/api-contract": "workspace:*",
     "@zebabu/emails": "workspace:*",
-    "better-auth": "1.7.18",
+    "better-auth": "1.7.21",
     "drizzle-orm": "^0.45.4",
-    "hono": "^4.13.16",
+    "hono": "^4.13.18",
     "nanoid": "^6.0.2",
     "narrowland": "^1.9.0",
     "zod": "~4.3.6"
@@ -38,6 +38,6 @@
     "globals": "^17.14.0",
     "redis-commander": "^0.9.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.2"
   }
 }
