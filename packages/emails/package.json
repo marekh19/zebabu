@@ -19,16 +19,16 @@
     "@react-email/render": "^2.3.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "resend": "^6.38.0"
+    "resend": "^6.39.0"
   },
   "devDependencies": {
     "@react-email/preview-server": "5.2.10",
-    "@react-email/ui": "6.11.11",
+    "@react-email/ui": "6.11.16",
     "@types/node": "^26.6.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@zebabu/tooling": "workspace:*",
-    "react-email": "^6.11.11",
+    "react-email": "^6.11.16",
     "typescript": "^6.0.3"
   }
 }
