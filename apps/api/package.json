@@ -30,7 +30,7 @@
     "zod": "~4.3.6"
   },
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
+    "@eslint/js": "^10.0.1",
     "@types/bun": "1.4.4",
     "@zebabu/tooling": "workspace:*",
     "drizzle-kit": "^0.31.11",
